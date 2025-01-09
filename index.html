@@ -35,9 +35,8 @@
             margin-top: 10px;
         }
         #controls {
-            position: absolute;
-            top: 30px;
-            right: 100px;
+            position: relative;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -77,6 +76,13 @@
             if (!isPaused) {
                 score++;
                 scoreDisplay.textContent = `Puntuación: ${score}`;
+                if (score === 15) {
+                    const popup = confirm('¡Enhorabuena! Has alcanzado 15 puntos. ¿Volver a empezar?');
+                    if (popup) {
+                        score = 0;
+                        scoreDisplay.textContent = `Puntuación: ${score}`;
+                    }
+                }
                 moveSquare();
             }
         }
