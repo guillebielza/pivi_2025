@@ -3,40 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>¡Feliz Cumpleaños!</title>
+    <title>Cuenta Atrás</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: white;
             text-align: center;
-            background-color: #ffebcd;
-            padding: 20px;
         }
-        .container {
-            max-width: 600px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #ff4500;
-        }
-        img {
-            max-width: 100%;
-            border-radius: 10px;
-        }
-        p {
-            font-size: 18px;
-            color: #333;
+        #countdown {
+            font-size: 2em;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎉 ¡Feliz Cumpleaños, Ángela! 🎂</h1>
-        <img src="IMG_6951.JPEG" alt="Imagen de cumpleaños">
-        <p>¡Que tengas el mejor día del mundo! ¡Te lo mereces!</p>
-    </div>
+    <div id="countdown"></div>
+    
+    <script>
+        function actualizarCuentaAtras() {
+            const fechaObjetivo = new Date("February 20, 2025 00:00:00").getTime();
+            const ahora = new Date().getTime();
+            const diferencia = fechaObjetivo - ahora;
+            
+            if (diferencia <= 0) {
+                document.getElementById("countdown").innerHTML = "¡La cuenta atrás ha finalizado!";
+                return;
+            }
+            
+            const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
+            const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
+            const decimas = Math.floor((diferencia % 1000) / 100);
+            
+            document.getElementById("countdown").innerHTML = `${horas}h ${minutos}m ${segundos}s ${decimas}d`;
+        }
+        
+        setInterval(actualizarCuentaAtras, 100);
+        actualizarCuentaAtras();
+    </script>
 </body>
 </html>
