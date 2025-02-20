@@ -52,9 +52,13 @@
             text-align: center;
         }
         .buttons {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
             display: flex;
             justify-content: space-between;
-            margin: 15px 10px;
+            padding: 10px;
+            box-sizing: border-box;
         }
         .buttons button {
             background-color: #ff9800;
@@ -86,6 +90,16 @@
             font-weight: bold;
             margin-top: 10px;
             color: #ff9800;
+        }
+        @media (max-width: 600px) {
+            .buttons {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .buttons button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
         }
     </style>
 </head>
@@ -183,3 +197,4 @@
 
 </body>
 </html>
+
