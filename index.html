@@ -3,47 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuenta Atrás</title>
+    <title>Feliz Cumpleaños</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
-            background-color: #282c34;
-            color: white;
+            background-color: #f8bbd0;
+        }
+        h1 {
+            font-size: 3em;
+            color: #fff;
             text-align: center;
         }
-        #countdown {
-            font-size: 2em;
+        .message {
+            font-size: 1.5em;
+            color: #fff;
+            margin-top: 20px;
+        }
+        .button-container {
+            margin-top: 30px;
+        }
+        .button-container button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .button-container button:hover {
+            background-color: #e68900;
         }
     </style>
 </head>
 <body>
-    <div id="countdown"></div>
-    
-    <script>
-        function actualizarCuentaAtras() {
-            const fechaObjetivo = new Date("February 20, 2025 00:00:00").getTime();
-            const ahora = new Date().getTime();
-            const diferencia = fechaObjetivo - ahora;
-            
-            if (diferencia <= 0) {
-                document.getElementById("countdown").innerHTML = "¡FELIZ CUMPLE PIVI!";
-                return;
-            }
-            
-            const horas = Math.floor((diferencia % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutos = Math.floor((diferencia % (1000 * 60 * 60)) / (1000 * 60));
-            const segundos = Math.floor((diferencia % (1000 * 60)) / 1000);
-            const decimas = Math.floor((diferencia % 1000) / 100);
-            
-            document.getElementById("countdown").innerHTML = `${horas}h ${minutos}m ${segundos}s ${decimas}d`;
-        }
-        
-        setInterval(actualizarCuentaAtras, 100);
-        actualizarCuentaAtras();
-    </script>
+
+    <h1>¡Feliz Cumpleaños PIVI!</h1>
+    <div class="message">
+        ¡CHULISIMO! 🎉
+    </div>
+
+    <div class="button-container">
+        <button onclick="window.location.href='inicio.html'">Ver Galería</button>
+    </div>
+
 </body>
 </html>
