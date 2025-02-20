@@ -6,6 +6,7 @@
     <title>Galería Deslizante</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
+        
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -17,8 +18,9 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden;
+            overflow-y: auto; /* Permite el desplazamiento */
         }
+
         .gallery-container {
             position: relative;
             width: 90%;
@@ -27,10 +29,12 @@
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
         .gallery-wrapper {
             display: flex;
             transition: transform 0.5s ease-in-out;
         }
+
         .gallery-slide {
             min-width: 100%;
             display: flex;
@@ -39,11 +43,13 @@
             justify-content: center;
             text-align: center;
         }
+
         .gallery-slide img {
             width: 100%;
-            max-height: 80vh;
+            max-height: 60vh; /* Evita imágenes demasiado grandes */
             object-fit: contain;
         }
+
         .message {
             font-size: 1.4em;
             margin-top: 10px;
@@ -51,15 +57,19 @@
             padding: 10px;
             text-align: center;
         }
+
         .buttons {
             position: absolute;
-            bottom: 10px;
-            width: 100%;
+            bottom: 10px; /* Mantiene los botones accesibles */
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
             padding: 10px;
-            box-sizing: border-box;
         }
+
         .buttons button {
             background-color: #ff9800;
             color: white;
@@ -70,9 +80,11 @@
             border-radius: 10px;
             transition: background 0.3s;
         }
+
         .buttons button:hover {
             background-color: #e68900;
         }
+
         .final-slide {
             display: flex;
             flex-direction: column;
@@ -85,21 +97,12 @@
             border-radius: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
+
         #countdown {
             font-size: 2em;
             font-weight: bold;
             margin-top: 10px;
             color: #ff9800;
-        }
-        @media (max-width: 600px) {
-            .buttons {
-                flex-direction: row;
-                justify-content: space-between;
-            }
-            .buttons button {
-                font-size: 14px;
-                padding: 8px 16px;
-            }
         }
     </style>
 </head>
@@ -197,4 +200,5 @@
 
 </body>
 </html>
+
 
