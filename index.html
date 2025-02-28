@@ -3,56 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feliz Cumpleaños</title>
+    <title>Cuenta Regresiva</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
         body {
             font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
+            background-color: #f4f4f9;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
-            background-color: #f8bbd0;
+            margin: 0;
+            color: #333;
         }
-        h1 {
-            font-size: 3em;
-            color: #fff;
+        .content {
             text-align: center;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 500px;
         }
-        .message {
-            font-size: 1.5em;
-            color: #fff;
-            margin-top: 20px;
+        #countdown {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
         }
-        .button-container {
-            margin-top: 30px;
-        }
-        .button-container button {
+        #redirect-btn {
             padding: 15px 30px;
-            font-size: 1.2em;
-            background-color: #ff9800;
+            font-size: 18px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        .button-container button:hover {
-            background-color: #e68900;
+        #redirect-btn.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        #redirect-btn:hover {
+            background-color: #45a049;
         }
     </style>
+    <script>
+        function updateCountdown() {
+            const targetDate = new Date('February 28, 2025 20:00:00').getTime();
+            const now = new Date().getTime();
+            const difference = targetDate - now;
+
+            if (difference > 0) {
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                document.getElementById('countdown').textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                document.getElementById('countdown').textContent = "¡El tiempo ha terminado!";
+                document.getElementById('redirect-btn').classList.add('active');
+                document.getElementById('redirect-btn').disabled = false;
+            }
+        }
+
+        setInterval(updateCountdown, 1000);
+        window.onload = updateCountdown;
+    </script>
 </head>
 <body>
 
-    <h1>¡Feliz Cumpleaños PIVI!</h1>
-    <div class="message">
-        ¡CHULISIMO! 🎉
-    </div>
-
-    <div class="button-container">
-        <button onclick="window.location.href='inicio.html'">Ver Galería</button>
+    <div class="content">
+        <div id="countdown"></div>
+        <button id="redirect-btn" onclick="window.location.href='inicio.html'">Ir a Inicio</button>
     </div>
 
 </body>

@@ -3,202 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Galería Deslizante</title>
+    <title>Juegos y Diversión</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
-        
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
+            text-align: center;
             background-color: #fff9c4;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow-y: auto; /* Permite el desplazamiento */
         }
-
-        .gallery-container {
-            position: relative;
+        nav {
+            background: white;
+            padding: 15px 0;
+            position: fixed;
             width: 90%;
-            max-width: 800px;
-            overflow: hidden;
-            border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .gallery-wrapper {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-        }
-
-        .gallery-slide {
-            min-width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .gallery-slide img {
-            width: 100%;
-            max-height: 60vh; /* Evita imágenes demasiado grandes */
-            object-fit: contain;
-        }
-
-        .message {
-            font-size: 1.4em;
-            margin-top: 10px;
-            font-weight: bold;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .buttons {
-            position: absolute;
-            bottom: 0px; /* Mantiene los botones accesibles */
+            top: 10px;
             left: 50%;
             transform: translateX(-50%);
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
             display: flex;
-            justify-content: space-between;
-            width: 100%;
-            max-width: 800px;
-            padding: 10px;
+            justify-content: center;
         }
-
-        .buttons button {
-            background-color: #ff9800;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 10px;
-            transition: background 0.3s;
+        nav ul li {
+            margin: 0 20px;
         }
-
-        .buttons button:hover {
-            background-color: #e68900;
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.2s, text-shadow 0.2s;
         }
-
-        .final-slide {
+        nav ul li a:hover {
+            transform: scale(1.1);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        section {
+            height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
+            flex-direction: row;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff9c4;
+            width: 80%;
+            border-radius: 15px;
+        }
+        .hero img {
+            width: 300px;
+            height: auto;
+            margin-right: 20px; /* Separar la imagen del texto */
+        }
+        .hero-text {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+        }
+        .hero h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 0; /* Eliminar márgenes para acercar */
+            transition: transform 0.3s ease;
+        }
+        .hero h2 {
+            font-size: 1.1em; /* Hacer el subtítulo más pequeño */
+            font-weight: 400;
+            color: #666;
+            margin-top: 5px; /* Acercar el subtítulo al título */
+            transition: transform 0.3s ease;
+        }
+        .hero h1:hover {
+            transform: translateX(10px);
+        }
+        .hero h2:hover {
+            transform: translateX(5px);
+        }
+        .songs-section {
             background-color: white;
             width: 100%;
-            height: 80vh;
             border-radius: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 20px;
         }
-
-        #countdown {
+        .songs-section h2 {
             font-size: 2em;
             font-weight: bold;
-            margin-top: 10px;
-            color: #ff9800;
+            margin-bottom: 20px;
+        }
+        .songs-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .songs-list li {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .songs-list li a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+            transition: transform 0.2s, text-shadow 0.2s;
+        }
+        .songs-list li a:hover {
+            transform: scale(1.1);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .calendar-section {
+            background-color: #ffcc80; /* Tono anaranjado */
+            width: 100%;
+            border-radius: 25px; /* Bordes más redondeados */
+            padding: 20px;
+        }
+        #calendar {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        /* Estilos para el calendario */
+        #calendar-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            border-radius: 25px;
+            overflow: hidden;
+        }
+        #calendar-table th, #calendar-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        #calendar-table th {
+            background-color: #ffb74d; /* Color más anaranjado */
+        }
+        #calendar-table td {
+            background-color: #fff;
+            cursor: pointer;
+        }
+        #calendar-table td:hover {
+            background-color: #ffe082;
+        }
+        /* Resaltar el día de hoy */
+        .today {
+            background-color: #ffeb3b;
+            border-radius: 50%;
+            font-weight: bold;
         }
     </style>
+    <script>
+        function updateCalendar() {
+            const now = new Date();
+            const month = now.getMonth();
+            const year = now.getFullYear();
+            const currentDay = now.getDate();
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDayOfMonth = new Date(year, month, 1).getDay();
+            
+            let calendarHTML = `<table id="calendar-table"><thead><tr>`;
+            const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+            for (let i = 0; i < 7; i++) {
+                calendarHTML += `<th>${weekDays[i]}</th>`;
+            }
+            calendarHTML += `</tr></thead><tbody><tr>`;
+            
+            // Fill empty spaces before the first day of the month
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                calendarHTML += `<td></td>`;
+            }
+
+            // Fill the days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                if ((firstDayOfMonth + day - 1) % 7 === 0 && day !== 1) {
+                    calendarHTML += `</tr><tr>`;
+                }
+                const isToday = (day === currentDay) ? 'today' : '';
+                calendarHTML += `<td class="${isToday}">${day}</td>`;
+            }
+
+            calendarHTML += `</tr></tbody></table>`;
+            document.getElementById('calendar').innerHTML = calendarHTML;
+        }
+
+        window.onload = function() {
+            updateCalendar();
+        }
+    </script>
 </head>
 <body>
-
-    <div class="gallery-container">
-        <div class="gallery-wrapper">
-            <div class="gallery-slide">
-                <img src="imagen1.JPEG" alt="Imagen 1">
-                <div class="message">Selfie con nuestra colegona que hicimos en NY</div>
-            </div>
-            <div class="gallery-slide">
-                <img src="imagen2.JPEG" alt="Imagen 2">
-                <div class="message">Cuenquers</div>
-            </div>
-            <div class="gallery-slide">
-                <img src="imagen3.JPEG" alt="Imagen 3">
-                <div class="message">Bajo los rayos del sol siendo Oslers</div>
-            </div>
-            <div class="gallery-slide">
-                <img src="imagen4.JPEG" alt="Imagen 4">
-                <div class="message">En nuestra finca de confianza donde nos gusta salir de fiesta</div>
-            </div>
-            <div class="gallery-slide">
-                <img src="imagen5.JPEG" alt="Imagen 5">
-                <div class="message">Chulísimo pivi</div>
-            </div>
-            <div class="gallery-slide">
-                <img src="imagen6.JPEG" alt="Imagen 6">
-                <div class="message">¡WISHBONE!</div>
-            </div>
-            <div class="gallery-slide final-slide">
-                <div class="message">...</div>
-                <div id="countdown"></div>
-            </div>
+    <nav>
+        <ul>
+            <li><a href="juegos.html">Juegos</a></li>
+            <li><a href="bingo.html">Bingo</a></li>
+            <li><a href="adivinanza.html">Adivina Adivinanza</a></li>
+            <li><a href="fotos.html">Fotos</a></li>
+        </ul>
+    </nav>
+    
+    <section class="hero">
+        <img src="paula_vino_joyas.png" alt="Imagen de Paula">
+        <div class="hero-text">
+            <h1>¡Qué chula la web pivi!</h1>
+            <h2>Tu página web favorita</h2>
         </div>
+    </section>
+    
+    <section class="songs-section">
+        <h2>¡Escucha las mejores canciones de Leiva, Gracie Abrams y Ed Sheeran!</h2>
+        <ul class="songs-list">
+            <!-- Leiva -->
+            <li><a href="https://open.spotify.com/track/0ZQ59X5V8y4" target="_blank">La Lluvia en los Zapatos - Leiva</a></li>
+            <li><a href="https://open.spotify.com/track/1TA0WZqIN3Q" target="_blank">Cuando Te Muerdes El Labio - Leiva</a></li>
 
-        <div class="buttons">
-            <button onclick="prevSlide()">← Anterior</button>
-            <button onclick="nextSlide()">Siguiente →</button>
-        </div>
-    </div>
+            <!-- Gracie Abrams -->
+            <li><a href="https://open.spotify.com/track/0g9AsCd8s0gnglgXaYZj9T" target="_blank">I miss you, I'm sorry - Gracie Abrams</a></li>
+            <li><a href="https://open.spotify.com/track/3eL7QPRlzQJsswbMxoYwD3" target="_blank">Feels Like - Gracie Abrams</a></li>
 
-    <script>
-        let currentIndex = 0;
-        const galleryWrapper = document.querySelector('.gallery-wrapper');
-        const slides = document.querySelectorAll('.gallery-slide');
-
-        function showSlide(index) {
-            if (index >= 0 && index < slides.length) {
-                galleryWrapper.style.transform = `translateX(${-index * 100}%)`;
-            }
-            
-            if (index === slides.length - 1) {
-                document.getElementById('countdown').style.display = 'block';
-            } else {
-                document.getElementById('countdown').style.display = 'none';
-            }
-        }
-
-        function nextSlide() {
-            if (currentIndex < slides.length - 1) {
-                currentIndex++;
-                showSlide(currentIndex);
-            }
-        }
-
-        function prevSlide() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                showSlide(currentIndex);
-            }
-        }
-
-        function updateCountdown() {
-            const targetDate = new Date('February 28, 2025 20:00:00').getTime();
-            const now = new Date().getTime();
-            const difference = targetDate - now;
-
-            if (difference > 0) {
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                document.getElementById('countdown').textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            } else {
-                document.getElementById('countdown').textContent = "¡Ya llegó el momento!";
-            }
-        }
-
-        setInterval(updateCountdown, 1000);
-        window.onload = updateCountdown;
-    </script>
-
+            <!-- Ed Sheeran -->
+            <li><a href="https://open.spotify.com/track/JGwWNGJdvx8" target="_blank">Shape of You - Ed Sheeran</a></li>
+            <li><a href="https://open.spotify.com/track/lp-EO5I60KA" target="_blank">Perfect - Ed Sheeran</a></li>
+        </ul>
+    </section>
+    
+    <section class="calendar-section">
+        <div id="calendar"></div>
+    </section>
 </body>
 </html>
+
+
+
+
 
 

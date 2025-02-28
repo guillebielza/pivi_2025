@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Caza el Sujeto!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            color: #333;
+        }
+        #game-area {
+            position: relative;
+            width: 80%;
+            height: 400px;
+            margin: 20px auto;
+            border: 2px solid #333;
+            background-color: #e6f7ff;
+        }
+        #square {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-image: url('Sujeto.png');
+            background-size: cover;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #score {
+            font-size: 24px;
+            margin-top: 10px;
+        }
+        #controls {
+            position: relative;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>¡Caza a tu chavalito favorito!</h1>
+    <p>Haz clic en la imagen antes de que desaparezca para ganar puntos.</p>
+    <div id="game-area">
+        <div id="square"></div>
+    </div>
+    <div id="score">Puntuación: 0</div>
+    <div id="controls">
+        <button id="pause-btn">Pausa</button>
+        <button id="resume-btn" disabled>Reanudar</button>
+    </div>
+
+    <script>
+        const square = document.getElementById('square');
+        const gameArea = document.getElementById('game-area');
+        const scoreDisplay = document.getElementById('score');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resumeBtn = document.getElementById('resume-btn');
+
+        let score = 0;
+        let gameInterval;
+        let isPaused = false;
+
+        function moveSquare() {
+            const areaWidth = gameArea.clientWidth - square.clientWidth;
+            const areaHeight = gameArea.clientHeight - square.clientHeight;
+            const newX = Math.floor(Math.random() * areaWidth);
+            const newY = Math.floor(Math.random() * areaHeight);
+            square.style.left = `${newX}px`;
+            square.style.top = `${newY}px`;
+        }
+
+        function increaseScore() {
+            if (!isPaused) {
+                score++;
+                scoreDisplay.textContent = `Puntuación: ${score}`;
+                if (score === 15) {
+                    const popup = confirm('¡Enhorabuena! Has alcanzado 15 puntos. ¿Volver a empezar?');
+                    if (popup) {
+                        score = 0;
+                        scoreDisplay.textContent = `Puntuación: ${score}`;
+                    }
+                }
+                moveSquare();
+            }
+        }
+
+        function startGame() {
+            gameInterval = setInterval(moveSquare, 1000);
+            isPaused = false;
+        }
+
+        function pauseGame() {
+            clearInterval(gameInterval);
+            isPaused = true;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = false;
+        }
+
+        function resumeGame() {
+            startGame();
+            pauseBtn.disabled = false;
+            resumeBtn.disabled = true;
+        }
+
+        square.addEventListener('click', increaseScore);
+        pauseBtn.addEventListener('click', pauseGame);
+        resumeBtn.addEventListener('click', resumeGame);
+
+        startGame();
+    </script>
+</body>
+</html>

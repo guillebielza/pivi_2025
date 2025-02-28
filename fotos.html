@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galería de Fotos</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-color: #fff9c4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        nav {
+            background: white;
+            padding: 15px 0;
+            position: fixed;
+            width: 90%;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            margin: 0 20px;
+        }
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.2s, text-shadow 0.2s;
+        }
+        nav ul li a:hover {
+            transform: scale(1.1);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .content {
+            margin-top: 80px;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            padding: 20px;
+            max-width: 1000px;
+        }
+        .gallery img {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .gallery img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <ul>
+            <li><a href="inicio.html">Inicio</a></li>
+            <li><a href="juegos.html">Juegos</a></li>
+            <li><a href="bingo.html">Bingo</a></li>
+            <li><a href="adivinanza.html">Adivina Adivinanza</a></li>
+            <li><a href="fotos.html">Fotos</a></li>
+        </ul>
+    </nav>
+
+    <div class="content">
+        <h1>Galería de Fotos</h1>
+
+        <div class="gallery">
+            <img src="IMG1.jpeg" alt="Imagen 1">
+            <img src="IMG2.jpeg" alt="Imagen 2">
+            <img src="IMG3.jpeg" alt="Imagen 3">
+            <img src="IMG4.jpeg" alt="Imagen 4">
+            <img src="IMG5.jpeg" alt="Imagen 5">
+            <img src="IMG6.jpeg" alt="Imagen 6">
+            <img src="IMG7.jpeg" alt="Imagen 7">
+            <img src="IMG8.jpeg" alt="Imagen 8">
+        </div>
+    </div>
+
+</body>
+</html>
+
