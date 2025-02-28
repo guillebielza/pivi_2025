@@ -62,7 +62,7 @@
         #pregunta {
             margin-top: 20px;
         }
-        #sorpresa {
+        #sorpresa, #sorpresaMaraton {
             display: none;
             margin-top: 20px;
             border: 2px solid #333;
@@ -71,7 +71,7 @@
             background-color: white;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        #sorpresa img {
+        #sorpresa img, #sorpresaMaraton img {
             max-width: 100%;
             border-radius: 10px;
         }
@@ -82,11 +82,15 @@
     <script>
         function verificarRespuesta() {
             const respuestaCorrecta = "maki";
+            const respuestaMaraton = "maratón";
             const respuestaUsuario = document.getElementById("respuesta").value.toLowerCase();
             
             if (respuestaUsuario === respuestaCorrecta) {
                 document.getElementById("pregunta").classList.add("hidden");
                 document.getElementById("sorpresa").style.display = "block";
+            } else if (respuestaUsuario === respuestaMaraton) {
+                document.getElementById("pregunta").classList.add("hidden");
+                document.getElementById("sorpresaMaraton").style.display = "block";
             } else {
                 alert("Respuesta incorrecta. Inténtalo de nuevo.");
             }
@@ -95,6 +99,7 @@
         function volverAdivinanza() {
             document.getElementById("pregunta").classList.remove("hidden");
             document.getElementById("sorpresa").style.display = "none";
+            document.getElementById("sorpresaMaraton").style.display = "none";
             document.getElementById("respuesta").value = "";
         }
     </script>
@@ -123,8 +128,15 @@
             <p>Cena para 2 en el restaurante SIBUYA el viernes 28 de febrero a las 22:00. Gran Vía 58.</p>
             <button onclick="volverAdivinanza()">Volver</button>
         </div>
+        
+        <div id="sorpresaMaraton">
+            <img src="rapido.jpg" alt="Sorpresa Maratón">
+            <p>¡Felicidades! Aqui algo que te ayudará a ser la más rápida.</p>
+            <button onclick="volverAdivinanza()">Volver</button>
+        </div>
     </div>
 
 </body>
 </html>
+
 
