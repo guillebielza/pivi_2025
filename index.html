@@ -1,85 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuenta Regresiva</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&display=swap');
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            color: #333;
-        }
-        .content {
-            text-align: center;
-            padding: 30px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 500px;
-        }
-        #countdown {
-            font-size: 2.5em;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        #redirect-btn {
-            padding: 15px 30px;
-            font-size: 18px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            opacity: 0.5;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        #redirect-btn.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-        #redirect-btn:hover {
-            background-color: #45a049;
-        }
-    </style>
-    <script>
-        function updateCountdown() {
-            const targetDate = new Date('February 28, 2025 20:00:00').getTime();
-            const now = new Date().getTime();
-            const difference = targetDate - now;
-
-            if (difference > 0) {
-                const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-                document.getElementById('countdown').textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
-            } else {
-                document.getElementById('countdown').textContent = "¡El tiempo ha terminado!";
-                document.getElementById('redirect-btn').classList.add('active');
-                document.getElementById('redirect-btn').disabled = false;
-            }
-        }
-
-        setInterval(updateCountdown, 1000);
-        window.onload = updateCountdown;
-    </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reto 2026</title>
+  <link rel="stylesheet" href="countdown.css" />
 </head>
 <body>
 
-    <div class="content">
-        <div id="countdown"></div>
-        <button id="redirect-btn" onclick="window.location.href='inicio.html'">Ir a Inicio</button>
+<header class="topbar">
+  <div class="header-center">
+    <h1>🎁 Reto 2026</h1>
+    <p class="subtitle">
+      Un <strong>regalo de Reyes</strong> en versión “deluxe”: cuando el contador llegue a cero,
+      se desbloquea la web completa. 👑✨
+    </p>
+  </div>
+</header>
+
+<main class="page">
+
+  <section class="card hero">
+    <h2>⏳ Cuenta atrás</h2>
+    <p class="muted">
+      Apertura: <strong id="openDateText">10 de enero de 2026</strong>
+      (hora de Madrid).
+    </p>
+
+    <div id="countdown" class="countdown">
+      <div class="timebox">
+        <div id="d" class="num">—</div>
+        <div class="label">días</div>
+      </div>
+      <div class="timebox">
+        <div id="h" class="num">—</div>
+        <div class="label">horas</div>
+      </div>
+      <div class="timebox">
+        <div id="m" class="num">—</div>
+        <div class="label">min</div>
+      </div>
+      <div class="timebox">
+        <div id="s" class="num">—</div>
+        <div class="label">seg</div>
+      </div>
     </div>
 
+    <div id="ready" class="ready hidden">
+      ✅ ¡Ya está! El <strong>Reto 2026</strong> está abierto.
+      <div class="ready-sub">Refresca la página si estás viendo esto antes de que actives la versión completa.</div>
+    </div>
+
+    <p class="tiny muted">
+      Nota: si la hora de tu ordenador está mal, el contador también.
+    </p>
+  </section>
+
+  <section class="card">
+    <h2>🧩 ¿Qué se desbloquea el 10 de enero?</h2>
+    <p class="desc">
+      <strong>Reto 2026</strong> es una web para gamificar el año: ganas pivi puntos y los canjeas por recompensas.
+      Lo divertido es que hay varias formas de conseguirlos, pero con reglas para que sea justo.
+    </p>
+
+    <div class="features">
+      <div class="feature">
+        <h3>🎁 Recompensas</h3>
+        <p>Experiencias y regalos canjeables con pivi puntos.</p>
+      </div>
+
+      <div class="feature">
+        <h3>🎡 Ruleta</h3>
+        <p>
+          Da puntos <strong>solo lunes y miércoles</strong> y
+          <strong>solo 1 tirada</strong> por día habilitado.
+        </p>
+      </div>
+
+      <div class="feature">
+        <h3>🎮 Retos</h3>
+        <p>
+          Minijuegos (Wordle, Quiz, Parejas, ¿Cuál falta?) que
+          <strong>solo puntúan en fin de semana</strong> y
+          <strong>solo 1 premio</strong> por fin de semana.
+        </p>
+      </div>
+
+      <div class="feature">
+        <h3>🏷️ Códigos</h3>
+        <p>Canjea códigos especiales para sumar pivi puntos (una vez por código).</p>
+      </div>
+    </div>
+
+    <p class="tiny muted">
+      En resumen: el 10 de enero se abre el “juego” completo y ya puedes empezar a acumular pivi puntos.
+    </p>
+  </section>
+
+</main>
+
+<script src="countdown.js"></script>
 </body>
 </html>
