@@ -1,0 +1,326 @@
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f7f3ef;
+}
+
+/* HEADER centrado */
+header {
+  padding: 16px;
+  background: #e7cfc8;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.header-left{
+  text-align: center;
+}
+
+.header-left h1 {
+  margin: 0;
+}
+
+.header-desc {
+  margin: 6px 0 0;
+  opacity: 0.8;
+  max-width: 760px;
+  line-height: 1.35;
+}
+
+/* Puntos arriba a la derecha */
+.points{
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+/* Layout principal */
+.layout {
+  display: flex;
+  gap: 18px;
+  padding: 18px;
+}
+
+/* RECOMPENSAS */
+.rewards {
+  width: 65%;
+  padding: 10px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+/* ---------------- BOTONES RECOMPENSAS ---------------- */
+.reward {
+  background: #fcd5ce;
+  padding: 18px;
+  border-radius: 16px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  color: #5b3a29;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.reward:hover {
+  transform: translateY(-4px);
+  box-shadow: 4px 6px 10px rgba(0,0,0,0.2);
+}
+
+.reward span {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #7c4d31;
+}
+
+.reward.disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* recompensa no disponible */
+.reward.unavailable{
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+  transform: none !important;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.12);
+}
+
+.reward.unavailable:hover{
+  transform: none;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.12);
+}
+
+.reward.unavailable::after{
+  content: "NO DISPONIBLE";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  padding: 6px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.10);
+  border: 1px solid rgba(0,0,0,0.10);
+}
+
+/* ------------ PANEL DERECHO ------------ */
+.right-panel{
+  width: 35%;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card{
+  background: #fff7ef;
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 2px 2px 10px rgba(0,0,0,0.10);
+}
+
+.muted{
+  opacity: 0.75;
+  margin-top: 6px;
+  margin-bottom: 12px;
+}
+
+button.big{
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 18px;
+}
+
+/* boton reset */
+.reset-btn{
+  width: 100%;
+  margin-top: 10px;
+  background: #e7cfc8;
+}
+
+/* ------------ RULETA ------------ */
+.wheel-container {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 14px auto 10px;
+}
+
+#wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 8px solid #e7cfc8;
+  position: relative;
+  transition: transform 3.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  background: conic-gradient(
+    #ffd6a5 0deg 45deg,
+    #fdffb6 45deg 90deg,
+    #caffbf 90deg 135deg,
+    #9bf6ff 135deg 180deg,
+    #a0c4ff 180deg 225deg,
+    #bdb2ff 225deg 270deg,
+    #ffc6ff 270deg 315deg,
+    #ffadad 315deg 360deg
+  );
+}
+
+.wheel-number {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-weight: 900;
+  font-size: 22px;
+  color: #ffffff;
+  user-select: none;
+  pointer-events: none;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.pointer {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+
+  border-left: 14px solid transparent;
+  border-right: 14px solid transparent;
+  border-top: 22px solid #ff595e;
+
+  z-index: 10;
+}
+
+/* ------------ CANJEAR CÓDIGO ------------ */
+.code-row{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+#codeInput{
+  flex: 1;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 2px solid rgba(0,0,0,0.10);
+  background: white;
+  font-size: 15px;
+  font-weight: 700;
+  outline: none;
+}
+
+#codeInput:focus{
+  border-color: rgba(255, 89, 94, 0.45);
+}
+
+.code-hint{
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+/* Botones generales */
+button {
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  background: #ffd6a5;
+  color: #5b3a29;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+  margin-top: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 4px 4px 10px rgba(0,0,0,0.2);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 2px 2px 6px rgba(0,0,0,0.15);
+}
+
+/* POPUP */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hidden {
+  display: none;
+}
+
+.popup {
+  background: #fff7ef;
+  padding: 24px;
+  border-radius: 16px;
+  max-width: 320px;
+  text-align: center;
+}
+
+.popup button {
+  margin-top: 12px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #e7cfc8;
+}
+
+/* FX CANVAS (confeti) */
+.fx-canvas{
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 999;
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 980px){
+  header{
+    padding-top: 50px;
+  }
+  .points{
+    top: 12px;
+    right: 12px;
+  }
+  .layout{
+    flex-direction: column;
+  }
+  .rewards, .right-panel{
+    width: 100%;
+  }
+  .right-panel{
+    min-width: 0;
+  }
+}

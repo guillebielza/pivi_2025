@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>¿Cuál falta?</title>
+  <link rel="stylesheet" href="missing.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="header-center">
+    <h1>🧠 ¿Cuál falta?</h1>
+    <p class="subtitle">Memoriza 9 iconos → vuelve 8 → adivina el que falta</p>
+  </div>
+
+  <div class="right">
+    <div class="points-badge">Puntos: <span id="points">0</span></div>
+    <button class="btn" onclick="window.location.href='retos.html'">⬅️ Retos</button>
+    <button class="btn" onclick="window.location.href='index.html'">🏠 Inicio</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="panel">
+
+    <div class="mode">
+      <button id="practiceBtn" class="btn secondary">Practicar</button>
+      <button id="challengeBtn" class="btn primary">Jugar reto (+ puntos)</button>
+      <button id="restartBtn" class="btn">🔁 Reiniciar</button>
+      <button id="giveUpBtn" class="btn danger">✖️ Salir de ronda</button>
+    </div>
+
+    <div class="status-row">
+      <div id="policyStatus" class="status-note">—</div>
+    </div>
+
+    <div class="info">
+      <div class="pill">Modo: <b id="modeLabel">—</b></div>
+      <div class="pill">Ronda: <b><span id="round">—</span>/<span id="roundsTotal">10</span></b></div>
+      <div class="pill">Tiempo: <b><span id="timeLeft">—</span></b></div>
+      <div class="pill">Aciertos: <b><span id="correct">0</span></b></div>
+      <div class="pill">Fallos: <b><span id="wrong">0</span></b></div>
+      <div class="pill">Recompensa: <b id="rewardLabel">—</b></div>
+    </div>
+
+    <div class="timerbar">
+      <div id="timerFill" class="timerbar-fill"></div>
+    </div>
+
+    <div id="stage" class="stage">
+      <div id="stageTitle" class="stage-title">Elige un modo para empezar</div>
+      <div id="grid" class="grid"></div>
+    </div>
+
+    <div class="question">
+      <h2>¿Cuál falta?</h2>
+      <div id="choices" class="choices"></div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- 📌 EXPLICACIÓN DE PUNTOS -->
+    <div class="rules">
+      <h3>📌 Cómo se suman puntos en este juego</h3>
+
+      <p>
+        <b>Solo en modo reto</b>. En práctica puedes jugar todas las veces que quieras,
+        pero <b>no suma puntos</b>.
+      </p>
+
+      <ul class="rules-list">
+        <li><b>Puntuación:</b> ganas <b>1 punto por cada acierto</b>.</li>
+        <li><b>Máximo:</b> 10 puntos por partida.</li>
+        <li><b>Fallos:</b> no restan puntos.</li>
+        <li><b>Abandonar:</b> si sales antes de terminar las 10 rondas → <b>0 puntos</b>.</li>
+      </ul>
+
+      <p class="rules-foot">
+        <b>Política:</b> el modo reto solo puede otorgar puntos
+        <b>una vez por fin de semana</b> para este juego.
+      </p>
+    </div>
+
+  </section>
+</main>
+
+<!-- Modal resultado -->
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Resultado</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button id="modalOk" class="btn primary">Aceptar</button>
+      <button id="modalAgain" class="btn secondary">Jugar otra</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal inicio -->
+<div id="startOverlay" class="overlay start-overlay hidden">
+  <div class="modal start-modal">
+    <h3>🧠 ¿Cómo quieres jugar?</h3>
+    <p id="startText"></p>
+
+    <div class="start-actions">
+      <button id="choosePractice" class="btn secondary">Practicar</button>
+      <button id="chooseChallenge" class="btn primary">Jugar reto (+ puntos)</button>
+    </div>
+
+    <p class="start-foot muted">Puedes cambiar de modo cuando quieras.</p>
+  </div>
+</div>
+
+<script src="points-policy.js"></script>
+<script src="missing.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Cultura General</title>
+  <link rel="stylesheet" href="quiz.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="header-center">
+    <h1>🧩 Quiz: Cultura general</h1>
+    <p class="subtitle">10 preguntas · responde rápido · suma puntos en modo reto</p>
+  </div>
+
+  <div class="right">
+    <div class="points-badge">Puntos: <span id="points">0</span></div>
+    <button class="btn" onclick="window.location.href='retos.html'">⬅️ Retos</button>
+    <button class="btn" onclick="window.location.href='index.html'">🏠 Inicio</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="panel">
+
+    <div class="mode">
+      <button id="practiceBtn" class="btn secondary">Practicar</button>
+      <button id="challengeBtn" class="btn primary">Jugar reto (+ puntos)</button>
+      <button id="restartBtn" class="btn">🔁 Reiniciar</button>
+    </div>
+
+    <div class="status-row">
+      <div id="policyStatus" class="status-note">—</div>
+    </div>
+
+    <div class="info">
+      <div class="pill">Modo: <b id="modeLabel">—</b></div>
+      <div class="pill">Pregunta: <b><span id="qIndex">—</span>/<span id="qTotal">10</span></b></div>
+      <div class="pill">Tiempo: <b><span id="timeLeft">—</span>s</b></div>
+      <div class="pill">Aciertos: <b><span id="correct">0</span></b></div>
+      <div class="pill">Fallos: <b><span id="wrong">0</span></b></div>
+      <div class="pill">Recompensa: <b id="rewardLabel">—</b></div>
+    </div>
+
+    <div class="timerbar">
+      <div id="timerFill" class="timerbar-fill"></div>
+    </div>
+
+    <div class="card">
+      <div class="metaRow">
+        <span class="tag" id="tagCategory">—</span>
+        <span class="tag" id="tagDifficulty">—</span>
+      </div>
+
+      <h2 id="questionText">Cargando preguntas…</h2>
+      <div id="answers" class="answers"></div>
+
+      <div class="bottomRow">
+        <button id="skipBtn" class="btn danger">⏭️ Pasar</button>
+        <button id="nextBtn" class="btn" disabled>Siguiente</button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <div class="rules">
+      <h3>📌 Cómo se suman puntos en este juego</h3>
+      <p><b>Solo en modo reto</b>. En práctica no suma puntos.</p>
+      <ul class="rules-list">
+        <li><b>+1 punto por cada acierto</b> (máximo 10 puntos).</li>
+        <li><b>Fallos / pasar:</b> 0 puntos.</li>
+        <li><b>Tiempo:</b> si se acaba el tiempo, cuenta como fallo.</li>
+      </ul>
+      <p class="rules-foot">
+        <b>Política:</b> el modo reto solo puede otorgar puntos <b>una vez por fin de semana</b> para este juego.
+      </p>
+    </div>
+
+  </section>
+</main>
+
+<!-- Modal resultado -->
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Resultado</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button id="modalOk" class="btn primary">Aceptar</button>
+      <button id="modalAgain" class="btn secondary">Jugar otra</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal inicio -->
+<div id="startOverlay" class="overlay start-overlay hidden">
+  <div class="modal start-modal">
+    <h3>🧩 ¿Cómo quieres jugar?</h3>
+    <p id="startText"></p>
+
+    <div class="start-actions">
+      <button id="choosePractice" class="btn secondary">Practicar</button>
+      <button id="chooseChallenge" class="btn primary">Jugar reto (+ puntos)</button>
+    </div>
+
+    <p class="start-foot muted">En reto: 10 preguntas · +1 punto por acierto.</p>
+  </div>
+</div>
+
+<script src="points-policy.js"></script>
+<script src="quiz.js"></script>
+</body>
+</html>

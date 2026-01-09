@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Retos</title>
+  <link rel="stylesheet" href="retos.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="center">
+    <h1>🎮 Retos</h1>
+    <p class="subtitle">Elige un minijuego. Dentro podrás escoger Práctica o Reto (+ puntos).</p>
+  </div>
+
+  <div class="right">
+    <div class="points-badge">
+      Puntos: <span id="points">0</span>
+    </div>
+    <button class="btn" onclick="window.location.href='index.html'">⬅️ Volver</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="challenge-list">
+    <h2>Minijuegos</h2>
+
+    <!-- MEMORY -->
+    <div class="challenge-card">
+      <div class="challenge-info">
+        <h3>🧠 Parejas ocultas</h3>
+        <p>Encuentra todas las parejas antes de que acabe el tiempo.</p>
+        <div class="meta">
+          <span>⏱️ 60s (solo reto)</span>
+          <span>🃏 16 cartas</span>
+          <span>🎁 Puntos dentro del juego</span>
+        </div>
+      </div>
+      <div class="challenge-actions one">
+        <button class="btn primary" onclick="window.location.href='memory.html'">Ir a jugar</button>
+      </div>
+    </div>
+
+    <!-- WORDLE -->
+    <div class="challenge-card">
+      <div class="challenge-info">
+        <h3>🟩 Wordle</h3>
+        <p>Adivina la palabra. Dentro eliges práctica o reto.</p>
+        <div class="meta">
+          <span>🎯 6 intentos</span>
+          <span>🧠 5 letras</span>
+          <span>🎁 Puntos dentro del juego</span>
+        </div>
+      </div>
+      <div class="challenge-actions one">
+        <button class="btn primary" onclick="window.location.href='wordle.html'">Ir a jugar</button>
+      </div>
+    </div>
+
+    <!-- MISSING -->
+    <div class="challenge-card">
+      <div class="challenge-info">
+        <h3>🧠 ¿Cuál falta?</h3>
+        <p>Memoriza 9 iconos, desaparece 1 y eliges cuál falta.</p>
+        <div class="meta">
+          <span>⚡ 10 rondas</span>
+          <span>🧠 Memoria visual</span>
+          <span>🎁 Puntos dentro del juego</span>
+        </div>
+      </div>
+      <div class="challenge-actions one">
+        <button class="btn primary" onclick="window.location.href='missing.html'">Ir a jugar</button>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div class="challenge-card">
+      <div class="challenge-info">
+        <h3>🧩 Quiz</h3>
+        <p>Preguntas rápidas. Dentro eliges práctica o reto.</p>
+        <div class="meta">
+          <span>🎯 10 preguntas</span>
+          <span>⏱️ Tiempo por pregunta</span>
+          <span>🎁 Puntos dentro del juego</span>
+        </div>
+      </div>
+      <div class="challenge-actions one">
+        <button class="btn primary" onclick="window.location.href='quiz.html'">Ir a jugar</button>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<script src="retos.js"></script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+[
+  {
+    "id": 1,
+    "tipo": "Experiencia",
+    "textoBoton": "🍣",
+    "coste": 25,
+    "disponible": true,
+    "mensajePopup": "¡Noche japonesa activada! 🇯🇵✨\nTe vas a cenar a SUMO Juan Bravo: sushi que entra solo, platos para compartir y ese plan redondo que siempre apetece repetir. ¡Que empiece el festín! 😋🥢",
+    "mensajeHistorico": "Cena en SUMO Juan Bravo — experiencia japonesa disfrutada 🍣"
+  },
+  {
+    "id": 2,
+    "tipo": "Experiencia",
+    "textoBoton": "🍔",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Antojo nivel máximo satisfecho! 😎🔥\nHamburguesa a domicilio en camino: pan blandito, carne jugosa, queso fundido y cero esfuerzo por tu parte. Solo queda una misión… no mancharlo todo 🍟🤤",
+    "mensajeHistorico": "Pedido de hamburguesa a domicilio — cena disfrutada desde casa 🍔"
+  },
+  {
+    "id": 3,
+    "tipo": "Experiencia",
+    "textoBoton": "🏓",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Raquetas listas y after activado! 😄🍹\nUna tarde de pickleball para sudar lo justo, picarse un poco y rematar con una bebida bien fría. Punto, risas y brindis: plan redondo 👌",
+    "mensajeHistorico": "Tarde de pickleball y tomar algo — deporte y relax disfrutados 🏓🍻"
+  },
+  {
+    "id": 4,
+    "tipo": "Experiencia",
+    "textoBoton": "🍿",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Plan clásico que nunca falla! 🎬✨\nPelícula en pantalla grande, palomitas en mano y cero preocupaciones durante un par de horas. Solo queda decidir… ¿dulces o saladas? 😄",
+    "mensajeHistorico": "Sesión de cine con palomitas — película disfrutada 🍿🎥"
+  },
+  {
+    "id": 5,
+    "tipo": "Experiencia",
+    "textoBoton": "🍽️",
+    "coste": 125,
+    "disponible": true,
+    "mensajePopup": "¡Planazo gastronómico desbloqueado! 😋✨\nTe espera una cena en Pai Pai, con platos sabrosos, ambiente acogedor y ese tipo de sitio al que siempre apetece volver. Prepárate para disfrutar sin prisas 🍷🍴",
+    "mensajeHistorico": "Cena en Pai Pai — experiencia gastronómica disfrutada 🍽️"
+  },
+  {
+    "id": 6,
+    "tipo": "Experiencia",
+    "textoBoton": "🍝",
+    "coste": 125,
+    "disponible": true,
+    "mensajePopup": "¡Carbohidratos benditos activados! 😇🇮🇹\nTe espera una cena en Beata Pasta: pasta fresca, salsas gloriosas y esa felicidad inmediata que solo llega después del primer bocado. Amén 🍷✨",
+    "mensajeHistorico": "Cena en Beata Pasta — experiencia italiana disfrutada 🍝"
+  },
+  {
+    "id": 7,
+    "tipo": "Experiencia",
+    "textoBoton": "🧖‍♂️",
+    "coste": 125,
+    "disponible": true,
+    "mensajePopup": "¡Modo relax ON! ✨😌\nUn día entero de spa para desaparecer del mundo: agua calentita, silencio, masajes y cero prisas. Hoy la única obligación es relajarte al máximo 🌿💦",
+    "mensajeHistorico": "Día de spa — jornada de descanso y relajación disfrutada 🧖‍♀️"
+  },
+  {
+    "id": 8,
+    "tipo": "Experiencia",
+    "textoBoton": "🎯",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 9,
+    "tipo": "Experiencia",
+    "textoBoton": "🎧",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 10,
+    "tipo": "Experiencia",
+    "textoBoton": "🌟",
+    "coste": 225,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 11,
+    "tipo": "Experiencia",
+    "textoBoton": "💫",
+    "coste": 225,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 12,
+    "tipo": "Experiencia",
+    "textoBoton": "🫶",
+    "coste": 300,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 13,
+    "tipo": "Regalo",
+    "textoBoton": "🧸",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Sorpresa misteriosa desbloqueada! 👀✨\nTe ha tocado un Smiski: una figura coleccionable adorable que no sabías que necesitabas… hasta ahora. Se esconde, te observa y brilla en la oscuridad. ¿Cuál te habrá tocado? 😄🌙",
+    "mensajeHistorico": "Figura Smiski coleccionable — recompensa recibida 🧸"
+  },
+  {
+    "id": 14,
+    "tipo": "Regalo",
+    "textoBoton": "📱",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Cambio de look desbloqueado! 😎✨\nTu móvil estrena funda nueva: más estilo, más protección y esa sensación tan satisfactoria de “parece otro móvil”. Ahora sí, a lucirlo 💅📲",
+    "mensajeHistorico": "Funda nueva para el móvil — accesorio renovado 📱"
+  },
+  {
+    "id": 15,
+    "tipo": "Regalo",
+    "textoBoton": "🧦",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Estilo desbloqueado desde los pies! 😄✨\nUnos calcetines divertidos para darle personalidad a cualquier look. Nadie los ve… hasta que los ve. Y entonces, risas aseguradas 🧦🔥",
+    "mensajeHistorico": "Calcetines divertidos — accesorio recibido 🧦"
+  },
+  {
+    "id": 16,
+    "tipo": "Regalo",
+    "textoBoton": "❤️",
+    "coste": 75,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 17,
+    "tipo": "Regalo",
+    "textoBoton": "🕯️",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 18,
+    "tipo": "Regalo",
+    "textoBoton": "🪙",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 19,
+    "tipo": "Regalo",
+    "textoBoton": "📦",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 20,
+    "tipo": "Regalo",
+    "textoBoton": "🧩",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 21,
+    "tipo": "Regalo",
+    "textoBoton": "🧷",
+    "coste": 125,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 22,
+    "tipo": "Regalo",
+    "textoBoton": "🧠",
+    "coste": 225,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 23,
+    "tipo": "Regalo",
+    "textoBoton": "🌟",
+    "coste": 225,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  },
+  {
+    "id": 24,
+    "tipo": "Regalo",
+    "textoBoton": "🔀",
+    "coste": 300,
+    "disponible": false,
+    "mensajePopup": "",
+    "mensajeHistorico": ""
+  }
+]

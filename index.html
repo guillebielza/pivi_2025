@@ -1,104 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reto 2026</title>
-  <link rel="stylesheet" href="countdown.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recompensas y Ruleta</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<header class="topbar">
-  <div class="header-center">
+<header>
+  <div class="header-left">
     <h1>🎁 Reto 2026</h1>
-    <p class="subtitle">
-      Un <strong>regalo de Reyes</strong> en versión “deluxe”: cuando el contador llegue a cero,
-      se desbloquea la web completa. 👑✨
+    <p class="header-desc">
+      Consigue pivi puntos para canjear experiencias y regalos.
+      Puedes ganar puntos con la ruleta (solo lunes y miercoles, 1 tirada por dia) y con los retos (solo puntuan en fin de semana y solo 1 premio por fin de semana).
+      Tambien puedes canjear codigos de puntos.
     </p>
+  </div>
+
+  <div class="points">
+    Pivi Puntos: <span id="points">0</span>
   </div>
 </header>
 
-<main class="page">
+<main class="layout">
 
-  <section class="card hero">
-    <h2>⏳ Cuenta atrás</h2>
-    <p class="muted">
-      Apertura: <strong id="openDateText">10 de enero de 2026</strong>
-      (hora de Madrid).
-    </p>
+  <!-- IZQUIERDA: RECOMPENSAS -->
+  <section class="rewards">
+    <h2>Experiencias</h2>
+    <div id="experiences" class="grid"></div>
 
-    <div id="countdown" class="countdown">
-      <div class="timebox">
-        <div id="d" class="num">—</div>
-        <div class="label">días</div>
-      </div>
-      <div class="timebox">
-        <div id="h" class="num">—</div>
-        <div class="label">horas</div>
-      </div>
-      <div class="timebox">
-        <div id="m" class="num">—</div>
-        <div class="label">min</div>
-      </div>
-      <div class="timebox">
-        <div id="s" class="num">—</div>
-        <div class="label">seg</div>
-      </div>
-    </div>
+    <h2>Regalos</h2>
+    <div id="gifts" class="grid"></div>
 
-    <div id="ready" class="ready hidden">
-      ✅ ¡Ya está! El <strong>Reto 2026</strong> está abierto.
-      <div class="ready-sub">Refresca la página si estás viendo esto antes de que actives la versión completa.</div>
-    </div>
-
-    <p class="tiny muted">
-      Nota: si la hora de tu ordenador está mal, el contador también.
-    </p>
+    <h3>Canjeadas</h3>
+    <ul id="redeemedList"></ul>
   </section>
 
-  <section class="card">
-    <h2>🧩 ¿Qué se desbloquea el 10 de enero?</h2>
-    <p class="desc">
-      <strong>Reto 2026</strong> es una web para gamificar el año: ganas pivi puntos y los canjeas por recompensas.
-      Lo divertido es que hay varias formas de conseguirlos, pero con reglas para que sea justo.
-    </p>
+  <!-- DERECHA: PANEL -->
+  <aside class="right-panel">
 
-    <div class="features">
-      <div class="feature">
-        <h3>🎁 Recompensas</h3>
-        <p>Experiencias y regalos canjeables con pivi puntos.</p>
+    <!-- RETOS -->
+    <div class="card">
+      <h2>🎮 Retos</h2>
+      <p class="muted">Juega minijuegos para ganar puntos</p>
+      <button id="goToChallenges" class="big">Ir a Retos</button>
+    </div>
+
+    <!-- RULETA -->
+    <div class="card">
+      <h2>🎡 Ruleta de puntos</h2>
+      <p class="muted" id="wheelHint">
+        Disponible solo lunes y miercoles (1 tirada por dia).
+      </p>
+
+      <div class="wheel-container">
+        <div id="wheel"></div>
+        <div class="pointer"></div>
       </div>
 
-      <div class="feature">
-        <h3>🎡 Ruleta</h3>
-        <p>
-          Da puntos <strong>solo lunes y miércoles</strong> y
-          <strong>solo 1 tirada</strong> por día habilitado.
-        </p>
+      <button id="spinBtn">Girar ruleta</button>
+
+      
+    </div>
+
+    <!-- CANJEAR CÓDIGO -->
+    <div class="card">
+      <h2>🏷️ Canjear codigo</h2>
+      <p class="muted">Introduce un codigo para sumar puntos</p>
+
+      <div class="code-row">
+        <input id="codeInput" type="text" placeholder="Ej: GH-10-ABCD" maxlength="30" autocomplete="off">
+        <button id="redeemCodeBtn">Canjear</button>
       </div>
 
-      <div class="feature">
-        <h3>🎮 Retos</h3>
-        <p>
-          Minijuegos (Wordle, Quiz, Parejas, ¿Cuál falta?) que
-          <strong>solo puntúan en fin de semana</strong> y
-          <strong>solo 1 premio</strong> por fin de semana.
-        </p>
-      </div>
-
-      <div class="feature">
-        <h3>🏷️ Códigos</h3>
-        <p>Canjea códigos especiales para sumar pivi puntos (una vez por código).</p>
+      <div class="code-hint muted">
+        * Los codigos solo se pueden usar una vez.
       </div>
     </div>
 
-    <p class="tiny muted">
-      En resumen: el 10 de enero se abre el “juego” completo y ya puedes empezar a acumular pivi puntos.
-    </p>
-  </section>
+  </aside>
 
 </main>
 
-<script src="countdown.js"></script>
+<!-- CONFETI / FX -->
+<canvas id="fxCanvas" class="fx-canvas" aria-hidden="true"></canvas>
+
+<!-- POPUP -->
+<div id="popupOverlay" class="overlay hidden">
+  <div class="popup">
+    <p id="popupText"></p>
+    <button id="closePopup">Aceptar</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>

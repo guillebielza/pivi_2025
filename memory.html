@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parejas (Memory)</title>
+  <link rel="stylesheet" href="memory.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="header-center">
+    <h1>🧠 Parejas ocultas</h1>
+    <p class="subtitle">Encuentra todas las parejas antes de que acabe el tiempo</p>
+  </div>
+
+  <div class="right">
+    <div class="points-badge">
+      Puntos: <span id="points">0</span>
+    </div>
+    <button class="btn" onclick="window.location.href='retos.html'">⬅️ Retos</button>
+    <button class="btn" onclick="window.location.href='index.html'">🏠 Inicio</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="panel">
+
+    <div class="mode">
+      <button id="practiceBtn" class="btn secondary">Practicar</button>
+      <button id="startBtn" class="btn primary">Jugar reto (+ puntos)</button>
+      <button id="restartBtn" class="btn">🔁 Reiniciar</button>
+      <button id="giveUpBtn" class="btn danger">✖️ Abandonar</button>
+    </div>
+
+    <div class="status-row">
+      <div id="policyStatus" class="status-note">—</div>
+    </div>
+
+    <div class="info">
+      <div class="pill">Tiempo: <b><span id="timeLeft">—</span></b></div>
+      <div class="pill">Aciertos: <b><span id="matches">0</span>/<span id="totalPairs">0</span></b></div>
+      <div class="pill">Fallos: <b><span id="mistakes">0</span></b></div>
+      <div class="pill">Modo: <b id="modeLabel">—</b></div>
+    </div>
+
+    <div class="timerbar">
+      <div id="timerFill" class="timerbar-fill"></div>
+    </div>
+
+    <div id="board" class="board"></div>
+
+    <div class="rules">
+      <h3>📌 Cómo se suman puntos en este juego</h3>
+      <p><b>Solo en modo reto</b>. En práctica juegas ilimitado pero <b>no suma puntos</b>.</p>
+      <ul class="rules-list">
+        <li><b>Condición:</b> completar todas las parejas antes de que acabe el tiempo.</li>
+        <li><b>Base:</b> +6 puntos.</li>
+        <li><b>Bonus por tiempo:</b> +0 a +6: <span class="mono">floor(segundosRestantes / 10)</span></li>
+        <li><b>Penalización:</b> -1 cada 4 fallos: <span class="mono">floor(fallos / 4)</span></li>
+        <li><b>Total:</b> <span class="mono">clamp(6 + bonus - penal, 0, 12)</span></li>
+      </ul>
+      <p class="rules-foot"><b>Política:</b> el modo reto se puede jugar <b>1 vez por fin de semana</b> (por juego).</p>
+    </div>
+
+  </section>
+</main>
+
+<!-- Modal resultado -->
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Resultado</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button id="modalClose" class="btn primary">Aceptar</button>
+      <button id="modalAgain" class="btn secondary">Jugar otra</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal inicio -->
+<div id="startOverlay" class="overlay start-overlay hidden">
+  <div class="modal start-modal">
+    <h3 id="startTitle">🧠 ¿Cómo quieres jugar?</h3>
+    <p id="startText"></p>
+    <div class="start-actions">
+      <button id="choosePractice" class="btn secondary">Practicar</button>
+      <button id="chooseChallenge" class="btn primary">Jugar reto (+ puntos)</button>
+    </div>
+    <p class="start-foot muted">Puedes cambiar luego con los botones.</p>
+  </div>
+</div>
+
+<script src="points-policy.js"></script>
+<script src="memory.js"></script>
+</body>
+</html>
