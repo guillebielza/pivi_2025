@@ -58,7 +58,7 @@
     "tipo": "Experiencia",
     "textoBoton": "🧖‍♂️",
     "coste": 125,
-    "disponible": true,
+    "disponible": false,
     "mensajePopup": "¡Modo relax ON! ✨😌\nUn día entero de spa para desaparecer del mundo: agua calentita, silencio, masajes y cero prisas. Hoy la única obligación es relajarte al máximo 🌿💦",
     "mensajeHistorico": "Día de spa — jornada de descanso y relajación disfrutada 🧖‍♀️"
   },
@@ -113,11 +113,20 @@
     "textoBoton": "🧸",
     "coste": 75,
     "disponible": true,
-    "mensajePopup": "¡Sorpresa misteriosa desbloqueada! 👀✨\nTe ha tocado un Smiski: una figura coleccionable adorable que no sabías que necesitabas… hasta ahora. Se esconde, te observa y brilla en la oscuridad. ¿Cuál te habrá tocado? 😄🌙",
-    "mensajeHistorico": "Figura Smiski coleccionable — recompensa recibida 🧸"
+    "mensajePopup": "¡Compañero adorable desbloqueado! 💙✨/nTe ha tocado un peluche de Stitch para llevar en el coche o poner donde quieras. Pequeño, achuchable y con energía traviesa incluida 😄🚗",
+    "mensajeHistorico": "Peluche de Stitch — detalle decorativo recibido 🧸"
   },
   {
     "id": 14,
+    "tipo": "Regalo",
+    "textoBoton": "🔥",
+    "coste": 75,
+    "disponible": true,
+    "mensajePopup": "¡Manos en modo tostito activado! 😄❄️/nTe han tocado unos calentadores de manos eléctricos para sobrevivir al frío como una campeona. Calor instantáneo, cero guantes perdidos y comodidad máxima ✨🧤",
+    "mensajeHistorico": "Calentadores de manos eléctricos — accesorio térmico recibido 🔥"
+  },
+  {
+    "id": 15,
     "tipo": "Regalo",
     "textoBoton": "📱",
     "coste": 75,
@@ -126,31 +135,22 @@
     "mensajeHistorico": "Funda nueva para el móvil — accesorio renovado 📱"
   },
   {
-    "id": 15,
-    "tipo": "Regalo",
-    "textoBoton": "🧦",
-    "coste": 75,
-    "disponible": true,
-    "mensajePopup": "¡Estilo desbloqueado desde los pies! 😄✨\nUnos calcetines divertidos para darle personalidad a cualquier look. Nadie los ve… hasta que los ve. Y entonces, risas aseguradas 🧦🔥",
-    "mensajeHistorico": "Calcetines divertidos — accesorio recibido 🧦"
-  },
-  {
     "id": 16,
     "tipo": "Regalo",
-    "textoBoton": "❤️",
+    "textoBoton": "💆‍♂️",
     "coste": 75,
-    "disponible": false,
-    "mensajePopup": "",
-    "mensajeHistorico": ""
+    "disponible": true,
+    "mensajePopup": "¡Adiós contracturas, hola gloria bendita! 😍⚡/nTe ha tocado una pistola de masaje para dejar los músculos como nuevos. Vibraciones potentes, relax instantáneo y sensación de spa casero en segundos 💥✨",
+    "mensajeHistorico": "Máquina de masaje muscular — dispositivo de relajación recibido 💆‍♀️"
   },
   {
     "id": 17,
     "tipo": "Regalo",
-    "textoBoton": "🕯️",
+    "textoBoton": "🎭",
     "coste": 125,
-    "disponible": false,
-    "mensajePopup": "",
-    "mensajeHistorico": ""
+    "disponible": true,
+    "mensajePopup": "¡Tus emociones favoritas en versión mini! 😄💥/nTe han tocado figuritas coleccionables de Inside Out: Alegría, Tristeza, Furia y compañía listas para invadir tu estantería. Pequeñas, adorables y 100% nostalgia Pixar ✨",
+    "mensajeHistorico": "Figuritas coleccionables de Inside Out — colección recibida 🎭"
   },
   {
     "id": 18,
@@ -215,4 +215,5 @@
     "mensajePopup": "",
     "mensajeHistorico": ""
   }
+
 ]
