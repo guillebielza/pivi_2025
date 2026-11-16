@@ -8,6 +8,9 @@
 */
 
 (function () {
+  // reloj (respeta el "día simulado" del modo dev si existe)
+  function nowDate() { return (window.PiviClock && PiviClock.now) ? PiviClock.now() : new Date(); }
+
   // --- helpers puntos ---
   function readPoints() {
     try {
@@ -32,13 +35,13 @@
   }
 
   // --- calendario ---
-  function isWeekend(date = new Date()) {
+  function isWeekend(date = nowDate()) {
     const d = date.getDay();
     return d === 6 || d === 0; // sábado o domingo
   }
 
   // Clave del finde basada en sábado (YYYY-MM-DD)
-  function weekendKey(date = new Date()) {
+  function weekendKey(date = nowDate()) {
     const d = new Date(date);
     const day = d.getDay(); // 0 dom, 6 sab
     if (day === 0) d.setDate(d.getDate() - 1); // domingo -> sábado
@@ -62,7 +65,8 @@
   }
 
   // --- API principal ---
-  function canPlayWeekendChallenge(gameId, date = new Date()) {
+  function canPlayWeekendChallenge(gameId, date = nowDate()) {
+    if (window.PIVI_DEV_BYPASS) return { ok: true, reason: "" }; // modo dev: reto libre
     const g = normalizeGameId(gameId);
 
     if (!isWeekend(date)) {
@@ -78,41 +82,48 @@
   }
 
   // Marcar que has ENTRADO al reto (1 intento)
-  function markWeekendChallengePlayed(gameId, date = new Date()) {
+  function markWeekendChallengePlayed(gameId, date = nowDate()) {
     const g = normalizeGameId(gameId);
     const wk = weekendKey(date);
     localStorage.setItem(playKey(g), wk);
   }
 
   // Dar puntos (solo 1 vez por finde y por juego)
-  function awardWeekendChallengePoints(amount, gameId, date = new Date()) {
+  function awardWeekendChallengePoints(amount, gameId, date = nowDate()) {
     const g = normalizeGameId(gameId);
     const n = Number(amount) || 0;
     if (n <= 0) return { ok: false, reason: "Cantidad de puntos inválida.", gained: 0 };
 
-    if (!isWeekend(date)) {
-      return { ok: false, reason: "Los retos solo puntúan en fin de semana (sábado y domingo).", gained: 0 };
-    }
-
+    const bypass = !!window.PIVI_DEV_BYPASS; // modo dev: ignora finde/candados
     const wk = weekendKey(date);
 
-    // Debe haber “intentado” el reto (evita sumar sin haber entrado)
-    if (localStorage.getItem(playKey(g)) !== wk) {
-      return { ok: false, reason: "Este reto no está activo o no has iniciado el modo reto.", gained: 0 };
-    }
-
-    // Solo 1 premio por finde y por juego
-    if (localStorage.getItem(rewardKey(g)) === wk) {
-      return { ok: false, reason: "Ya has ganado puntos por este juego este fin de semana.", gained: 0 };
+    if (!bypass) {
+      if (!isWeekend(date)) {
+        return { ok: false, reason: "Los retos solo puntúan en fin de semana (sábado y domingo).", gained: 0 };
+      }
+      // Debe haber “intentado” el reto (evita sumar sin haber entrado)
+      if (localStorage.getItem(playKey(g)) !== wk) {
+        return { ok: false, reason: "Este reto no está activo o no has iniciado el modo reto.", gained: 0 };
+      }
+      // Solo 1 premio por finde y por juego
+      if (localStorage.getItem(rewardKey(g)) === wk) {
+        return { ok: false, reason: "Ya has ganado puntos por este juego este fin de semana.", gained: 0 };
+      }
     }
 
     writePoints(readPoints() + n);
-    localStorage.setItem(rewardKey(g), wk);
+    if (!bypass) localStorage.setItem(rewardKey(g), wk);
+
+    if (window.PiviLedger) {
+      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones" };
+      window.PiviLedger.record(g, n, names[g] || ("Reto " + g));
+    }
 
     return { ok: true, reason: "", gained: n };
   }
 
-  function getWeekendRewardStatusText(gameId, date = new Date()) {
+  function getWeekendRewardStatusText(gameId, date = nowDate()) {
+    if (window.PIVI_DEV_BYPASS) return "🛠 DEV: reto disponible siempre";
     const g = normalizeGameId(gameId);
 
     if (!isWeekend(date)) return "⛔ Solo fin de semana (sábado/domingo)";

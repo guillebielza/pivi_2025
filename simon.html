@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Simón · Pivi</title>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="simon.css?v=1" />
+</head>
+<body>
+
+<header class="app-header">
+  <a class="brand" href="index.html"><span class="logo">🎁</span> Pivi</a>
+  <span class="spacer"></span>
+  <a class="nav-link" href="retos.html">⬅️ Retos</a>
+  <a class="nav-link" href="index.html">🏠 Inicio</a>
+  <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
+  <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>🎵 Simón</h1>
+    <p class="subtitle">Memoriza la secuencia y repítela. Cada ronda es una más.</p>
+  </div>
+
+  <section class="panel">
+
+    <div class="mode">
+      <button id="practiceBtn" class="btn secondary">Practicar</button>
+      <button id="challengeBtn" class="btn primary">Jugar reto (+ puntos)</button>
+      <button id="restartBtn" class="btn">🔁 Reiniciar</button>
+    </div>
+
+    <div class="status-row">
+      <div id="policyStatus" class="status-note">—</div>
+    </div>
+
+    <div class="info">
+      <div class="pill">Modo: <b id="modeLabel">—</b></div>
+      <div class="pill">Ronda: <b id="round">—</b></div>
+      <div class="pill">Tiempo: <b><span id="timeLeft">—</span></b></div>
+      <div class="pill">Recompensa: <b id="rewardLabel">—</b></div>
+    </div>
+
+    <div class="timerbar">
+      <div id="timerFill" class="timerbar-fill"></div>
+    </div>
+
+    <div id="stageTitle" class="simon-stage">Elige un modo para empezar</div>
+
+    <div id="simonBoard" class="simon-board locked">
+      <button class="pad" data-pad="0" type="button" aria-label="Pad 1 (tecla 1)"></button>
+      <button class="pad" data-pad="1" type="button" aria-label="Pad 2 (tecla 2)"></button>
+      <button class="pad" data-pad="2" type="button" aria-label="Pad 3 (tecla 3)"></button>
+      <button class="pad" data-pad="3" type="button" aria-label="Pad 4 (tecla 4)"></button>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <div class="rules">
+      <h3>📌 Cómo se suman puntos en este juego</h3>
+      <p><b>Solo en modo reto</b>. En práctica juegas ilimitado y <b>no suma puntos</b>.</p>
+      <ul class="rules-list">
+        <li>Observa la secuencia de luces y <b>repítela</b> tocando los pads (o teclas 1–4).</li>
+        <li><b>Cada ronda</b> añade un paso y va un poco más rápida.</li>
+        <li><b>+1 punto por ronda superada</b> (máximo 10).</li>
+        <li>En reto tienes un tiempo por toque: si fallas o se acaba, termina la partida.</li>
+      </ul>
+      <p class="rules-foot"><b>Política:</b> el reto solo puede otorgar puntos <b>una vez por fin de semana</b> para este juego.</p>
+    </div>
+
+  </section>
+</main>
+
+<!-- Modal resultado -->
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Resultado</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button id="modalOk" class="btn primary">Aceptar</button>
+      <button id="modalAgain" class="btn secondary">Jugar otra</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal inicio -->
+<div id="startOverlay" class="overlay start-overlay hidden">
+  <div class="modal start-modal">
+    <h3>🎵 ¿Cómo quieres jugar?</h3>
+    <p id="startText"></p>
+    <div class="start-actions">
+      <button id="choosePractice" class="btn secondary">Practicar</button>
+      <button id="chooseChallenge" class="btn primary">Jugar reto (+ puntos)</button>
+    </div>
+    <p class="start-foot muted">Puedes cambiar de modo cuando quieras.</p>
+  </div>
+</div>
+
+<script src="pivi-core.js?v=3"></script>
+<script src="cloud-config.js?v=2"></script>
+<script src="pivi-config.js?v=1"></script>
+<script src="pivi-dev.js?v=4"></script>
+<script src="pivi-ledger.js?v=2"></script>
+<script src="cloud-sync.js?v=2"></script>
+<script src="points-policy.js?v=2"></script>
+<script src="simon.js?v=1"></script>
+</body>
+</html>

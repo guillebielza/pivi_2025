@@ -1,0 +1,40 @@
+/* ============================================================
+   atrapa.css — SOLO la rejilla de Atrapacorazones.
+   El resto (header, botones, panel, pills, timerbar, reglas…) -> theme.css
+   ============================================================ */
+
+.atrapa-grid {
+  width: min(420px, 90vw);
+  margin: 16px auto 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.atrapa-grid.shake { animation: atrapaShake .3s; }
+@keyframes atrapaShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+.atrapa-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(34px, 9vw, 52px);
+  cursor: pointer;
+  user-select: none;
+  padding: 0;
+  transition: background .12s;
+}
+.atrapa-cell .target { display: inline-block; animation: atrapaPop .16s ease; }
+@keyframes atrapaPop {
+  from { transform: scale(.25); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.atrapa-cell.hit { background: var(--success-bg); }
+.atrapa-cell.boom { background: var(--danger-bg); }

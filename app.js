@@ -1,25 +1,26 @@
-let pointsEl = document.getElementById("points");
+/* ============================================================
+   app.js — Página de inicio (recompensas, ruleta, códigos)
+   El confeti/sonido y el tema vienen de pivi-core.js (PiviCore/PiviFX).
+   El historial/feed y la racha vienen de pivi-ledger.js (PiviLedger).
+   ============================================================ */
+
 const experiencesEl = document.getElementById("experiences");
 const giftsEl = document.getElementById("gifts");
 const redeemedListEl = document.getElementById("redeemedList");
-let popupOverlay = document.getElementById("popupOverlay");
-let popupText = document.getElementById("popupText");
+const popupOverlay = document.getElementById("popupOverlay");
+const popupText = document.getElementById("popupText");
 
 /* ================== STORAGE ================== */
-function getPoints() {
-  return Number(localStorage.getItem("points")) || 0;
-}
+function getPoints() { return Number(localStorage.getItem("points")) || 0; }
 function setPoints(value) {
-  localStorage.setItem("points", value);
-  if (pointsEl) pointsEl.textContent = value;
+  const v = Number(value) || 0;
+  localStorage.setItem("points", String(v));
+  if (window.PiviCore && PiviCore.setPointsUI) PiviCore.setPointsUI(v, { bump: true });
+  else { const el = document.getElementById("points"); if (el) el.textContent = String(v); }
+  renderRewards();
 }
-
-function getRedeemed() {
-  return JSON.parse(localStorage.getItem("redeemedRewards")) || [];
-}
-function setRedeemed(arr) {
-  localStorage.setItem("redeemedRewards", JSON.stringify(arr));
-}
+function getRedeemed() { try { return JSON.parse(localStorage.getItem("redeemedRewards")) || []; } catch (e) { return []; } }
+function setRedeemed(arr) { localStorage.setItem("redeemedRewards", JSON.stringify(arr)); }
 
 /* ================== POPUP ================== */
 function showPopup(text) {
@@ -27,299 +28,221 @@ function showPopup(text) {
   popupText.textContent = text;
   popupOverlay.classList.remove("hidden");
 }
-
 const closePopupBtn = document.getElementById("closePopup");
-if (closePopupBtn) {
-  closePopupBtn.onclick = () => popupOverlay.classList.add("hidden");
+if (closePopupBtn) closePopupBtn.onclick = () => popupOverlay.classList.add("hidden");
+if (popupOverlay) popupOverlay.addEventListener("click", (e) => { if (e.target === popupOverlay) popupOverlay.classList.add("hidden"); });
+
+/* ================== CONFIRMACIÓN ================== */
+const confirmOverlay = document.getElementById("confirmOverlay");
+const confirmText = document.getElementById("confirmText");
+const confirmCancel = document.getElementById("confirmCancel");
+const confirmOk = document.getElementById("confirmOk");
+let pendingConfirm = null;
+
+function closeConfirm() { if (confirmOverlay) confirmOverlay.classList.add("hidden"); pendingConfirm = null; }
+function showConfirm(text, onOk) {
+  if (!confirmOverlay || !confirmText) { if (window.confirm(text)) onOk(); return; }
+  confirmText.textContent = text;
+  pendingConfirm = onOk;
+  confirmOverlay.classList.remove("hidden");
 }
+if (confirmCancel) confirmCancel.onclick = closeConfirm;
+if (confirmOk) confirmOk.onclick = () => { const f = pendingConfirm; closeConfirm(); if (f) f(); };
+if (confirmOverlay) confirmOverlay.addEventListener("click", (e) => { if (e.target === confirmOverlay) closeConfirm(); });
 
-/* ================== CELEBRACIÓN (MAS CONFETI + AUDIO MAS DIVERTIDO) ================== */
-const fxCanvas = document.getElementById("fxCanvas");
-let fxCtx = fxCanvas ? fxCanvas.getContext("2d") : null;
-let fxAnimId = null;
-
-function resizeFxCanvas(){
-  if (!fxCanvas) return;
-  const dpr = Math.max(1, window.devicePixelRatio || 1);
-  fxCanvas.width = Math.floor(window.innerWidth * dpr);
-  fxCanvas.height = Math.floor(window.innerHeight * dpr);
-  fxCanvas.style.width = "100%";
-  fxCanvas.style.height = "100%";
-  if (fxCtx) fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
-}
-window.addEventListener("resize", resizeFxCanvas);
-resizeFxCanvas();
-
-/* confeti mas potente */
-function celebrateConfetti(durationMs = 2400){
-  if (!fxCanvas || !fxCtx) return;
-
-  if (fxAnimId) cancelAnimationFrame(fxAnimId);
-  fxCanvas.style.display = "block";
-
-  const W = window.innerWidth;
-  const H = window.innerHeight;
-  const centerX = W / 2;
-  const centerY = Math.min(H * 0.36, 260);
-
-  const colors = ["#ff595e","#ffca3a","#8ac926","#1982c4","#6a4c93","#ffd6a5","#caffbf","#9bf6ff","#a0c4ff","#ffc6ff"];
-  const particles = [];
-  const count = 320; // MAS
-
-  for (let i = 0; i < count; i++){
-    const angle = (Math.random() * Math.PI) - (Math.PI / 2);
-    const speed = 7 + Math.random() * 12;
-
-    particles.push({
-      x: centerX,
-      y: centerY,
-      vx: Math.cos(angle) * speed + (Math.random() - 0.5) * 3.2,
-      vy: Math.sin(angle) * speed - (Math.random() * 4),
-      g: 0.16 + Math.random() * 0.18,
-      w: 6 + Math.random() * 10,
-      h: 3 + Math.random() * 6,
-      rot: Math.random() * Math.PI,
-      vr: (Math.random() - 0.5) * 0.35,
-      color: colors[Math.floor(Math.random() * colors.length)],
-    });
-  }
-
-  const start = performance.now();
-
-  function frame(t){
-    const elapsed = t - start;
-    fxCtx.clearRect(0, 0, W, H);
-
-    for (const p of particles){
-      p.vy += p.g;
-      p.x += p.vx;
-      p.y += p.vy;
-      p.rot += p.vr;
-
-      p.vx *= 0.991;
-      p.vy *= 0.999;
-
-      fxCtx.save();
-      fxCtx.translate(p.x, p.y);
-      fxCtx.rotate(p.rot);
-      fxCtx.fillStyle = p.color;
-      fxCtx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
-      fxCtx.restore();
-    }
-
-    if (elapsed < durationMs){
-      fxAnimId = requestAnimationFrame(frame);
-    } else {
-      fxCtx.clearRect(0, 0, W, H);
-      fxCanvas.style.display = "none";
-      fxAnimId = null;
-    }
-  }
-
-  fxAnimId = requestAnimationFrame(frame);
-}
-
-/* audio mas divertido (mini jingle arcade) */
-let audioCtx = null;
-
-function playWinJingle(){
-  try{
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const now = audioCtx.currentTime;
-
-    const master = audioCtx.createGain();
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 0.9);
-    master.connect(audioCtx.destination);
-
-    const osc = audioCtx.createOscillator();
-    const osc2 = audioCtx.createOscillator();
-    osc.type = "square";
-    osc2.type = "triangle";
-
-    const g1 = audioCtx.createGain();
-    const g2 = audioCtx.createGain();
-    g1.gain.value = 0.9;
-    g2.gain.value = 0.55;
-
-    osc.connect(g1); g1.connect(master);
-    osc2.connect(g2); g2.connect(master);
-
-    // jingle: sube rapido con saltitos
-    const seq = [523.25, 659.25, 783.99, 987.77, 1046.5, 1318.51]; // C E G B D E
-    const step = 0.09;
-
-    seq.forEach((f, i) => {
-      const t = now + i * step;
-      osc.frequency.setValueAtTime(f, t);
-      osc2.frequency.setValueAtTime(f / 2, t);
-    });
-
-    // pequeño "glide" final
-    osc.frequency.linearRampToValueAtTime(1567.98, now + seq.length * step + 0.08);
-    osc2.frequency.linearRampToValueAtTime(783.99, now + seq.length * step + 0.08);
-
-    osc.start(now);
-    osc2.start(now);
-    osc.stop(now + 0.95);
-    osc2.stop(now + 0.95);
-  } catch(e){
-    // si bloquea, sin sonido
-  }
-}
-
-function celebrateWin(){
-  celebrateConfetti(2400);
-  playWinJingle();
+/* ================== CELEBRACIÓN ================== */
+function celebrateWin() {
+  if (window.PiviCore && PiviCore.celebrate) PiviCore.celebrate({ duration: 2400 });
+  else if (window.PiviFX && PiviFX.celebrate) PiviFX.celebrate();
 }
 
 /* ================== RECOMPENSAS ================== */
 let rewardsData = [];
 
-function isAvailable(reward){
-  return reward && (reward.disponible !== false);
+function nowDate() { return (window.PiviClock && PiviClock.now) ? PiviClock.now() : new Date(); }
+function isAvailable(reward) {
+  if (window.PIVI_DEV_FORCE_AVAILABLE) return true; // modo dev: todo disponible
+  return reward && reward.disponible !== false;
+}
+function rewardName(r) {
+  if (r.mensajeHistorico) return r.mensajeHistorico.split("—")[0].trim();
+  return (r.tipo || "Recompensa") + " de " + r.coste + " pts";
+}
+
+function makeRewardTile(r) {
+  const btn = document.createElement("button");
+  btn.className = "reward";
+  btn.type = "button";
+  btn.innerHTML = `<span class="emoji" aria-hidden="true">${r.textoBoton}</span><span class="cost">${r.coste} pts</span>`;
+
+  const redeemed = getRedeemed().includes(r.id);
+  const available = isAvailable(r);
+  const points = getPoints();
+
+  if (redeemed) {
+    btn.classList.add("redeemed");
+    btn.disabled = true;
+    btn.setAttribute("aria-label", `${rewardName(r)} — ya canjeada`); // ya desbloqueada: se puede revelar
+  } else if (!available) {
+    btn.classList.add("unavailable");
+    btn.disabled = true;
+    btn.setAttribute("aria-label", `Recompensa sorpresa de ${r.coste} puntos — próximamente`);
+  } else {
+    btn.setAttribute("aria-label", `Canjear recompensa sorpresa por ${r.coste} puntos`); // sorpresa hasta canjear
+    if (points >= r.coste) btn.classList.add("affordable");
+    btn.onclick = () => askRedeem(r.id);
+  }
+  return btn;
 }
 
 function renderRewards() {
-  if (!experiencesEl || !giftsEl || !redeemedListEl) return;
-  const redeemed = getRedeemed();
-
+  if (!experiencesEl || !giftsEl) return;
   experiencesEl.innerHTML = "";
   giftsEl.innerHTML = "";
-  redeemedListEl.innerHTML = "";
+  if (redeemedListEl) redeemedListEl.innerHTML = "";
+
+  const redeemed = getRedeemed();
 
   rewardsData.forEach((r) => {
-    const div = document.createElement("div");
-    div.className = "reward";
-    div.innerHTML = `
-      ${r.textoBoton}
-      <span>${r.coste} pts</span>
-    `;
-
-    const alreadyRedeemed = redeemed.includes(r.id);
-    const available = isAvailable(r);
-
-    if (alreadyRedeemed) {
-      div.classList.add("disabled");
-      if (r.mensajeHistorico) redeemedListEl.innerHTML += `<li>${r.mensajeHistorico}</li>`;
-    } else if (!available) {
-      div.classList.add("unavailable");
-      div.title = "No disponible ahora";
-      div.onclick = () => showPopup("⛔ Esta recompensa no esta disponible ahora mismo.");
-    } else {
-      div.onclick = () => redeemReward(r.id);
+    (r.tipo === "Experiencia" ? experiencesEl : giftsEl).appendChild(makeRewardTile(r));
+    if (redeemed.includes(r.id) && r.mensajeHistorico && redeemedListEl) {
+      const li = document.createElement("li");
+      li.textContent = r.mensajeHistorico;
+      redeemedListEl.appendChild(li);
     }
-
-    (r.tipo === "Experiencia" ? experiencesEl : giftsEl).appendChild(div);
   });
+
+  if (redeemedListEl && !redeemedListEl.children.length) {
+    redeemedListEl.innerHTML = '<li class="muted">Aún no has canjeado nada.</li>';
+  }
+
+  updateNextReward();
+}
+
+function updateNextReward() {
+  const nameEl = document.getElementById("nextRewardName");
+  const barEl = document.getElementById("nextRewardBar");
+  const hintEl = document.getElementById("nextRewardHint");
+  if (!nameEl || !barEl || !hintEl) return;
+
+  const points = getPoints();
+  const redeemed = getRedeemed();
+  const candidates = rewardsData.filter(r => isAvailable(r) && !redeemed.includes(r.id));
+  const locked = candidates.filter(r => r.coste > points).sort((a, b) => a.coste - b.coste);
+
+  if (locked.length) {
+    const next = locked[0];
+    nameEl.textContent = "¡sorpresa! 🎁"; // el título es secreto hasta desbloquearla
+    const pct = Math.max(4, Math.min(100, (points / next.coste) * 100));
+    barEl.style.width = pct + "%";
+    hintEl.textContent = `Tienes ${points}/${next.coste} pts · te faltan ${next.coste - points}`;
+  } else if (candidates.length) {
+    nameEl.textContent = "¡Puedes canjear lo que quieras!";
+    barEl.style.width = "100%";
+    hintEl.textContent = `Tienes ${points} pts disponibles`;
+  } else {
+    nameEl.textContent = "—";
+    barEl.style.width = "0%";
+    hintEl.textContent = "No hay recompensas disponibles ahora mismo";
+  }
+}
+
+// Paso intermedio: pide confirmación antes de canjear (no revela el título)
+function askRedeem(rewardId) {
+  const reward = rewardsData.find(r => r.id === rewardId);
+  if (!reward) return;
+  if (!isAvailable(reward)) return showPopup("⛔ Esta recompensa no está disponible ahora mismo.");
+  const points = getPoints();
+  if (points < reward.coste) return showPopup(`Te faltan ${reward.coste - points} puntos para esto.`);
+  showConfirm(
+    `¿Seguro que quieres canjear ${reward.textoBoton} por ${reward.coste} puntos?\n\nTe quedarán ${points - reward.coste} puntos.`,
+    () => redeemReward(rewardId)
+  );
 }
 
 function redeemReward(rewardId) {
   const reward = rewardsData.find(r => r.id === rewardId);
   if (!reward) return showPopup("Ha ocurrido un error: recompensa no encontrada.");
+  if (!isAvailable(reward)) return showPopup("⛔ Esta recompensa no está disponible ahora mismo.");
 
-  if (!isAvailable(reward)) {
-    return showPopup("⛔ Esta recompensa no esta disponible ahora mismo.");
-  }
-
-  let points = getPoints();
-  if (points < reward.coste) return showPopup("No tienes suficientes puntos");
+  const points = getPoints();
+  if (points < reward.coste) return showPopup(`Te faltan ${reward.coste - points} puntos para esto.`);
 
   setPoints(points - reward.coste);
-
   const redeemed = getRedeemed();
   redeemed.push(reward.id);
   setRedeemed(redeemed);
 
-  // 🎉 canje exitoso -> fiesta
-  celebrateWin();
+  if (window.PiviLedger) PiviLedger.record("reward", -reward.coste, "Canje: " + rewardName(reward));
 
-  showPopup(reward.mensajePopup || "✅ Recompensa canjeada");
+  // celebración especial: confeti + emoji gigante + fanfarria, y el mensaje tras el "pop"
+  if (window.PiviCore && PiviCore.celebrateReward) PiviCore.celebrateReward(reward.textoBoton);
+  else celebrateWin();
+  setTimeout(() => showPopup(reward.mensajePopup || "✅ Recompensa canjeada"), 650);
   renderRewards();
 }
+window.renderRewards = renderRewards; // lo usa cloud-sync al hidratar
 
-/* ================== RETOS (SIEMPRE ACTIVO) ================== */
+/* ================== RETOS ================== */
 const goToChallengesBtn = document.getElementById("goToChallenges");
-if (goToChallengesBtn){
-  goToChallengesBtn.disabled = false;
-  goToChallengesBtn.addEventListener("click", () => {
-    window.location.href = "retos.html";
-  });
-}
+if (goToChallengesBtn) goToChallengesBtn.addEventListener("click", () => window.location.href = "retos.html");
 
-/* ================== RESET (mantener) ================== */
-const resetAllBtn = document.getElementById("resetAllBtn");
+/* ================== RULETA (LUN/MIÉ, 1/día) ================== */
+let wheelValues = (window.PIVI_CONFIG && Array.isArray(PIVI_CONFIG.ruleta) && PIVI_CONFIG.ruleta.length)
+  ? PIVI_CONFIG.ruleta : [1, 4, 6, 0, 8, 4, 6, 1];
+const wheel = document.getElementById("wheel");
+const spinBtn = document.getElementById("spinBtn");
+const wheelHint = document.getElementById("wheelHint");
+
+const WHEEL_MON_KEY = "wheel_spin_monday";
+const WHEEL_WED_KEY = "wheel_spin_wednesday";
 
 let currentRotation = 0;
 let spinning = false;
 
-function resetAll() {
-  localStorage.clear();
-
-  currentRotation = 0;
-  spinning = false;
-  if (wheel) wheel.style.transform = "rotate(0deg)";
-
-  setPoints(0);
-  rewardsData = rewardsData || [];
-  renderRewards();
-  createWheelNumbers();
-
-  showPopup("♻️ Todo reseteado: puntos, canjeos, codigos, y estado de ruleta.");
+function isoDateLocal(d = new Date()) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
 }
 
-if (resetAllBtn) {
-  resetAllBtn.addEventListener("click", () => {
-    const ok = window.confirm("¿Seguro que quieres resetear TODO? (puntos, canjeadas, codigos, etc.)");
-    if (ok) resetAll();
-  });
-}
-
-/* ================== RULETA (LUNES Y MIERCOLES, 1 VEZ CADA DIA) ================== */
-const wheelValues = [1, 4, 6, 0, 8, 4, 6, 1];
-const wheel = document.getElementById("wheel");
-const spinBtn = document.getElementById("spinBtn");
-
-// Keys para recordar tiradas por dia habil
-const WHEEL_MON_KEY = "wheel_spin_monday";
-const WHEEL_WED_KEY = "wheel_spin_wednesday";
-
-function isoDateLocal(d = new Date()){
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function canSpinNow(){
-  const d = new Date();
-  const day = d.getDay(); // 0 dom, 1 lun, 2 mar, 3 mie...
+function canSpinNow() {
+  const d = nowDate();
+  const day = d.getDay();
   const today = isoDateLocal(d);
-
-  if (day !== 1 && day !== 3) {
-    return { ok: false, reason: "⛔ La ruleta solo se puede tirar los lunes y los miercoles." };
+  if (window.PIVI_DEV_BYPASS) return { ok: true, today }; // sin storeKey -> no marca el candado
+  if (day !== 1 && day !== 3) return { ok: false, reason: "⛔ La ruleta solo se puede tirar los lunes y los miércoles." };
+  const key = day === 1 ? WHEEL_MON_KEY : WHEEL_WED_KEY;
+  if (localStorage.getItem(key) === today) {
+    return { ok: false, reason: `⛔ Ya has tirado la ruleta hoy (${day === 1 ? "lunes" : "miércoles"}).` };
   }
-
-  if (day === 1) {
-    const last = localStorage.getItem(WHEEL_MON_KEY);
-    if (last === today) return { ok: false, reason: "⛔ Ya has tirado la ruleta hoy (lunes)." };
-    return { ok: true, storeKey: WHEEL_MON_KEY, today };
-  }
-
-  // day === 3
-  const last = localStorage.getItem(WHEEL_WED_KEY);
-  if (last === today) return { ok: false, reason: "⛔ Ya has tirado la ruleta hoy (miercoles)." };
-  return { ok: true, storeKey: WHEEL_WED_KEY, today };
+  return { ok: true, storeKey: key, today };
 }
 
-/* numeros adheridos */
+function updateWheelUI() {
+  if (!spinBtn) return;
+  const st = canSpinNow();
+  const card = document.getElementById("wheelStatCard");
+  const statusEl = document.getElementById("wheelStatus");
+  const d = nowDate().getDay();
+
+  spinBtn.disabled = !st.ok;
+  spinBtn.title = st.ok ? "" : st.reason;
+
+  if (statusEl) {
+    if (st.ok) statusEl.textContent = "¡Disponible! 🎉";
+    else if (d === 1 || d === 3) statusEl.textContent = "Ya tirada hoy ✅";
+    else statusEl.textContent = "Vuelve lun/mié";
+  }
+  if (card) {
+    card.classList.toggle("ok", st.ok);
+    card.classList.toggle("locked", !st.ok);
+  }
+  if (wheelHint && !st.ok && (d === 1 || d === 3)) wheelHint.textContent = "Ya has tirado hoy. Vuelve el próximo día hábil.";
+}
+
 function createWheelNumbers() {
   if (!wheel) return;
-
   const sectors = wheelValues.length;
   const degreesPerSlice = 360 / sectors;
-
   wheel.querySelectorAll(".wheel-number").forEach(el => el.remove());
 
   const cs = getComputedStyle(wheel);
@@ -331,65 +254,58 @@ function createWheelNumbers() {
     const span = document.createElement("span");
     span.className = "wheel-number";
     span.textContent = num;
-
     const angle = i * degreesPerSlice + degreesPerSlice / 2;
-
-    span.style.transform = `
-      translate(-50%, -50%)
-      rotate(${angle}deg)
-      translateY(-${radius}px)
-    `;
-
+    span.style.transform = `translate(-50%, -50%) rotate(${angle}deg) translateY(-${radius}px)`;
     wheel.appendChild(span);
   });
 }
-
-window.addEventListener("resize", () => createWheelNumbers());
+window.addEventListener("resize", createWheelNumbers);
 setTimeout(createWheelNumbers, 0);
 
-/* girar */
 if (spinBtn) {
   spinBtn.onclick = () => {
     if (spinning) return;
-
     const status = canSpinNow();
-    if (!status.ok) {
-      showPopup(status.reason);
-      return;
-    }
+    if (!status.ok) { showPopup(status.reason); return; }
 
     spinning = true;
-
+    spinBtn.disabled = true;
     const sectors = wheelValues.length;
     const degreesPerSlice = 360 / sectors;
-
     const index = Math.floor(Math.random() * sectors);
     const sliceCenter = index * degreesPerSlice + degreesPerSlice / 2;
-
     const normalized = ((currentRotation % 360) + 360) % 360;
-    const extraSpins = 5 * 360;
-
-    currentRotation = currentRotation - normalized + extraSpins - sliceCenter;
+    currentRotation = currentRotation - normalized + 5 * 360 - sliceCenter;
     wheel.style.transform = `rotate(${currentRotation}deg)`;
 
     setTimeout(() => {
       const pointsWon = wheelValues[index];
-
-      // marca como usado HOY para el dia habil correspondiente
-      localStorage.setItem(status.storeKey, status.today);
-
+      if (status.storeKey) localStorage.setItem(status.storeKey, status.today); // en dev (bypass) no hay candado
       setPoints(getPoints() + pointsWon);
 
-      if (pointsWon > 0) celebrateWin();
-
-      showPopup(pointsWon > 0
-        ? `🎉 Has ganado ${pointsWon} puntos`
-        : "😅 Ha salido 0 puntos. Mejor suerte la proxima."
-      );
-
+      if (pointsWon > 0) {
+        if (window.PiviLedger) PiviLedger.record("wheel", pointsWon, "Ruleta");
+        celebrateWin();
+        showPopup(`🎉 Has ganado ${pointsWon} puntos`);
+      } else {
+        if (window.PiviLedger) PiviLedger.record("wheel", 0, "Ruleta: sin premio");
+        showPopup("😅 Ha salido 0 puntos. Mejor suerte la próxima.");
+      }
       spinning = false;
+      updateWheelUI();
     }, 3600);
   };
+}
+
+/* ================== RETOS (estado en home) ================== */
+function updateWeekendUI() {
+  const statusEl = document.getElementById("weekendStatus");
+  const card = document.getElementById("weekendStatCard");
+  if (!statusEl) return;
+  const day = nowDate().getDay();
+  const isWeekend = day === 6 || day === 0;
+  statusEl.textContent = isWeekend ? "¡Activos este finde! 🎮" : "Vuelven el sábado";
+  if (card) { card.classList.toggle("ok", isWeekend); card.classList.toggle("locked", !isWeekend); }
 }
 
 /* ================== CANJEAR CÓDIGO ================== */
@@ -397,69 +313,68 @@ const USED_CODES_KEY = "usedCodes";
 const codeInput = document.getElementById("codeInput");
 const redeemCodeBtn = document.getElementById("redeemCodeBtn");
 
-const CODES = {
-  "GH10-A1B2": 10, "GH10-C3D4": 10, "GH10-E5F6": 10, "GH10-G7H8": 10,
-  "GH10-I9J0": 10, "GH10-K1L2": 10, "GH10-M3N4": 10, "GH10-O5P6": 10,
-  "GH15-Q7R8": 15, "GH15-S9T0": 15, "GH15-U1V2": 15, "GH15-W3X4": 15, "GH15-Y5Z6": 15,
-  "GH18-AB12": 18, "GH18-CD34": 18, "GH18-EF56": 18,
-  "GH22-GH78": 22, "GH22-IJ90": 22, "GH22-KL12": 22,
-  "GH50-ULTRA": 50, "PIVI-2026":25
-};
-
-function normalizeCode(raw) {
-  return (raw || "").trim().toUpperCase().replace(/[\s-]/g, "");
+// Los códigos viven en pivi-config.js (y se pueden editar en caliente)
+function getCodes() {
+  return (window.PIVI_CONFIG && PIVI_CONFIG.codigos) || { "GH50-ULTRA": 50, "PIVI-2026": 25 };
 }
 
-function getUsedCodes() {
-  return JSON.parse(localStorage.getItem(USED_CODES_KEY)) || [];
-}
-
-function setUsedCodes(arr) {
-  localStorage.setItem(USED_CODES_KEY, JSON.stringify(arr));
-}
-
+function normalizeCode(raw) { return (raw || "").trim().toUpperCase().replace(/[\s-]/g, ""); }
+function getUsedCodes() { try { return JSON.parse(localStorage.getItem(USED_CODES_KEY)) || []; } catch (e) { return []; } }
+function setUsedCodes(arr) { localStorage.setItem(USED_CODES_KEY, JSON.stringify(arr)); }
 function findCodeValue(input) {
   const n = normalizeCode(input);
-  for (const k in CODES) {
-    if (normalizeCode(k) === n) return { value: CODES[k], key: n };
-  }
+  const codes = getCodes();
+  for (const k in codes) if (normalizeCode(k) === n) return { value: codes[k], key: n };
   return null;
 }
 
 function redeemCode() {
   const found = findCodeValue(codeInput.value);
-  if (!found) return showPopup("Codigo invalido ❌");
-
+  if (!found) return showPopup("Código inválido ❌");
   const used = getUsedCodes();
-  if (used.includes(found.key)) return showPopup("Ese codigo ya fue canjeado");
+  if (used.includes(found.key)) return showPopup("Ese código ya fue canjeado.");
 
   setPoints(getPoints() + found.value);
   used.push(found.key);
   setUsedCodes(used);
-
   codeInput.value = "";
 
+  if (window.PiviLedger) PiviLedger.record("code", found.value, "Código canjeado");
   celebrateWin();
-  showPopup(`✅ Codigo canjeado: +${found.value} puntos`);
+  showPopup(`✅ Código canjeado: +${found.value} puntos`);
 }
-
 if (redeemCodeBtn) redeemCodeBtn.onclick = redeemCode;
-if (codeInput) codeInput.addEventListener("keydown", e => e.key === "Enter" && redeemCode());
+if (codeInput) codeInput.addEventListener("keydown", e => { if (e.key === "Enter") redeemCode(); });
 
 /* ================== INIT ================== */
+if (window.PiviLedger) PiviLedger.touchStreak();
 setPoints(getPoints());
+updateWheelUI();
+updateWeekendUI();
 
-fetch("recompensas.json")
-  .then(r => {
-    if (!r.ok) throw new Error(`No se pudo cargar recompensas.json (${r.status})`);
-    return r.json();
-  })
-  .then(data => {
-    rewardsData = data;
-    renderRewards();
-    createWheelNumbers();
-  })
-  .catch(() => {
-    showPopup("No se han podido cargar las recompensas (recompensas.json).");
-    renderRewards();
-  });
+// Aplica los ajustes de recompensas definidos en pivi-config.js (override por id)
+function applyRewardOverrides() {
+  const ov = (window.PIVI_CONFIG && PIVI_CONFIG.recompensasOverride) || {};
+  rewardsData.forEach(r => { const o = ov[String(r.id)]; if (o) Object.assign(r, o); });
+}
+
+fetch("recompensas.json", { cache: "no-cache" })
+  .then(r => { if (!r.ok) throw new Error(`recompensas.json (${r.status})`); return r.json(); })
+  .then(data => { rewardsData = data; applyRewardOverrides(); renderRewards(); createWheelNumbers(); })
+  .catch(() => { showPopup("No se han podido cargar las recompensas (recompensas.json)."); renderRewards(); });
+
+// Cambios de contenido en caliente (códigos/ruleta/recompensas desde la nube)
+window.addEventListener("pivi:config", () => {
+  if (window.PIVI_CONFIG && Array.isArray(PIVI_CONFIG.ruleta) && PIVI_CONFIG.ruleta.length) wheelValues = PIVI_CONFIG.ruleta;
+  applyRewardOverrides();
+  renderRewards();
+  createWheelNumbers();
+  updateWheelUI();
+});
+
+// Al sincronizar desde la nube: refrescar puntos/estados
+window.addEventListener("pivi:hydrated", () => {
+  setPoints(getPoints());
+  updateWheelUI();
+  updateWeekendUI();
+});

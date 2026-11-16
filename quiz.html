@@ -3,25 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Quiz Cultura General</title>
-  <link rel="stylesheet" href="quiz.css" />
+  <title>Quiz · Pivi</title>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="quiz.css?v=2" />
 </head>
 <body>
 
-<header class="topbar">
-  <div class="header-center">
+<header class="app-header">
+  <a class="brand" href="index.html"><span class="logo">🎁</span> Pivi</a>
+  <span class="spacer"></span>
+  <a class="nav-link" href="retos.html">⬅️ Retos</a>
+  <a class="nav-link" href="index.html">🏠 Inicio</a>
+  <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
+  <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
     <h1>🧩 Quiz: Cultura general</h1>
     <p class="subtitle">10 preguntas · responde rápido · suma puntos en modo reto</p>
   </div>
 
-  <div class="right">
-    <div class="points-badge">Puntos: <span id="points">0</span></div>
-    <button class="btn" onclick="window.location.href='retos.html'">⬅️ Retos</button>
-    <button class="btn" onclick="window.location.href='index.html'">🏠 Inicio</button>
-  </div>
-</header>
-
-<main class="page">
   <section class="panel">
 
     <div class="mode">
@@ -107,7 +113,13 @@
   </div>
 </div>
 
-<script src="points-policy.js"></script>
-<script src="quiz.js"></script>
+<script src="pivi-core.js?v=3"></script>
+<script src="cloud-config.js?v=2"></script>
+<script src="pivi-config.js?v=1"></script>
+<script src="pivi-dev.js?v=4"></script>
+<script src="pivi-ledger.js?v=2"></script>
+<script src="cloud-sync.js?v=2"></script>
+<script src="points-policy.js?v=2"></script>
+<script src="quiz.js?v=2"></script>
 </body>
 </html>

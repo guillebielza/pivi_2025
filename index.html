@@ -3,84 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Recompensas y Ruleta</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Pivi · Reto 2026</title>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=2">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
 
-<header>
-  <div class="header-left">
-    <h1>🎁 Reto 2026</h1>
-    <p class="header-desc">
-      Consigue pivi puntos para canjear experiencias y regalos.
-      Puedes ganar puntos con la ruleta (solo lunes y miercoles, 1 tirada por dia) y con los retos (solo puntuan en fin de semana y solo 1 premio por fin de semana).
-      Tambien puedes canjear codigos de puntos.
-    </p>
-  </div>
-
-  <div class="points">
-    Pivi Puntos: <span id="points">0</span>
-  </div>
+<header class="app-header">
+  <a class="brand" href="index.html"><span class="logo">🎁</span> Pivi</a>
+  <span class="spacer"></span>
+  <a class="nav-link" href="retos.html">🎮 Retos</a>
+  <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
+  <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
 </header>
 
-<main class="layout">
+<main class="page">
 
-  <!-- IZQUIERDA: RECOMPENSAS -->
-  <section class="rewards">
-    <h2>Experiencias</h2>
-    <div id="experiences" class="grid"></div>
+  <div class="page-head">
+    <h1>🎁 Reto 2026</h1>
+    <p class="subtitle">Gana Pivi Puntos con la ruleta, los retos y los códigos. Canjéalos por experiencias y regalos 💞</p>
+  </div>
 
-    <h2>Regalos</h2>
-    <div id="gifts" class="grid"></div>
-
-    <h3>Canjeadas</h3>
-    <ul id="redeemedList"></ul>
+  <!-- TIRA DE ESTADO -->
+  <section class="status-strip">
+    <div class="stat-card">
+      <span class="stat-ic">🔥</span>
+      <div class="grow">
+        <div class="stat-label">Racha</div>
+        <div class="stat-val" id="streakValue">0 días</div>
+      </div>
+    </div>
+    <div class="stat-card" id="wheelStatCard">
+      <span class="stat-ic">🎡</span>
+      <div class="grow">
+        <div class="stat-label">Ruleta hoy</div>
+        <div class="stat-val" id="wheelStatus">—</div>
+      </div>
+    </div>
+    <div class="stat-card" id="weekendStatCard">
+      <span class="stat-ic">🎮</span>
+      <div class="grow">
+        <div class="stat-label">Retos</div>
+        <div class="stat-val" id="weekendStatus">—</div>
+      </div>
+    </div>
+    <div class="stat-card next-reward">
+      <span class="stat-ic">🎯</span>
+      <div class="grow">
+        <div class="stat-label">Próxima recompensa: <b id="nextRewardName">—</b></div>
+        <div class="progress"><span id="nextRewardBar"></span></div>
+        <div class="stat-sub muted" id="nextRewardHint">—</div>
+      </div>
+    </div>
   </section>
 
-  <!-- DERECHA: PANEL -->
-  <aside class="right-panel">
+  <div class="layout">
 
-    <!-- RETOS -->
-    <div class="card">
-      <h2>🎮 Retos</h2>
-      <p class="muted">Juega minijuegos para ganar puntos</p>
-      <button id="goToChallenges" class="big">Ir a Retos</button>
-    </div>
+    <!-- IZQUIERDA: RECOMPENSAS -->
+    <section class="rewards">
+      <div class="section-head"><h2>✨ Experiencias</h2></div>
+      <div id="experiences" class="grid"></div>
 
-    <!-- RULETA -->
-    <div class="card">
-      <h2>🎡 Ruleta de puntos</h2>
-      <p class="muted" id="wheelHint">
-        Disponible solo lunes y miercoles (1 tirada por dia).
-      </p>
+      <div class="section-head"><h2>🎁 Regalos</h2></div>
+      <div id="gifts" class="grid"></div>
 
-      <div class="wheel-container">
-        <div id="wheel"></div>
-        <div class="pointer"></div>
+      <details class="history-card" id="historyWrap">
+        <summary>📜 Recompensas canjeadas</summary>
+        <ul id="redeemedList" class="redeemed-list"></ul>
+      </details>
+    </section>
+
+    <!-- DERECHA: PANEL -->
+    <aside class="right-panel">
+
+      <div class="card">
+        <h2>🎮 Retos</h2>
+        <p class="muted">Juega minijuegos para ganar puntos.</p>
+        <button id="goToChallenges" class="btn primary big">Ir a Retos</button>
       </div>
 
-      <button id="spinBtn">Girar ruleta</button>
+      <div class="card">
+        <h2>🎡 Ruleta de puntos</h2>
+        <p class="muted" id="wheelHint">Disponible solo lunes y miércoles (1 tirada por día).</p>
 
-      
-    </div>
+        <div class="wheel-container">
+          <div id="wheel"></div>
+          <div class="pointer"></div>
+        </div>
 
-    <!-- CANJEAR CÓDIGO -->
-    <div class="card">
-      <h2>🏷️ Canjear codigo</h2>
-      <p class="muted">Introduce un codigo para sumar puntos</p>
-
-      <div class="code-row">
-        <input id="codeInput" type="text" placeholder="Ej: GH-10-ABCD" maxlength="30" autocomplete="off">
-        <button id="redeemCodeBtn">Canjear</button>
+        <button id="spinBtn" class="btn big">Girar ruleta</button>
       </div>
 
-      <div class="code-hint muted">
-        * Los codigos solo se pueden usar una vez.
+      <div class="card">
+        <h2>🏷️ Canjear código</h2>
+        <p class="muted">Introduce un código para sumar puntos.</p>
+
+        <div class="code-row">
+          <input id="codeInput" type="text" placeholder="Ej: GH10-ABCD" maxlength="30" autocomplete="off" inputmode="text">
+          <button id="redeemCodeBtn" class="btn primary">Canjear</button>
+        </div>
+
+        <div class="code-hint muted">* Los códigos solo se pueden usar una vez.</div>
       </div>
-    </div>
 
-  </aside>
+      <div class="card">
+        <h2>💞 Actividad</h2>
+        <ul id="activityFeed" class="activity-feed"></ul>
+      </div>
 
+    </aside>
+
+  </div>
 </main>
 
 <!-- CONFETI / FX -->
@@ -90,10 +127,27 @@
 <div id="popupOverlay" class="overlay hidden">
   <div class="popup">
     <p id="popupText"></p>
-    <button id="closePopup">Aceptar</button>
+    <button id="closePopup" class="btn primary">Aceptar</button>
   </div>
 </div>
 
-<script src="app.js"></script>
+<!-- CONFIRMACIÓN DE CANJE -->
+<div id="confirmOverlay" class="overlay hidden">
+  <div class="popup">
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button id="confirmCancel" class="btn secondary">Cancelar</button>
+      <button id="confirmOk" class="btn primary">Sí, canjear</button>
+    </div>
+  </div>
+</div>
+
+<script src="pivi-core.js?v=3"></script>
+<script src="cloud-config.js?v=2"></script>
+<script src="pivi-config.js?v=1"></script>
+<script src="pivi-dev.js?v=4"></script>
+<script src="pivi-ledger.js?v=2"></script>
+<script src="cloud-sync.js?v=2"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>
