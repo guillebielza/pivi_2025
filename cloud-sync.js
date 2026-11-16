@@ -193,9 +193,12 @@
   var BASE = ROOT + "/rest/v1/" + (cfg.table || "pivi_state");
   var HEADERS = {
     "apikey": cfg.anonKey,
-    "Authorization": "Bearer " + cfg.anonKey,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "x-pivi-profile": cfg.profileId   // la base de datos solo deja tocar la fila de este perfil
   };
+  // Las claves antiguas ("anon", empiezan por eyJ) van también como Bearer;
+  // las nuevas (sb_publishable_…) solo en "apikey".
+  if (/^eyJ/.test(cfg.anonKey)) HEADERS.Authorization = "Bearer " + cfg.anonKey;
 
   function cloudGet() {
     var url = BASE + "?profile_id=eq." + encodeURIComponent(cfg.profileId) + "&select=*";

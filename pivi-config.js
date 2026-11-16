@@ -63,7 +63,9 @@ window.PIVI_CONFIG = {
   var TABLE = "pivi_content";
 
   function headers() {
-    return { "apikey": CLOUD.anonKey, "Authorization": "Bearer " + CLOUD.anonKey, "Content-Type": "application/json" };
+    var h = { "apikey": CLOUD.anonKey, "Content-Type": "application/json", "x-pivi-profile": CLOUD.profileId };
+    if (/^eyJ/.test(CLOUD.anonKey)) h.Authorization = "Bearer " + CLOUD.anonKey; // clave antigua "anon"
+    return h;
   }
   function base() {
     var root = CLOUD.url.replace(/\/+$/, "").replace(/\/rest\/v1$/i, "");

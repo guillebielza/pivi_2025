@@ -9,23 +9,25 @@
 
      1. Crea un proyecto gratis en https://supabase.com
      2. Ejecuta el SQL de  supabase-schema.sql  (Project > SQL Editor)
-     3. Copia aquí la URL y la clave "anon public"
-        (Project Settings > API)
-     4. Inventa un profileId largo y secreto (actúa como contraseña):
-        cualquiera con estos 3 datos puede ver/editar los puntos.
+     3. Copia aquí la "Project URL" y la clave PÚBLICA: la
+        "publishable" (sb_publishable_…) o la antigua "anon public"
+        (eyJ…). ¡Nunca la "secret" ni la "service_role"!
+     4. profileId: id largo y aleatorio, el MISMO en todos los
+        dispositivos. La base de datos solo deja leer/escribir la
+        fila de este id (ver supabase-schema.sql).
 
    Ejemplo ya configurado:
      url:       "https://abcdxyz.supabase.co"
-     anonKey:   "eyJhbGciOiJIUzI1NiIsIn........"
+     anonKey:   "sb_publishable_........"
      profileId: "pivi-2026-9f3a7c1b6e2d"   // invéntate uno único
 
-   NOTA (nov-2026): el proyecto Supabase anterior ya no existe, así
-   que la nube está DESACTIVADA (url y anonKey vacíos) hasta crear
-   uno nuevo. Mientras tanto la web funciona en modo local.
+   NOTA (nov-2026): proyecto Supabase "pivi". El antiguo
+   ("reto-2026") está pausado. Si Supabase pausa este por falta de
+   uso, la tarea .github/workflows/supabase-keepalive.yml lo evita.
    ============================================================ */
 window.PIVI_CLOUD = {
-  url: "",        // URL del proyecto Supabase
-  anonKey: "",    // clave anon public
-  profileId: "Pivi_12345$%&",  // identificador secreto compartido entre dispositivos
+  url: "https://ragsrhvaepisvigthmyu.supabase.co",        // URL del proyecto Supabase ("pivi")
+  anonKey: "sb_publishable_IT3VI3E0VdJvOayOBm7m4Q_bqaL7Vuf",    // clave pública (publishable)
+  profileId: "pivi-cphqAAwU3sXJFjTUuTlnLTpV",  // identificador secreto compartido entre dispositivos
   table: "pivi_state"
 };
