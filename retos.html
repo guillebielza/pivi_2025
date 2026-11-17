@@ -39,23 +39,6 @@
   <section class="challenge-list">
     <h2>Minijuegos</h2>
 
-    <!-- MEMORY -->
-    <a class="challenge-card" href="memory.html">
-      <div class="challenge-info">
-        <h3>🧠 Parejas ocultas</h3>
-        <p>Encuentra todas las parejas antes de que acabe el tiempo.</p>
-        <div class="meta">
-          <span>⏱️ 60s (solo reto)</span>
-          <span>🃏 16 cartas</span>
-          <span>🎁 Hasta +12</span>
-        </div>
-      </div>
-      <div class="challenge-actions one">
-        <span class="btn primary">Ir a jugar</span>
-      </div>
-      <span class="challenge-go" aria-hidden="true">›</span>
-    </a>
-
     <!-- WORDLE -->
     <a class="challenge-card" href="wordle.html">
       <div class="challenge-info">
@@ -65,23 +48,6 @@
           <span>🎯 6 intentos</span>
           <span>🧠 5 letras</span>
           <span>🎁 Hasta +8</span>
-        </div>
-      </div>
-      <div class="challenge-actions one">
-        <span class="btn primary">Ir a jugar</span>
-      </div>
-      <span class="challenge-go" aria-hidden="true">›</span>
-    </a>
-
-    <!-- MISSING -->
-    <a class="challenge-card" href="missing.html">
-      <div class="challenge-info">
-        <h3>🧠 ¿Cuál falta?</h3>
-        <p>Memoriza 9 iconos, desaparece 1 y eliges cuál falta.</p>
-        <div class="meta">
-          <span>⚡ 10 rondas</span>
-          <span>🧠 Memoria visual</span>
-          <span>🎁 Hasta +10</span>
         </div>
       </div>
       <div class="challenge-actions one">
@@ -141,23 +107,6 @@
       <span class="challenge-go" aria-hidden="true">›</span>
     </a>
 
-    <!-- ATRAPACORAZONES -->
-    <a class="challenge-card" href="atrapa.html">
-      <div class="challenge-info">
-        <h3>💘 Atrapacorazones</h3>
-        <p>Toca los 💖 y esquiva las 💣 durante 30 segundos.</p>
-        <div class="meta">
-          <span>⏱️ 30 segundos</span>
-          <span>🎯 Precisión y rapidez</span>
-          <span>🎁 Hasta +10</span>
-        </div>
-      </div>
-      <div class="challenge-actions one">
-        <span class="btn primary">Ir a jugar</span>
-      </div>
-      <span class="challenge-go" aria-hidden="true">›</span>
-    </a>
-
     <!-- MURO DE PINCHOS -->
     <a class="challenge-card" href="muro.html">
       <div class="challenge-info">
@@ -192,6 +141,61 @@
       <span class="challenge-go" aria-hidden="true">›</span>
     </a>
 
+    <!-- JUEGOS RETIRADOS: dentro de <template> no se muestran, pero el código sigue aquí.
+         Para recuperar uno, saca su tarjeta de aquí y quítalo de RETIRED en points-policy.js. -->
+    <template id="juegosRetirados">
+      <!-- MEMORY -->
+      <a class="challenge-card" href="memory.html">
+        <div class="challenge-info">
+          <h3>🧠 Parejas ocultas</h3>
+          <p>Encuentra todas las parejas antes de que acabe el tiempo.</p>
+          <div class="meta">
+            <span>⏱️ 60s (solo reto)</span>
+            <span>🃏 16 cartas</span>
+            <span>🎁 Hasta +12</span>
+          </div>
+        </div>
+        <div class="challenge-actions one">
+          <span class="btn primary">Ir a jugar</span>
+        </div>
+        <span class="challenge-go" aria-hidden="true">›</span>
+      </a>
+
+      <!-- MISSING -->
+      <a class="challenge-card" href="missing.html">
+        <div class="challenge-info">
+          <h3>🧠 ¿Cuál falta?</h3>
+          <p>Memoriza 9 iconos, desaparece 1 y eliges cuál falta.</p>
+          <div class="meta">
+            <span>⚡ 10 rondas</span>
+            <span>🧠 Memoria visual</span>
+            <span>🎁 Hasta +10</span>
+          </div>
+        </div>
+        <div class="challenge-actions one">
+          <span class="btn primary">Ir a jugar</span>
+        </div>
+        <span class="challenge-go" aria-hidden="true">›</span>
+      </a>
+
+      <!-- ATRAPACORAZONES -->
+      <a class="challenge-card" href="atrapa.html">
+        <div class="challenge-info">
+          <h3>💘 Atrapacorazones</h3>
+          <p>Toca los 💖 y esquiva las 💣 durante 30 segundos.</p>
+          <div class="meta">
+            <span>⏱️ 30 segundos</span>
+            <span>🎯 Precisión y rapidez</span>
+            <span>🎁 Hasta +10</span>
+          </div>
+        </div>
+        <div class="challenge-actions one">
+          <span class="btn primary">Ir a jugar</span>
+        </div>
+        <span class="challenge-go" aria-hidden="true">›</span>
+      </a>
+    </template>
+
   </section>
 </main>
 
@@ -209,7 +213,7 @@
 <script src="pivi-dev.js?v=9"></script>
 <script src="pivi-ledger.js?v=6"></script>
 <script src="cloud-sync.js?v=6"></script>
-<script src="points-policy.js?v=6"></script>
+<script src="points-policy.js?v=7"></script>
 <script src="retos.js?v=3"></script>
 </body>
 </html>

@@ -64,10 +64,23 @@
     return `weekend_rewarded_${normalizeGameId(gameId)}`;
   }
 
+  // --- juegos ---
+  const ALL_GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro", "vuelo"];
+  // Juegos RETIRADOS (ocultos): no salen en Retos, no cuentan en el resumen
+  // del finde y su reto ya no da puntos (si alguien entra por la dirección,
+  // solo puede practicar). Sus archivos siguen en la carpeta, intactos.
+  // Para recuperar uno: quítalo de esta lista y saca su tarjeta del
+  // <template id="juegosRetirados"> de retos.html (y sube el ?v= de este archivo).
+  const RETIRED = ["memory", "missing", "atrapa"];
+  const GAMES = ALL_GAMES.filter(g => RETIRED.indexOf(g) === -1);
+  function isRetired(gameId) { return RETIRED.indexOf(normalizeGameId(gameId)) !== -1; }
+  const RETIRED_REASON = "Este juego está retirado: ya no da puntos.";
+
   // --- API principal ---
   function canPlayWeekendChallenge(gameId, date = nowDate()) {
     if (window.PIVI_DEV_BYPASS) return { ok: true, reason: "" }; // modo dev: reto libre
     const g = normalizeGameId(gameId);
+    if (isRetired(g)) return { ok: false, reason: RETIRED_REASON };
 
     if (!isWeekend(date)) {
       return { ok: false, reason: "Los retos solo se pueden jugar en fin de semana (sábado y domingo)." };
@@ -98,6 +111,7 @@
     const wk = weekendKey(date);
 
     if (!bypass) {
+      if (isRetired(g)) return { ok: false, reason: RETIRED_REASON, gained: 0 };
       if (!isWeekend(date)) {
         return { ok: false, reason: "Los retos solo puntúan en fin de semana (sábado y domingo).", gained: 0 };
       }
@@ -126,6 +140,7 @@
     if (window.PIVI_DEV_BYPASS) return "🛠 DEV: reto disponible siempre";
     const g = normalizeGameId(gameId);
 
+    if (isRetired(g)) return "🗄️ Juego retirado: solo práctica, no da puntos";
     if (!isWeekend(date)) return "⛔ Solo fin de semana (sábado/domingo)";
     const wk = weekendKey(date);
 
@@ -137,8 +152,7 @@
     return "✅ Puedes jugar reto este fin de semana";
   }
 
-  // --- resumen del finde (lista de Retos y portada) ---
-  const GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro", "vuelo"];
+  // --- resumen del finde (lista de Retos y portada): solo juegos activos ---
   function weekendSummary(date = nowDate()) {
     const weekend = isWeekend(date);
     const wk = weekendKey(date);
@@ -166,6 +180,9 @@
 
   window.PointsPolicy = {
     GAMES,
+    ALL_GAMES,
+    RETIRED,
+    isRetired,
     weekendSummary,
     isWeekend,
     weekendKey,
