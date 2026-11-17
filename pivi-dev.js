@@ -389,8 +389,9 @@
       '</div>' +
 
       section("Contenido REAL (afecta a los dos)") +
-      '<div style="display:flex;gap:6px;margin-bottom:10px">' +
-        '<button data-act="content" style="' + btnCss("#a0c4ff", "#0d1b33") + ';flex:1">📦 Editar códigos / ruleta / recompensas</button>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px">' +
+        '<button data-act="gestor" style="' + btnCss("#ffc8dd", "#3a1f25") + '">🎁 Gestor de premios</button>' +
+        '<button data-act="content" style="' + btnCss("#a0c4ff", "#0d1b33") + '">📦 Códigos / ruleta / PIN</button>' +
       '</div>' +
 
       section("Sandbox") +
@@ -400,7 +401,7 @@
         '<button data-act="clearCodes" style="' + btnCss() + '">Reusar códigos</button>' +
         '<button data-act="wipe" style="' + btnCss("#ff7d8c", "#2a1016") + '">Limpiar todo</button>' +
       '</div>' +
-      '<div style="margin-top:10px;opacity:.7;font-weight:600">Sandbox aislado · sync en pausa · tus puntos, canjes y retos reales están a salvo. Solo «📦 Contenido» escribe en la nube real.</div>';
+      '<div style="margin-top:10px;opacity:.7;font-weight:600">Sandbox aislado · sync en pausa · tus puntos, canjes y retos reales están a salvo. Solo «🎁 Premios» y «📦 Contenido» escriben en la nube real.</div>';
 
     document.body.appendChild(bar);
 
@@ -416,6 +417,7 @@
       var act = b.getAttribute("data-act");
       if (act === "min") setOpen(false);
       else if (act === "content") openContentEditor();
+      else if (act === "gestor") { setOpen(false); openGestor(); }
       else if (act === "exit") disableDev();
       else if (act === "setpts") setPointsDev(document.getElementById("devPts").value);
       else if (act === "p10") addPointsDev(10);
@@ -456,7 +458,26 @@
   }
 
   /* ============================================================
-     Editor de Contenido (códigos / ruleta / PIN / recompensas)
+     🎁 Gestor de premios: vive en pivi-gestor.js y se carga al abrirlo
+     (con pivi-premios.js si la página no lo tenía).
+     ============================================================ */
+  function loadScript(src) {
+    return new Promise(function (ok, ko) {
+      var sc = document.createElement("script");
+      sc.src = src; sc.onload = ok; sc.onerror = function () { ko(new Error("no se pudo cargar " + src)); };
+      document.head.appendChild(sc);
+    });
+  }
+  function openGestor() {
+    if (window.PiviGestor) { PiviGestor.open(); return; }
+    (window.PiviPremios ? Promise.resolve() : loadScript("pivi-premios.js?v=2"))
+      .then(function () { return loadScript("pivi-gestor.js?v=1"); })
+      .then(function () { if (window.PiviGestor) PiviGestor.open(); })
+      .catch(function (e) { window.alert("No se ha podido abrir el gestor de premios: " + e.message); });
+  }
+
+  /* ============================================================
+     Editor de Contenido (códigos / ruleta / PIN)
      Lee de PIVI_CONFIG y guarda en la nube (pivi_content) vía PiviContent.
      ============================================================ */
   function openContentEditor() {
@@ -464,8 +485,6 @@
     var cur = (window.PiviContent && PiviContent.current()) || { codigos: {}, ruleta: [], devPin: "", recompensasOverride: {} };
     var codigosText = Object.keys(cur.codigos || {}).map(function (k) { return k + "=" + cur.codigos[k]; }).join("\n");
     var ruletaText = (cur.ruleta || []).join(", ");
-    var curOv = cur.recompensasOverride || {};
-    var baseById = {};
 
     var inp = "width:100%;box-sizing:border-box;background:#251d24;color:#fff;border:1px solid #4a3645;border-radius:9px;padding:8px;margin-bottom:6px;font:600 13px system-ui;";
     var ta = function (h) { return inp + "min-height:" + h + "px;font-family:ui-monospace,Consolas,monospace;font-size:12px;"; };
@@ -477,7 +496,7 @@
       : "⚠️ Sin nube configurada: el cambio solo afecta a esta sesión.";
     var realWarn = hasCloud
       ? '<div style="margin:2px 0 8px;padding:8px 10px;border-radius:10px;background:#3a1f25;color:#ffc8dd;font-weight:700">' +
-          '⚠️ Esto NO es el sandbox: cambia el contenido REAL (códigos, ruleta y recompensas) en los dos móviles.</div>'
+          '⚠️ Esto NO es el sandbox: cambia el contenido REAL (códigos, ruleta y PIN) en los dos móviles.</div>'
       : "";
 
     var ov = document.createElement("div");
@@ -497,8 +516,7 @@
         '<input id="ceRuleta" style="' + inp + '">' +
         lbl("🛠 PIN del modo Dev") +
         '<input id="cePin" style="' + inp + '">' +
-        lbl("🎁 RECOMPENSAS — edita coste, disponibilidad y mensajes (toca ✏️)") +
-        '<div id="ceRewards" style="margin-bottom:10px">Cargando recompensas…</div>' +
+        '<button id="ceGestor" style="' + btnCss("#ffc8dd", "#3a1f25") + ';width:100%;margin:10px 0">🎁 Los premios se editan en el Gestor de premios</button>' +
         '<button id="ceSave" style="' + btnCss("#8ac926", "#0f2a0a") + ';width:100%;padding:11px">💾 Guardar</button>' +
         '<div style="margin-top:8px;opacity:.7;font-size:11px">' + cloudNote + '</div>' +
       '</div>';
@@ -509,52 +527,10 @@
     document.getElementById("ceRuleta").value = ruletaText;
     document.getElementById("cePin").value = cur.devPin || "";
 
-    // ---- lista editable de recompensas (carga recompensas.json) ----
-    var cinp = "box-sizing:border-box;background:#251d24;color:#fff;border:1px solid #4a3645;border-radius:8px;padding:6px;font:600 12px system-ui;";
-    var rewardsBox = document.getElementById("ceRewards");
-    function dispBool(r) { return r.disponible !== false; }
-    function buildRewardRow(base) {
-      var id = String(base.id);
-      var eff = Object.assign({}, base, curOv[id] || {});
-      var row = document.createElement("div");
-      row.className = "ce-rw";
-      row.setAttribute("data-id", id);
-      row.style.cssText = "border:1px solid #4a3645;border-radius:10px;padding:8px;margin-bottom:6px;";
-      row.innerHTML =
-        '<div style="display:flex;align-items:center;gap:8px">' +
-          '<span style="opacity:.5;font-size:11px;width:22px">#' + id + '</span>' +
-          '<input class="ce-emoji" maxlength="8" style="width:46px;text-align:center;' + cinp + '">' +
-          '<span style="opacity:.6;font-size:11px;min-width:70px">' + (base.tipo || "") + '</span>' +
-          '<span style="flex:1"></span>' +
-          '<label style="display:flex;align-items:center;gap:4px;font-size:11px"><input type="checkbox" class="ce-disp"> disp.</label>' +
-          '<input type="number" class="ce-coste" style="width:62px;' + cinp + '">' +
-          '<button type="button" class="ce-toggle" title="Editar mensajes" style="' + btnCss() + '">✏️</button>' +
-        '</div>' +
-        '<div class="ce-msgs" style="display:none;margin-top:6px">' +
-          '<textarea class="ce-popup" placeholder="Mensaje al canjear" style="' + ta(46) + '"></textarea>' +
-          '<textarea class="ce-hist" placeholder="Texto del historial" style="' + ta(34) + '"></textarea>' +
-        '</div>';
-      rewardsBox.appendChild(row);
-      row.querySelector(".ce-emoji").value = eff.textoBoton || "";
-      row.querySelector(".ce-coste").value = (eff.coste != null ? eff.coste : "");
-      row.querySelector(".ce-disp").checked = dispBool(eff);
-      row.querySelector(".ce-popup").value = eff.mensajePopup || "";
-      row.querySelector(".ce-hist").value = eff.mensajeHistorico || "";
-      row.querySelector(".ce-toggle").onclick = function () {
-        var m = row.querySelector(".ce-msgs"); m.style.display = (m.style.display === "none" ? "block" : "none");
-      };
-    }
-    fetch("recompensas.json", { cache: "no-store" })
-      .then(function (r) { return r.json(); })
-      .then(function (list) {
-        rewardsBox.innerHTML = "";
-        (list || []).forEach(function (b) { baseById[String(b.id)] = b; buildRewardRow(b); });
-      })
-      .catch(function () { rewardsBox.innerHTML = '<div style="opacity:.7;font-size:12px">No se pudo cargar recompensas.json.</div>'; });
-
     function close() { ov.remove(); }
     ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
     document.getElementById("ceClose").onclick = close;
+    document.getElementById("ceGestor").onclick = function () { close(); openGestor(); };
     document.getElementById("ceReload").onclick = function () {
       if (window.PiviContent && PiviContent.load) PiviContent.load().then(function () { close(); openContentEditor(); });
     };
@@ -574,32 +550,14 @@
         return;
       }
       var pin = document.getElementById("cePin").value.trim();
-      var ovObj = {};
-      if (rewardsBox) rewardsBox.querySelectorAll(".ce-rw").forEach(function (row) {
-        var id = row.getAttribute("data-id"); var base = baseById[id]; if (!base) return;
-        var emoji = row.querySelector(".ce-emoji").value.trim();
-        var costeStr = row.querySelector(".ce-coste").value;
-        var coste = costeStr === "" ? base.coste : Number(costeStr);
-        var disp = row.querySelector(".ce-disp").checked;
-        var popup = row.querySelector(".ce-popup").value;
-        var hist = row.querySelector(".ce-hist").value;
-        var diff = {};
-        if (emoji !== (base.textoBoton || "")) diff.textoBoton = emoji;
-        if (Number(coste) !== Number(base.coste)) diff.coste = Number(coste);
-        if (disp !== (base.disponible !== false)) diff.disponible = disp;
-        if (popup !== (base.mensajePopup || "")) diff.mensajePopup = popup;
-        if (hist !== (base.mensajeHistorico || "")) diff.mensajeHistorico = hist;
-        if (Object.keys(diff).length) ovObj[id] = diff;
-      });
-
+      // solo estos campos: el catálogo de premios lo guarda el gestor (save mezcla con la nube)
       var content = {
         codigos: codigos,
         ruleta: ruleta.length ? ruleta : undefined,
-        devPin: pin || undefined,
-        recompensasOverride: ovObj
+        devPin: pin || undefined
       };
       if (!window.PiviContent) { close(); return; }
-      if (PiviContent.hasCloud && !window.confirm("Vas a cambiar el contenido REAL (no el sandbox): códigos, ruleta y recompensas para los dos móviles.\n\n¿Guardar?")) return;
+      if (PiviContent.hasCloud && !window.confirm("Vas a cambiar el contenido REAL (no el sandbox): códigos, ruleta y PIN para los dos móviles.\n\n¿Guardar?")) return;
       PiviContent.save(content).then(function () {
         if (window.PiviCore) PiviCore.toast("📦 Contenido guardado y sincronizado", 2400);
         close();
@@ -623,5 +581,5 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
-  window.PiviDev = { enable: enableDev, disable: disableDev, restoreReal: restoreRealSnapshot, isOn: function () { return !!window.PIVI_DEV; } };
+  window.PiviDev = { enable: enableDev, disable: disableDev, restoreReal: restoreRealSnapshot, openGestor: openGestor, isOn: function () { return !!window.PIVI_DEV; } };
 })();

@@ -2,7 +2,9 @@
    pivi-premios.js — Catálogo de premios, compartido por Inicio,
    Premios y Recuerdos
    ------------------------------------------------------------
-   - Carga recompensas.json (+ ajustes de la nube de pivi-config).
+   - Catálogo: el de la nube (Gestor de premios del modo Dev) si existe;
+     si no, recompensas.json (+ ajustes antiguos por id).
+   - "retirado": true → fuera de todo (sus recuerdos siguen en Recuerdos).
    - Niveles de precio (PIVI_CONFIG.niveles): cada premio cae en
      un nivel por su coste (o por su campo "nivel" si lo tiene).
    - Estado de cada premio: "disponible", "proximamente" (aún no
@@ -21,7 +23,8 @@
     { id: "especial", nombre: "Especial", coste: 185, emoji: "💎" }
   ];
 
-  var catalog = [];
+  var catalog = [];   // sin retirados: lo que ven Inicio y Premios
+  var full = [];      // con retirados: para reconstruir recuerdos antiguos
   var loading = null;
   var listeners = [];
 
@@ -106,29 +109,44 @@
     data.forEach(function (r) { var o = ov[String(r.id)]; if (o) Object.assign(r, o); });
     return data;
   }
-  var base = [];
+  var fileBase = [];
+  function cloudList() {
+    var c = window.PIVI_CONFIG && PIVI_CONFIG.recompensas;
+    return Array.isArray(c) && c.length ? c : null;
+  }
   function rebuild() {
-    catalog = applyOverrides(base.map(function (r) { return Object.assign({}, r); }));
+    var src = cloudList() || fileBase;
+    full = applyOverrides(src.map(function (r) { return Object.assign({}, r); }));
+    catalog = full.filter(function (r) { return !r.retirado; });
   }
   function notify() { listeners.forEach(function (fn) { try { fn(catalog); } catch (e) {} }); }
   function load() {
     if (!loading) {
-      loading = fetch("recompensas.json", { cache: "no-cache" })
+      // espera un momento a la 1.ª lectura de la nube (así no se ve el catálogo
+      // del archivo y luego "salta" al de la nube); sin conexión, no más de 2,5 s
+      var cloudReady = (window.PiviContent && PiviContent.ready)
+        ? Promise.race([PiviContent.ready, new Promise(function (r) { setTimeout(r, 2500); })])
+        : Promise.resolve();
+      var file = fetch("recompensas.json", { cache: "no-cache" })
         .then(function (r) { if (!r.ok) throw new Error("recompensas.json (" + r.status + ")"); return r.json(); })
-        .then(function (data) { base = Array.isArray(data) ? data : []; rebuild(); notify(); migrate(); return catalog; });
+        .then(function (data) { fileBase = Array.isArray(data) ? data : []; })
+        .catch(function (e) { if (!cloudList()) throw e; }); // con catálogo en la nube, el archivo no hace falta
+      loading = Promise.all([file, cloudReady]).then(function () {
+        rebuild(); notify(); migrate(); return catalog;
+      });
     }
     return loading;
   }
   function onChange(fn) { listeners.push(fn); if (catalog.length) fn(catalog); }
 
   // cambios de contenido en caliente (recompensas desde la nube)
-  window.addEventListener("pivi:config", function () { if (base.length) { rebuild(); notify(); } });
+  window.addEventListener("pivi:config", function () { if (fileBase.length || cloudList()) { rebuild(); notify(); } });
 
   /* ---------- canjes antiguos → Recuerdos ---------- */
   var hydrated = !window.PiviSync; // sin nube (o en modo Dev) no hay que esperar
   function migrate() {
-    if (!hydrated || !catalog.length || !window.PiviLedger || !PiviLedger.ensureCanjes) return;
-    if (PiviLedger.ensureCanjes(catalog)) {
+    if (!hydrated || !full.length || !window.PiviLedger || !PiviLedger.ensureCanjes) return;
+    if (PiviLedger.ensureCanjes(full)) {
       try { window.dispatchEvent(new CustomEvent("pivi:canjes")); } catch (e) {}
     }
   }
@@ -137,7 +155,7 @@
   });
 
   window.PiviPremios = {
-    load: load, onChange: onChange, all: function () { return catalog; },
+    load: load, onChange: onChange, all: function () { return catalog; }, allWithRetired: function () { return full; },
     niveles: niveles, nivelDe: nivelDe, name: name, points: points,
     estado: estado, isAvailable: isAvailable, timesRedeemed: timesRedeemed, addRedeemed: addRedeemed,
     resumen: resumen, siguiente: siguiente

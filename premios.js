@@ -170,6 +170,16 @@
     render();
   });
 
+  // modo Dev: acceso directo al Gestor de premios (añadir, editar, retirar)
+  if (window.PIVI_DEV && window.PiviDev && PiviDev.openGestor) {
+    var gb = document.createElement("button");
+    gb.type = "button";
+    gb.className = "btn secondary pz-gestor";
+    gb.textContent = "🛠 Gestionar premios";
+    gb.addEventListener("click", function () { PiviDev.openGestor(); });
+    filtersEl.parentNode.insertBefore(gb, filtersEl);
+  }
+
   window.addEventListener("pivi:hydrated", render);
   window.addEventListener("pivi:canjes", render);
   if (P) {

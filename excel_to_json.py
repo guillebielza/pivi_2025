@@ -1,3 +1,16 @@
+# ============================================================
+# OBSOLETO desde nov-2026: los premios se gestionan en la web, modo Dev,
+# "🎁 Gestor de premios" (se guardan en la nube y llevan nivel, repetible,
+# retirado...). recompensas.json solo es la copia inicial. Si regeneras desde
+# el Excel, insertar una fila en medio cambia los ids y los canjes antiguos
+# apuntarían a otro premio. Para usarlo igualmente: python excel_to_json.py --forzar
+# ============================================================
+import sys
+if "--forzar" not in sys.argv:
+    print("excel_to_json.py está obsoleto: los premios se editan en la web (modo Dev > Gestor de premios).")
+    print("Si de verdad quieres regenerar recompensas.json desde datos.xlsx: python excel_to_json.py --forzar")
+    sys.exit(1)
+
 import pandas as pd
 import json
 from pathlib import Path

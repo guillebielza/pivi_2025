@@ -10,6 +10,11 @@
 
    La nube (si existe) MANDA sobre este archivo. Si borras la fila de
    la nube, se vuelve a usar lo de aquí.
+
+   🎁 PREMIOS: desde nov-2026 se gestionan en el modo Dev
+   («🎁 Gestor de premios»): el catálogo completo y los precios de cada
+   nivel se guardan en la nube. recompensas.json (y datos.xlsx) solo
+   son la copia inicial que se usa si la nube aún no tiene catálogo.
    ============================================================ */
 window.PIVI_CONFIG = {
 
@@ -90,33 +95,50 @@ window.PIVI_CONFIG = {
     C.ruleta = (Array.isArray(ov.ruleta) && ov.ruleta.length) ? ov.ruleta.map(Number) : DEFAULTS.ruleta;
     C.devPin = ov.devPin || DEFAULTS.devPin;
     C.recompensasOverride = Object.assign({}, DEFAULTS.recompensasOverride, ov.recompensasOverride || {});
+    // catálogo completo de premios y precios por nivel (Gestor de premios)
+    C.recompensas = (Array.isArray(ov.recompensas) && ov.recompensas.length) ? ov.recompensas : DEFAULTS.recompensas;
+    C.niveles = (Array.isArray(ov.niveles) && ov.niveles.length) ? ov.niveles : DEFAULTS.niveles;
     try { window.dispatchEvent(new CustomEvent("pivi:config")); } catch (e) {}
+  }
+  function fetchRow() {
+    var url = base() + "?id=eq." + encodeURIComponent(CLOUD.profileId) + "&select=*";
+    return fetch(url, { headers: headers(), cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function (rows) { return rows && rows.length ? (rows[0].content || {}) : null; });
   }
 
   function load() {
     if (!CLOUD || !CLOUD.url) return Promise.resolve();
-    var url = base() + "?id=eq." + encodeURIComponent(CLOUD.profileId) + "&select=*";
-    return fetch(url, { headers: headers(), cache: "no-store" })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
-      .then(function (rows) { if (rows && rows.length) apply(rows[0].content || {}); })
+    return fetchRow()
+      .then(function (content) { if (content) apply(content); })
       .catch(function (e) { if (window.console) console.info("[Pivi config] sin override de nube:", e.message); });
-  }
-
-  // content = { codigos, ruleta, devPin, recompensasOverride }
-  function save(content) {
-    apply(content); // refleja al instante en este dispositivo
-    if (!CLOUD || !CLOUD.url) return Promise.reject(new Error("Sin nube configurada"));
-    var body = [{ id: CLOUD.profileId, content: content, updated_at: new Date().toISOString() }];
-    var h = Object.assign({}, headers(), { "Prefer": "resolution=merge-duplicates,return=minimal" });
-    return fetch(base(), { method: "POST", headers: h, body: JSON.stringify(body) })
-      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); });
   }
 
   function current() {
     var C = window.PIVI_CONFIG;
-    return { codigos: C.codigos, ruleta: C.ruleta, devPin: C.devPin, recompensasOverride: C.recompensasOverride };
+    return { codigos: C.codigos, ruleta: C.ruleta, devPin: C.devPin, recompensasOverride: C.recompensasOverride,
+             recompensas: C.recompensas, niveles: C.niveles };
   }
 
-  window.PiviContent = { load: load, save: save, current: current, hasCloud: !!(CLOUD && CLOUD.url) };
-  load();
+  // Guarda SOLO los campos que se pasan (p. ej. {codigos, ruleta, devPin} o
+  // {recompensas, niveles}). Antes lee la nube y mezcla encima, así un editor
+  // no borra lo que guardó el otro (ni lo que cambió el otro móvil).
+  function save(partial) {
+    function strip(o) { var out = {}; Object.keys(o).forEach(function (k) { if (o[k] !== undefined) out[k] = o[k]; }); return out; }
+    if (!CLOUD || !CLOUD.url) {
+      apply(Object.assign({}, current(), strip(partial))); // sin nube: solo en esta sesión
+      return Promise.reject(new Error("Sin nube configurada"));
+    }
+    return fetchRow().then(function (cloud) {
+      var content = Object.assign({}, cloud || current(), strip(partial));
+      apply(content); // refleja al instante en este dispositivo
+      var body = [{ id: CLOUD.profileId, content: content, updated_at: new Date().toISOString() }];
+      var h = Object.assign({}, headers(), { "Prefer": "resolution=merge-duplicates,return=minimal" });
+      return fetch(base(), { method: "POST", headers: h, body: JSON.stringify(body) })
+        .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); });
+    });
+  }
+
+  var ready = load(); // la 1.ª lectura de la nube (pivi-premios la espera un momento)
+  window.PiviContent = { load: load, save: save, current: current, ready: ready, hasCloud: !!(CLOUD && CLOUD.url) };
 })();

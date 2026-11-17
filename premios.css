@@ -78,3 +78,6 @@
   .pz-chip { flex: 0 0 auto; padding: 8px 12px; }
   .pz-nivel-head h2 { font-size: 1.1rem; }
 }
+
+/* modo Dev: acceso al Gestor de premios */
+.pz-gestor { width: 100%; margin: 0 0 14px; }
