@@ -515,7 +515,38 @@ a { color: var(--primary-strong); }
 }
 
 /* Modal de inicio (elige modo) */
-.start-modal { max-width: 520px; }
+.start-modal { max-width: 520px; position: relative; }
+.start-modal h3 { padding: 0 34px; }
+a.btn { text-decoration: none; }
+/* "▶ Empezar" encima del tablero (PiviCore.readyGate): el juego espera */
+.ready-host { position: relative !important; min-height: 220px; }
+.ready-gate {
+  position: absolute; inset: 0; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 16px; text-align: center;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+  border-radius: inherit;
+  animation: fade .2s ease;
+  -webkit-user-select: none; user-select: none;
+}
+.ready-btn { font-size: 1.2rem; padding: 16px 30px; min-width: 210px; box-shadow: var(--shadow); animation: readyPulse 1.8s ease-in-out infinite; }
+.ready-hint { font-weight: 700; color: var(--text-soft); font-size: .92rem; line-height: 1.35; max-width: 290px; }
+.ready-count { font: 800 clamp(64px, 18vw, 96px)/1 var(--font-head); color: var(--primary-strong); text-shadow: 0 4px 14px rgba(0,0,0,.12); animation: countPop .45s cubic-bezier(.22,1,.36,1); }
+@keyframes readyPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes countPop { from { transform: scale(1.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+/* ✕ para cerrar sin elegir (lo añade pivi-core.js) */
+.modal-close {
+  position: absolute; top: 10px; right: 10px;
+  width: 36px; height: 36px; border-radius: 50%;
+  display: grid; place-items: center;
+  border: 1px solid var(--border); background: var(--surface-2);
+  color: var(--text-soft); font: 700 1rem/1 var(--font-body);
+  cursor: pointer;
+}
+.modal-close:focus-visible { outline: none; box-shadow: var(--ring); }
+@media (hover: hover) { .modal-close:hover { background: var(--surface-inset); color: var(--text); } }
 .start-foot { margin-top: 12px; font-size: .85rem; color: var(--muted); }
 
 /* ---------- Animaciones ---------- */

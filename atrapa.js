@@ -199,20 +199,49 @@ function finish() {
 }
 
 /* ---------- modos ---------- */
+// Tablero vacío y quieto hasta que se pulse "▶ Empezar"
+function prepareGame() {
+  running = false;
+  stopLoops();
+  clearBoard();
+  score = 0;
+  timeLeft = DURATION;
+  setModeUI();
+  scoreEl.textContent = "0";
+  timeLeftEl.textContent = DURATION + "s";
+  timerFill.style.width = "100%";
+  stage.textContent = practiceMode ? "Práctica: 30 segundos" : "Reto: 30 segundos";
+}
+// Al pulsar "Empezar reto": ahora sí se gasta el intento del finde
+function beginChallenge() {
+  const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+  if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return false; }
+  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  updatePolicyStatus();
+  return true;
+}
 function startPractice() {
   if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
-  setModeUI();
-  startGame();
+  prepareGame();
+  PiviCore.readyGate(grid, {
+    label: "Empezar",
+    hint: "Toca los 💖 y evita las 💣",
+    onStart: startGame
+  });
 }
 function startChallenge() {
   if (isChallengeRunning()) { PiviCore.toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return; }
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
-  setModeUI();
-  startGame();
+  prepareGame();
+  PiviCore.readyGate(grid, {
+    label: "Empezar reto",
+    hint: "Al pulsar, el reto cuenta (1 vez por finde). 3 💖 = 1 punto.",
+    onBegin: beginChallenge,
+    onStart: startGame
+  });
 }
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
 // después (o desde práctica) siempre arranca una práctica

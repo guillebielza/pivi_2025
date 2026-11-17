@@ -49,7 +49,8 @@ let WORDS = new Set();      // soluciones (palabras comunes: words-sol5.txt)
 let ALLOWED = new Set();    // válidas como intento (diccionario grande: words-es5.txt)
 let wordsLoaded = false;
 
-function isChallengeRunning(){ return !practiceMode && !!secret && !finished; }
+let challengeStarted = false; // el reto se gasta al enviar la primera palabra
+function isChallengeRunning(){ return !practiceMode && challengeStarted && !finished; }
 if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 /* ---------- util ---------- */
@@ -100,7 +101,7 @@ function openStartModal(){
   chooseChallenge.title = st.ok ? "" : st.reason;
 
   startText.textContent = st.ok
-    ? "Elige modo. En Reto hay palabra del día y puedes ganar puntos (1 vez por fin de semana para este juego). Si sales a mitad, el reto se pierde."
+    ? "Elige modo. En Reto hay palabra del día y puedes ganar puntos (1 vez por fin de semana para este juego). El reto empieza al enviar tu primera palabra; si sales después, se pierde."
     : st.reason + " Puedes practicar igualmente.";
 
   startOverlay.classList.remove("hidden");
@@ -267,12 +268,12 @@ function startChallenge(){
   }
 
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  challengeStarted = false;
 
   secret = getDailyWord();
   resetState();
   setModeUI();
-  toast("Modo reto: palabra del día");
+  toast("Reto: escribe tu primera palabra para empezar");
 }
 
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
@@ -360,6 +361,15 @@ function submitGuess(){
     toast("No está en el diccionario");
     shakeRow(row);
     return;
+  }
+
+  // primera palabra del reto: ahora sí se gasta el intento del finde
+  if (!practiceMode && !challengeStarted){
+    const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+    if (!st.ok){ finished = true; openModal("⛔ No disponible", st.reason, "Practicar"); return; }
+    policy?.markWeekendChallengePlayed?.(GAME_ID);
+    challengeStarted = true;
+    updatePolicyStatus();
   }
 
   const states = evaluateGuess(guess, secret);

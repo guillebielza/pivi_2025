@@ -305,6 +305,103 @@
     if (challengeRunning() && !leaveOk) { e.preventDefault(); e.returnValue = ""; }
   });
 
+  /* ---------------- "▶ EMPEZAR": el juego no arranca solo ----------------
+     Al elegir modo, el tablero se queda quieto con un botón grande encima.
+     Al tocarlo: opts.onBegin() (p. ej. gastar el reto; si devuelve false
+     no se empieza), cuenta atrás 3·2·1 y opts.onStart() arranca el juego.
+     Solo hay una puerta a la vez: abrir otra (cambiar de modo) cierra la anterior. */
+  var gate = null;
+  function cancelGate() { if (gate) { var g = gate; gate = null; g.close(); } }
+  function readyGate(container, opts) {
+    cancelGate();
+    opts = opts || {};
+    if (!container) { if (!opts.onBegin || opts.onBegin() !== false) { if (opts.onStart) opts.onStart(); } return null; }
+
+    var el = document.createElement("div");
+    el.className = "ready-gate";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "btn primary ready-btn";
+    btn.textContent = "▶ " + (opts.label || "Empezar");
+    el.appendChild(btn);
+    if (opts.hint) {
+      var hint = document.createElement("div");
+      hint.className = "ready-hint";
+      hint.textContent = opts.hint;
+      el.appendChild(hint);
+    }
+    container.classList.add("ready-host");
+    container.appendChild(el);
+
+    var timers = [];
+    var g = {
+      close: function () {
+        timers.forEach(clearTimeout);
+        if (el.parentNode) el.parentNode.removeChild(el);
+        container.classList.remove("ready-host");
+      }
+    };
+    gate = g;
+
+    // que el toque en la puerta no llegue al tablero (p. ej. el panel de Reflejos)
+    el.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
+    btn.addEventListener("click", function () {
+      if (gate !== g) return;
+      if (opts.onBegin && opts.onBegin() === false) { cancelGate(); return; }
+      var n = opts.countdown === 0 ? 0 : (opts.countdown || 3);
+      var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      function go() { if (gate !== g) return; gate = null; g.close(); if (opts.onStart) opts.onStart(); }
+      if (!n || calm) { go(); return; }
+      el.innerHTML = "";
+      var count = document.createElement("div");
+      count.className = "ready-count";
+      el.appendChild(count);
+      (function tick(k) {
+        if (gate !== g) return;
+        count.textContent = k > 0 ? String(k) : "¡Ya!";
+        count.style.animation = "none"; void count.offsetWidth; count.style.animation = "";
+        timers.push(setTimeout(function () { if (k > 0) tick(k - 1); else go(); }, k > 0 ? 520 : 320));
+      })(n);
+    });
+    setTimeout(function () { try { btn.focus({ preventScroll: true }); } catch (e) {} }, 0);
+    return g;
+  }
+
+  /* ---------------- VENTANA DE INICIO DE LOS JUEGOS: poder salir ----------------
+     "¿Cómo quieres jugar?" no obligaba a elegir: ahora tiene ✕ (cerrar y
+     ver el juego/reglas), "Volver a Retos", toque fuera y tecla Esc. */
+  function enhanceStartModal() {
+    var ov = document.querySelector(".start-overlay");
+    if (!ov || ov.getAttribute("data-enhanced")) return;
+    ov.setAttribute("data-enhanced", "1");
+    var modal = ov.querySelector(".start-modal");
+    var actions = ov.querySelector(".start-actions");
+    function close() { ov.classList.add("hidden"); }
+    if (modal) {
+      var x = document.createElement("button");
+      x.type = "button";
+      x.className = "modal-close";
+      x.setAttribute("aria-label", "Cerrar");
+      x.title = "Cerrar";
+      x.textContent = "✕";
+      x.addEventListener("click", close);
+      modal.insertBefore(x, modal.firstChild);
+    }
+    if (actions) {
+      var back = document.createElement("a");
+      back.className = "btn ghost";
+      back.href = "retos.html";
+      back.textContent = "⬅️ Volver a Retos";
+      actions.appendChild(back);
+    }
+    ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !ov.classList.contains("hidden")) close();
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enhanceStartModal);
+  else enhanceStartModal();
+
   /* ---------------- APP INSTALABLE (service worker) ---------------- */
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener("load", function () {
@@ -326,6 +423,7 @@
     applyTheme: applyTheme, toggleTheme: toggleTheme, preferred: preferred,
     setPointsUI: setPointsUI, toast: toast, onTap: onTap, focusGame: focusGame,
     guardChallenge: guardChallenge, confirmLeave: confirmLeave, challengeRunning: challengeRunning,
+    readyGate: readyGate, cancelGate: cancelGate,
     celebrate: celebrate, celebrateReward: celebrateReward,
     confetti: confetti, jingle: jingle, fanfare: fanfare, bigEmojiPop: bigEmojiPop,
     isoDate: isoDate, isWeekend: isWeekend, isWheelDay: isWheelDay, dayName: dayName, DAYS: DAYS

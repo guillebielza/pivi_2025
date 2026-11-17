@@ -289,18 +289,39 @@ function finishLose(){
 }
 
 /* ---------- modos ---------- */
-function startPractice(){
-  if (window.PiviCore && !PiviCore.confirmLeave()) return;
-  practiceMode = true;
+// Cartas boca abajo y quietas hasta que se pulse "▶ Empezar"
+function prepareBoard(){
   stopTimer();
   clearTimeout(mismatchTimer); mismatchTimer = null;
-  playing = true;
-  lock = false;
+  playing = false;
+  lock = true;
   first = null; second = null;
+  timeLeft = CHALLENGE_SECONDS;
   resetStats();
   buildBoard();
   setModeUI();
   setTimerUI();
+}
+
+// Al pulsar "Empezar reto": ahora sí se gasta el intento del finde
+function beginChallenge(){
+  const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+  if (!st.ok){ openModal("⛔ No disponible", st.reason, "Practicar"); return false; }
+  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  playing = true;
+  updatePolicyStatus();
+  return true;
+}
+
+function startPractice(){
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
+  practiceMode = true;
+  prepareBoard();
+  PiviCore.readyGate(boardEl, {
+    label: "Empezar",
+    hint: "Encuentra las 8 parejas de frutas",
+    onStart: () => { playing = true; lock = false; }
+  });
 }
 
 function startChallenge(){
@@ -312,16 +333,13 @@ function startChallenge(){
   }
 
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
-
-  clearTimeout(mismatchTimer); mismatchTimer = null;
-  playing = true;
-  lock = false;
-  first = null; second = null;
-  resetStats();
-  buildBoard();
-  setModeUI();
-  startTimer();
+  prepareBoard();
+  PiviCore.readyGate(boardEl, {
+    label: "Empezar reto",
+    hint: "Tienes 60 segundos. Al pulsar, el reto cuenta (1 vez por finde).",
+    onBegin: beginChallenge,
+    onStart: () => { lock = false; startTimer(); }
+  });
 }
 
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que

@@ -338,15 +338,31 @@ function resetGameState(){
 }
 
 /* ---------- modos ---------- */
+const stageEl = document.getElementById("stage");
+
+// Al pulsar "Empezar reto": ahora sí se gasta el intento del finde
+function beginChallenge(){
+  const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+  if (!st.ok){ openModal("⛔ No disponible", st.reason, "Practicar"); return false; }
+  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  playing = true;
+  updatePolicyStatus();
+  return true;
+}
+
 function startPractice(){
   if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   resetGameState();
-  playing = true;
+  playing = false;
   setModeUI();
   setStatsUI();
-  stageTitle.textContent = "Práctica: empieza la ronda 1";
-  startRound();
+  stageTitle.textContent = "Práctica: 10 rondas";
+  PiviCore.readyGate(stageEl, {
+    label: "Empezar",
+    hint: "Memoriza los 9 iconos: luego desaparece uno",
+    onStart: () => { playing = true; startRound(); }
+  });
 }
 
 function startChallenge(){
@@ -358,14 +374,17 @@ function startChallenge(){
   }
 
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
-
   resetGameState();
-  playing = true;
+  playing = false;
   setModeUI();
   setStatsUI();
-  stageTitle.textContent = "Reto: empieza la ronda 1";
-  startRound();
+  stageTitle.textContent = "Reto: 10 rondas";
+  PiviCore.readyGate(stageEl, {
+    label: "Empezar reto",
+    hint: "Al pulsar, el reto cuenta (1 vez por finde). +1 punto por acierto.",
+    onBegin: beginChallenge,
+    onStart: startRound
+  });
 }
 
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que

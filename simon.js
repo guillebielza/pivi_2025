@@ -266,28 +266,43 @@ function resetState() {
   pads.forEach(p => p.classList.remove("lit"));
   setRoundUI();
 }
+// Al pulsar "Empezar reto": ahora sí se gasta el intento del finde
+function beginChallenge() {
+  const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+  if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return false; }
+  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  playing = true;
+  updatePolicyStatus();
+  return true;
+}
 function startPractice() {
   if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   resetState();
-  playing = true;
+  playing = false;
   setModeUI();
   stage.textContent = "Práctica: observa y repite";
-  const g = gen;
-  setTimeout(() => { if (g === gen) nextRound(); }, 400);
+  PiviCore.readyGate(board, {
+    label: "Empezar",
+    hint: "Mira la secuencia de luces y repítela",
+    onStart: () => { playing = true; nextRound(); }
+  });
 }
 function startChallenge() {
   if (isChallengeRunning()) { toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return; }
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
   resetState();
-  playing = true;
+  playing = false;
   setModeUI();
   stage.textContent = "Reto: observa y repite";
-  const g = gen;
-  setTimeout(() => { if (g === gen) nextRound(); }, 400);
+  PiviCore.readyGate(board, {
+    label: "Empezar reto",
+    hint: "Al pulsar, el reto cuenta (1 vez por finde). +1 punto por ronda.",
+    onBegin: beginChallenge,
+    onStart: nextRound
+  });
 }
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
 // después (o desde práctica) siempre arranca una práctica

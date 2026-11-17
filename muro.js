@@ -85,7 +85,8 @@ function approach(v, target, step) { return v < target ? Math.min(target, v + st
 function ptsFor(s) { return clamp(Math.floor(s / SCORE_DIV), 0, MAX_SCORE); }
 function speedFor(s) { return Math.min(SPEED0 + s * SPEED_STEP, SPEED_MAX); }
 function isOverlayOpen() { return !!document.querySelector(".overlay:not(.hidden)"); }
-function inChallenge() { return !practiceMode && state !== "idle" && state !== "over"; }
+let challengePending = false; // reto elegido pero aún sin el primer toque
+function inChallenge() { return !practiceMode && !challengePending && state !== "idle" && state !== "over"; }
 
 /* ---------- pinchos ---------- */
 function spikeCount(s) { return Math.min(2 + Math.floor(s / 4), SLOTS - 3); } // 2 → 7
@@ -296,6 +297,13 @@ function handleTap() {
   if (isOverlayOpen()) return;
   switch (state) {
     case "ready":
+      if (!practiceMode && challengePending) {
+        const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+        if (!st.ok) { state = "over"; challengePending = false; openModal("⛔ No disponible", st.reason); return; }
+        policy?.markWeekendChallengePlayed?.(GAME_ID);
+        challengePending = false;
+        updatePolicyStatus();
+      }
       state = "playing";
       canvas.classList.add("is-playing");
       jump();
@@ -496,7 +504,7 @@ function drawParticles() {
 function drawMessage() {
   let l1 = "", l2 = "";
   if (state === "idle") { l1 = "Elige un modo"; l2 = "para empezar"; }
-  else if (state === "ready") { l1 = "Toca para saltar"; l2 = practiceMode ? "Práctica" : `Intento ${tryNo} de ${TRIES}`; }
+  else if (state === "ready") { l1 = "👆 Toca para empezar"; l2 = practiceMode ? "Práctica" : `Intento ${tryNo} de ${TRIES}`; }
   else if (state === "paused") { l1 = "⏸ Pausa"; l2 = "Toca para seguir"; }
   else if (state === "between") {
     l1 = `💥 ${score} ${score === 1 ? "pared" : "paredes"}`;
@@ -576,7 +584,7 @@ function startChallenge() {
   if (!st.ok) { openModal("⛔ No disponible", st.reason); return; }
   if (!confirmLeaveChallenge()) return;
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  challengePending = true; // se gasta con el primer toque
   tryNo = 1;
   best = 0;
   enterReady();

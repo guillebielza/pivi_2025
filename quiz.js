@@ -395,15 +395,41 @@ function resetRun(){
   timerFill.style.width = "0%";
 }
 
+// Deja la partida quieta y limpia hasta que se pulse "▶ Empezar"
+const quizCard = questionText.closest(".card");
+function prepareRun(){
+  stopTimer();
+  clearTimeout(advanceTimer);
+  running = false;
+  resetRun();
+  answersEl.innerHTML = "";
+  tagCategory.textContent = "—";
+  tagDifficulty.textContent = "—";
+  nextBtn.disabled = true;
+}
+
+// Al pulsar "Empezar reto": ahora sí se gasta el intento del finde
+function beginChallenge(){
+  const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+  if (!st.ok){ openModal("⛔ No disponible", st.reason, "Practicar"); return false; }
+  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  running = true;
+  updatePolicyStatus();
+  return true;
+}
+
 function startPractice(){
   if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
-  running = true;
   questions = pickRandomSet();
-  resetRun();
+  prepareRun();
   setModeUI();
-  renderQuestion();
-  toast("Modo práctica");
+  questionText.textContent = "Práctica: 10 preguntas, 18 segundos cada una";
+  PiviCore.readyGate(quizCard, {
+    label: "Empezar",
+    hint: "Responde antes de que se acabe el tiempo",
+    onStart: () => { running = true; renderQuestion(); }
+  });
 }
 
 function startChallenge(){
@@ -415,14 +441,16 @@ function startChallenge(){
   }
 
   practiceMode = false;
-  running = true;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
-
   questions = pickDailySet();
-  resetRun();
+  prepareRun();
   setModeUI();
-  renderQuestion();
-  toast("Modo reto");
+  questionText.textContent = "Reto: 10 preguntas, 18 segundos cada una";
+  PiviCore.readyGate(quizCard, {
+    label: "Empezar reto",
+    hint: "Al pulsar, el reto cuenta (1 vez por finde). +1 punto por acierto.",
+    onBegin: beginChallenge,
+    onStart: renderQuestion
+  });
 }
 
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que

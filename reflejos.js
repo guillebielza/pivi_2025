@@ -205,22 +205,40 @@ function resetRun() {
   state = "idle";
   setStats();
 }
+// Al pulsar "Empezar reto": ahora sí se gasta el intento del finde
+function beginChallenge() {
+  const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
+  if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return false; }
+  policy?.markWeekendChallengePlayed?.(GAME_ID);
+  updatePolicyStatus();
+  return true;
+}
 function startPractice() {
   if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   resetRun();
   setModeUI();
-  nextRound();
+  setArea("idle", "", "");
+  PiviCore.readyGate(area, {
+    label: "Empezar",
+    hint: "5 rondas: toca en cuanto el panel se ponga verde",
+    onStart: nextRound
+  });
 }
 function startChallenge() {
   if (isChallengeRunning()) { PiviCore.toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return; }
   practiceMode = false;
-  policy?.markWeekendChallengePlayed?.(GAME_ID);
   resetRun();
   setModeUI();
-  nextRound();
+  setArea("idle", "", "");
+  PiviCore.readyGate(area, {
+    label: "Empezar reto",
+    hint: "Al pulsar, el reto cuenta (1 vez por finde). Cuanto más rápido, más puntos.",
+    onBegin: beginChallenge,
+    onStart: nextRound
+  });
 }
 // "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
 // después (o desde práctica) siempre arranca una práctica
@@ -234,6 +252,7 @@ function restartSameMode(){
 if (window.PiviCore && PiviCore.onTap) PiviCore.onTap(area, onAreaClick);
 else area.addEventListener("click", onAreaClick);
 area.addEventListener("keydown", (e) => {
+  if (e.target !== area) return; // p. ej. el botón "▶ Empezar" que va encima
   if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!e.repeat) onAreaClick(); }
 });
 practiceBtn.onclick = startPractice;
