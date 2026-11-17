@@ -15,7 +15,6 @@
   var SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sept", "oct", "nov", "dic"];
 
   var timelineEl = document.getElementById("timeline");
-  var catalog = [];
 
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
@@ -116,28 +115,12 @@
       + '</div></li>';
   }
 
-  // Canjes sin "foto" (anteriores a Recuerdos): se reconstruyen con el
-  // catálogo, pero solo después de leer la nube (por si ya están allí)
-  var hydratedOnce = !window.PiviSync;
-  function migrate() {
-    if (!hydratedOnce || !catalog.length || !window.PiviLedger || !PiviLedger.ensureCanjes) return;
-    if (PiviLedger.ensureCanjes(catalog)) render();
-  }
-  function applyOverrides(data) {
-    var ov = (window.PIVI_CONFIG && PIVI_CONFIG.recompensasOverride) || {};
-    data.forEach(function (r) { var o = ov[String(r.id)]; if (o) Object.assign(r, o); });
-    return data;
-  }
-  fetch("recompensas.json", { cache: "no-cache" })
-    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (data) { catalog = applyOverrides(Array.isArray(data) ? data : []); migrate(); })
-    .catch(function () { /* sin catálogo: se ven los recuerdos que ya tienen foto */ });
+  // Canjes sin "foto" (anteriores a Recuerdos): pivi-premios.js los reconstruye
+  // con el catálogo tras la 1.ª lectura de la nube y avisa con "pivi:canjes"
+  window.addEventListener("pivi:canjes", render);
+  if (window.PiviPremios) PiviPremios.load().catch(function () {});
 
-  window.addEventListener("pivi:hydrated", function () {
-    setPointsUI();
-    render();
-    if (!hydratedOnce) { hydratedOnce = true; setTimeout(migrate, 0); }
-  });
+  window.addEventListener("pivi:hydrated", function () { setPointsUI(); render(); });
 
   setPointsUI();
   render();

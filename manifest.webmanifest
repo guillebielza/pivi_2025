@@ -20,6 +20,7 @@
   "shortcuts": [
     { "name": "Retos", "short_name": "Retos", "url": "./retos.html", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] },
     { "name": "Ruleta", "short_name": "Ruleta", "url": "./index.html#ruleta", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] },
+    { "name": "Premios", "short_name": "Premios", "url": "./premios.html", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] },
     { "name": "Recuerdos", "short_name": "Recuerdos", "url": "./recuerdos.html", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] }
   ]
 }

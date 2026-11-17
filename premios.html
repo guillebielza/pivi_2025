@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf4ef">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pivi">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+  <title>Premios · Pivi</title>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1f1820':'#fbf4ef');}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=6">
+  <link rel="stylesheet" href="premios.css?v=1">
+</head>
+<body class="has-tabbar" id="top">
+
+<header class="app-header">
+  <a class="brand" href="index.html"><span class="brand-name">Pivi</span></a>
+  <span class="spacer"></span>
+  <a class="nav-link hide-mobile" href="index.html" aria-label="Ir a Inicio" title="Ir a Inicio"><span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-text">Inicio</span></a>
+  <a class="nav-link hide-mobile" href="retos.html" aria-label="Ir a Retos" title="Ir a Retos"><span class="nav-ic" aria-hidden="true">🎮</span><span class="nav-text">Retos</span></a>
+  <a class="nav-link hide-mobile" href="recuerdos.html" aria-label="Ir a Recuerdos" title="Ir a Recuerdos"><span class="nav-ic" aria-hidden="true">💞</span><span class="nav-text">Recuerdos</span></a>
+  <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
+  <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
+</header>
+
+<main class="page pz-page">
+  <div class="page-head">
+    <h1>🎁 Premios</h1>
+    <p class="subtitle">Planes y regalos sorpresa: solo sabrás qué es al canjearlo 💝</p>
+  </div>
+
+  <!-- saldo y próximo premio -->
+  <section class="pz-top">
+    <div class="pz-saldo">
+      <span class="pz-saldo-label">Tienes</span>
+      <span class="pz-saldo-val"><span id="saldo">0</span> pts</span>
+    </div>
+    <div class="pz-next" id="pzNext"></div>
+  </section>
+
+  <!-- filtros -->
+  <div class="pz-filters" id="filters" role="group" aria-label="Filtrar premios">
+    <button type="button" class="pz-chip" data-f="todos">Todos</button>
+    <button type="button" class="pz-chip" data-f="Experiencia">✨ Experiencias</button>
+    <button type="button" class="pz-chip" data-f="Regalo">🎁 Regalos</button>
+    <button type="button" class="pz-chip" data-f="llega">⭐ Me llega <span id="countLlega"></span></button>
+  </div>
+
+  <!-- premios disponibles, agrupados por nivel (lo rellena premios.js) -->
+  <section id="niveles" class="pz-niveles" aria-live="polite"></section>
+
+  <!-- lo que aún no está desbloqueado: una sola línea -->
+  <div class="pz-soon hidden" id="pzSoon">
+    <span class="pz-soon-ic" aria-hidden="true">🔒</span>
+    <span class="grow"><b id="pzSoonN">0 sorpresas en camino</b><span class="pz-soon-sub">Se irán desbloqueando poco a poco.</span></span>
+  </div>
+
+  <!-- lo canjeado vive en Recuerdos -->
+  <a class="recuerdos-link" href="recuerdos.html">
+    <span class="rl-ic" aria-hidden="true">💞</span>
+    <span class="grow">
+      <span class="rl-title">Recuerdos</span>
+      <span class="rl-sub" id="recuerdosSub">Lo que canjeéis se guarda aquí, con su fecha</span>
+    </span>
+    <span class="rl-go" aria-hidden="true">›</span>
+  </a>
+</main>
+
+<!-- PESTAÑAS INFERIORES (solo se ven en el móvil) -->
+<nav class="tabbar" aria-label="Secciones">
+  <a class="tab" href="index.html"><span class="tab-ic" aria-hidden="true">🏠</span><span>Inicio</span></a>
+  <a class="tab" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
+  <a class="tab is-active" aria-current="page" href="premios.html"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
+  <a class="tab" href="recuerdos.html"><span class="tab-ic" aria-hidden="true">💞</span><span>Recuerdos</span></a>
+</nav>
+
+<!-- POPUP -->
+<div id="popupOverlay" class="overlay hidden">
+  <div class="popup">
+    <p id="popupText"></p>
+    <button id="closePopup" class="btn primary">Aceptar</button>
+  </div>
+</div>
+
+<!-- CONFIRMACIÓN DE CANJE -->
+<div id="confirmOverlay" class="overlay hidden">
+  <div class="popup">
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button id="confirmCancel" class="btn secondary">Cancelar</button>
+      <button id="confirmOk" class="btn primary">Sí, canjear</button>
+    </div>
+  </div>
+</div>
+
+<script src="pivi-core.js?v=8"></script>
+<script src="cloud-config.js?v=3"></script>
+<script src="pivi-config.js?v=3"></script>
+<script src="pivi-dev.js?v=10"></script>
+<script src="pivi-ledger.js?v=8"></script>
+<script src="cloud-sync.js?v=7"></script>
+<script src="pivi-premios.js?v=1"></script>
+<script src="premios.js?v=1"></script>
+</body>
+</html>

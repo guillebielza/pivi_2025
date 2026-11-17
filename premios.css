@@ -1,0 +1,80 @@
+/* ============================================================
+   premios.css — Página de Premios (por niveles).
+   Las fichas de premio (.reward) y el acceso a Recuerdos vienen
+   de theme.css; aquí solo va la maqueta de esta página.
+   ============================================================ */
+
+.pz-page { max-width: 860px; }
+
+/* ---------- saldo + próximo premio ---------- */
+.pz-top {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 14px;
+}
+.pz-saldo { display: flex; flex-direction: column; flex: 0 0 auto; }
+.pz-saldo-label { font-size: .78rem; font-weight: 800; color: var(--muted); }
+.pz-saldo-val { font-family: var(--font-head); font-weight: 700; font-size: 1.6rem; color: var(--primary-strong); line-height: 1.1; }
+.pz-next { flex: 1; min-width: 0; }
+.pz-next-label { font-size: .88rem; font-weight: 700; color: var(--text-soft); margin-bottom: 6px; }
+.pz-next-label b { color: var(--text); }
+
+/* ---------- filtros ---------- */
+.pz-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+.pz-chip {
+  appearance: none; cursor: pointer;
+  font: 800 .85rem/1 var(--font-body);
+  color: var(--text-soft);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 9px 14px;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.pz-chip.on { background: var(--grad-primary); color: var(--on-primary); border-color: transparent; }
+.pz-chip:focus-visible { outline: none; box-shadow: var(--ring); }
+@media (hover: hover) { .pz-chip:not(.on):hover { border-color: var(--border-strong); color: var(--text); } }
+
+/* ---------- niveles ---------- */
+.pz-niveles { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.pz-nivel-head { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+.pz-nivel-head h2 { margin: 0; font-size: 1.2rem; }
+.pz-nivel-cost {
+  font-size: .8rem; font-weight: 800; color: var(--primary-strong);
+  background: var(--surface-2); border: 1px solid var(--border);
+  padding: 3px 10px; border-radius: var(--radius-pill);
+}
+.pz-ok { font-size: .78rem; font-weight: 800; color: var(--success); }
+.pz-niveles .reward-grid { margin-bottom: 14px; }
+
+.pz-empty {
+  text-align: center; padding: 26px 18px; margin-bottom: 14px;
+  background: var(--surface); border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg); color: var(--text-soft); font-weight: 700; line-height: 1.5;
+}
+
+/* ---------- sorpresas en camino (una sola línea, sin casillas grises) ---------- */
+.pz-soon {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; margin-bottom: 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg);
+  color: var(--text-soft);
+}
+.pz-soon-ic { font-size: 1.4rem; }
+.pz-soon .grow { display: flex; flex-direction: column; gap: 1px; }
+.pz-soon b { color: var(--text); }
+.pz-soon-sub { font-size: .82rem; color: var(--muted); font-weight: 700; }
+
+@media (max-width: 760px) {
+  .pz-top { padding: 12px 14px; gap: 14px; }
+  .pz-saldo-val { font-size: 1.35rem; }
+  .pz-filters { flex-wrap: nowrap; overflow-x: auto; margin: 0 -12px 14px; padding: 0 12px 2px; scrollbar-width: none; }
+  .pz-filters::-webkit-scrollbar { display: none; }
+  .pz-chip { flex: 0 0 auto; padding: 8px 12px; }
+  .pz-nivel-head h2 { font-size: 1.1rem; }
+}

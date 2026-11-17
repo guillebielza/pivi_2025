@@ -1,14 +1,14 @@
 /* ============================================================
-   app.js — Página de inicio (recompensas, ruleta, códigos)
+   app.js — Inicio: lo de hoy (ruleta, código, actividad) y un
+   resumen de Premios y Recuerdos. El catálogo y los canjes viven
+   en pivi-premios.js + premios.html; el histórico, en recuerdos.html.
    El confeti/sonido y el tema vienen de pivi-core.js (PiviCore/PiviFX).
-   El historial/feed y la racha vienen de pivi-ledger.js (PiviLedger).
    ============================================================ */
 
-const experiencesEl = document.getElementById("experiences");
-const giftsEl = document.getElementById("gifts");
 const recuerdosSubEl = document.getElementById("recuerdosSub");
 const popupOverlay = document.getElementById("popupOverlay");
 const popupText = document.getElementById("popupText");
+const P = window.PiviPremios;
 
 /* ================== STORAGE ================== */
 function getPoints() { return Number(localStorage.getItem("points")) || 0; }
@@ -18,29 +18,6 @@ function setPoints(value) {
   if (window.PiviCore && PiviCore.setPointsUI) PiviCore.setPointsUI(v, { bump: true });
   else { const el = document.getElementById("points"); if (el) el.textContent = String(v); }
   renderRewards();
-}
-// Canjes: "redeemedRewards" guarda una marca por canje ("6" en los
-// antiguos, "6#k3x9" en los nuevos) y "revokedRewards" las marcas anuladas
-// (p. ej. el canje de prueba que se coló desde el modo Dev). Las dos listas
-// se fusionan por unión en la nube; anular una marca no impide volver a
-// canjear esa recompensa de verdad más adelante (la marca nueva es otra).
-function readArr(key) { try { const a = JSON.parse(localStorage.getItem(key)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
-function getRedeemed() {
-  const revoked = new Set(readArr("revokedRewards").map(String));
-  const ids = [];
-  readArr("redeemedRewards").forEach(t => {
-    if (revoked.has(String(t))) return;
-    const id = Number(String(t).split("#")[0]);
-    if (!isNaN(id) && !ids.includes(id)) ids.push(id);
-  });
-  return ids;
-}
-function addRedeemed(id) {
-  const raw = readArr("redeemedRewards");
-  const mark = id + "#" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5).padEnd(3, "0");
-  raw.push(mark);
-  localStorage.setItem("redeemedRewards", JSON.stringify(raw));
-  return mark;
 }
 
 /* ================== POPUP ================== */
@@ -53,80 +30,70 @@ const closePopupBtn = document.getElementById("closePopup");
 if (closePopupBtn) closePopupBtn.onclick = () => popupOverlay.classList.add("hidden");
 if (popupOverlay) popupOverlay.addEventListener("click", (e) => { if (e.target === popupOverlay) popupOverlay.classList.add("hidden"); });
 
-/* ================== CONFIRMACIÓN ================== */
-const confirmOverlay = document.getElementById("confirmOverlay");
-const confirmText = document.getElementById("confirmText");
-const confirmCancel = document.getElementById("confirmCancel");
-const confirmOk = document.getElementById("confirmOk");
-let pendingConfirm = null;
-
-function closeConfirm() { if (confirmOverlay) confirmOverlay.classList.add("hidden"); pendingConfirm = null; }
-function showConfirm(text, onOk) {
-  if (!confirmOverlay || !confirmText) { if (window.confirm(text)) onOk(); return; }
-  confirmText.textContent = text;
-  pendingConfirm = onOk;
-  confirmOverlay.classList.remove("hidden");
-}
-if (confirmCancel) confirmCancel.onclick = closeConfirm;
-if (confirmOk) confirmOk.onclick = () => { const f = pendingConfirm; closeConfirm(); if (f) f(); };
-if (confirmOverlay) confirmOverlay.addEventListener("click", (e) => { if (e.target === confirmOverlay) closeConfirm(); });
-
 /* ================== CELEBRACIÓN ================== */
 function celebrateWin() {
   if (window.PiviCore && PiviCore.celebrate) PiviCore.celebrate({ duration: 2400 });
   else if (window.PiviFX && PiviFX.celebrate) PiviFX.celebrate();
 }
 
-/* ================== RECOMPENSAS ================== */
-let rewardsData = [];
-
 function nowDate() { return (window.PiviClock && PiviClock.now) ? PiviClock.now() : new Date(); }
-function isAvailable(reward) {
-  if (window.PIVI_DEV_FORCE_AVAILABLE) return true; // modo dev: todo disponible
-  return reward && reward.disponible !== false;
-}
-function rewardName(r) {
-  if (r.mensajeHistorico) return r.mensajeHistorico.split("—")[0].trim();
-  return (r.tipo || "Recompensa") + " de " + r.coste + " pts";
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
-function makeRewardTile(r) {
-  const btn = document.createElement("button");
-  btn.className = "reward";
-  btn.type = "button";
-  btn.innerHTML = `<span class="emoji" aria-hidden="true">${r.textoBoton}</span><span class="cost">${r.coste} pts</span>`;
-
-  const redeemed = getRedeemed().includes(r.id);
-  const available = isAvailable(r);
-  const points = getPoints();
-
-  if (redeemed) {
-    btn.classList.add("redeemed");
-    btn.disabled = true;
-    btn.setAttribute("aria-label", `${rewardName(r)} — ya canjeada`); // ya desbloqueada: se puede revelar
-  } else if (!available) {
-    btn.classList.add("unavailable");
-    btn.disabled = true;
-    btn.setAttribute("aria-label", `Recompensa sorpresa de ${r.coste} puntos — próximamente`);
-  } else {
-    btn.setAttribute("aria-label", `Canjear recompensa sorpresa por ${r.coste} puntos`); // sorpresa hasta canjear
-    if (points >= r.coste) btn.classList.add("affordable");
-    btn.onclick = () => askRedeem(r.id);
-  }
-  return btn;
-}
-
+/* ================== PREMIOS (solo el resumen) ================== */
+// "Próximo premio" de la tira de estado + tarjeta de Premios + acceso a Recuerdos
 function renderRewards() {
-  if (!experiencesEl || !giftsEl) return;
-  experiencesEl.innerHTML = "";
-  giftsEl.innerHTML = "";
-
-  rewardsData.forEach((r) => {
-    (r.tipo === "Experiencia" ? experiencesEl : giftsEl).appendChild(makeRewardTile(r));
-  });
-
   updateNextReward();
+  updatePremiosCard();
   updateRecuerdosCard();
+}
+window.renderRewards = renderRewards; // lo usan cloud-sync (al hidratar), el modo Dev y las correcciones
+
+function updateNextReward() {
+  const nameEl = document.getElementById("nextRewardName");
+  const barEl = document.getElementById("nextRewardBar");
+  const hintEl = document.getElementById("nextRewardHint");
+  if (!nameEl || !barEl || !hintEl || !P || !P.all().length) return;
+  const points = getPoints();
+  const sig = P.siguiente();
+  const res = P.resumen();
+  if (sig) {
+    nameEl.textContent = "¡sorpresa! 🎁"; // el título es secreto hasta canjearlo
+    barEl.style.width = sig.pct + "%";
+    hintEl.textContent = `Tienes ${points}/${sig.premio.coste} pts · te faltan ${sig.faltan}`;
+  } else if (res.disponibles.length) {
+    nameEl.textContent = "¡Te llega para cualquiera!";
+    barEl.style.width = "100%";
+    hintEl.textContent = `Tienes ${points} pts disponibles`;
+  } else {
+    nameEl.textContent = "—";
+    barEl.style.width = "0%";
+    hintEl.textContent = "Pronto habrá premios nuevos ✨";
+  }
+}
+
+// Tarjeta de Premios: cuántos te llegan y unos pocos de muestra (siempre el mismo tamaño)
+function updatePremiosCard() {
+  const txt = document.getElementById("premiosResumen");
+  const mini = document.getElementById("premiosMini");
+  if (!txt || !mini || !P || !P.all().length) return;
+  const points = getPoints();
+  const res = P.resumen();
+  const sig = P.siguiente();
+  if (res.alcanzables.length) {
+    const n = res.alcanzables.length;
+    txt.innerHTML = `Con tus <b>${points} pts</b> te llega para <b>${n} ${n === 1 ? "premio" : "premios"}</b>.`;
+  } else if (sig) {
+    txt.innerHTML = `Te faltan <b>${sig.faltan} pts</b> para el próximo premio.`;
+  } else {
+    txt.textContent = "Ahora mismo no hay premios para canjear. ¡Pronto habrá sorpresas nuevas! ✨";
+  }
+  const muestra = (res.alcanzables.length ? res.alcanzables : res.disponibles).slice(0, 4);
+  mini.innerHTML = muestra.map(r =>
+    `<a class="reward${points >= r.coste ? " affordable" : ""}" href="premios.html" aria-label="Ver premios: sorpresa de ${r.coste} puntos">`
+    + `<span class="emoji" aria-hidden="true">${esc(r.textoBoton)}</span><span class="cost">${r.coste} pts</span></a>`).join("");
+  mini.classList.toggle("hidden", !muestra.length);
 }
 
 // Acceso a Recuerdos: cuántos hay y el último (el historial completo vive en recuerdos.html)
@@ -137,82 +104,6 @@ function updateRecuerdosCard() {
   const last = list[0];
   recuerdosSubEl.textContent = `${list.length} ${list.length === 1 ? "recuerdo" : "recuerdos"} · último: ${last.emoji} ${last.nombre}`;
 }
-
-// Canjes sin "foto" (los de antes o hechos desde una versión vieja): se crean
-// a partir del catálogo, pero solo después de leer la nube (por si ya están allí)
-let hydratedOnce = !window.PiviSync; // sin nube o en modo Dev no hay que esperar
-function migrateCanjes() {
-  if (!hydratedOnce || !rewardsData.length || !window.PiviLedger || !PiviLedger.ensureCanjes) return;
-  if (PiviLedger.ensureCanjes(rewardsData)) updateRecuerdosCard();
-}
-
-function updateNextReward() {
-  const nameEl = document.getElementById("nextRewardName");
-  const barEl = document.getElementById("nextRewardBar");
-  const hintEl = document.getElementById("nextRewardHint");
-  if (!nameEl || !barEl || !hintEl) return;
-
-  const points = getPoints();
-  const redeemed = getRedeemed();
-  const candidates = rewardsData.filter(r => isAvailable(r) && !redeemed.includes(r.id));
-  const locked = candidates.filter(r => r.coste > points).sort((a, b) => a.coste - b.coste);
-
-  if (locked.length) {
-    const next = locked[0];
-    nameEl.textContent = "¡sorpresa! 🎁"; // el título es secreto hasta desbloquearla
-    const pct = Math.max(4, Math.min(100, (points / next.coste) * 100));
-    barEl.style.width = pct + "%";
-    hintEl.textContent = `Tienes ${points}/${next.coste} pts · te faltan ${next.coste - points}`;
-  } else if (candidates.length) {
-    nameEl.textContent = "¡Puedes canjear lo que quieras!";
-    barEl.style.width = "100%";
-    hintEl.textContent = `Tienes ${points} pts disponibles`;
-  } else {
-    nameEl.textContent = "—";
-    barEl.style.width = "0%";
-    hintEl.textContent = "No hay recompensas disponibles ahora mismo";
-  }
-}
-
-// Paso intermedio: pide confirmación antes de canjear (no revela el título)
-function askRedeem(rewardId) {
-  const reward = rewardsData.find(r => r.id === rewardId);
-  if (!reward) return;
-  if (!isAvailable(reward)) return showPopup("⛔ Esta recompensa no está disponible ahora mismo.");
-  const points = getPoints();
-  if (points < reward.coste) return showPopup(`Te faltan ${reward.coste - points} puntos para esto.`);
-  showConfirm(
-    `¿Seguro que quieres canjear ${reward.textoBoton} por ${reward.coste} puntos?\n\nTe quedarán ${points - reward.coste} puntos.`,
-    () => redeemReward(rewardId)
-  );
-}
-
-function redeemReward(rewardId) {
-  const reward = rewardsData.find(r => r.id === rewardId);
-  if (!reward) return showPopup("Ha ocurrido un error: recompensa no encontrada.");
-  if (!isAvailable(reward)) return showPopup("⛔ Esta recompensa no está disponible ahora mismo.");
-
-  const points = getPoints();
-  if (points < reward.coste) return showPopup(`Te faltan ${reward.coste - points} puntos para esto.`);
-
-  setPoints(points - reward.coste);
-  const mark = addRedeemed(reward.id);
-  // recuerdo permanente: una "foto" del premio tal y como era al canjearlo
-  if (window.PiviLedger && PiviLedger.recordCanje) PiviLedger.recordCanje(reward, mark);
-
-  if (window.PiviLedger) PiviLedger.record("reward", -reward.coste, "Canje: " + rewardName(reward));
-
-  // celebración especial: confeti + emoji gigante + fanfarria, y el mensaje tras el "pop"
-  if (window.PiviCore && PiviCore.celebrateReward) PiviCore.celebrateReward(reward.textoBoton);
-  else celebrateWin();
-  setTimeout(() => showPopup(reward.mensajePopup || "✅ Recompensa canjeada"), 650);
-  renderRewards();
-}
-window.renderRewards = renderRewards; // lo usa cloud-sync al hidratar
-
-/* ================== RETOS ================== */
-const goToChallengesBtn = document.getElementById("goToChallenges");
-if (goToChallengesBtn) goToChallengesBtn.addEventListener("click", () => window.location.href = "retos.html");
 
 /* ================== RULETA (LUN/MIÉ, 1/día) ================== */
 let wheelValues = (window.PIVI_CONFIG && Array.isArray(PIVI_CONFIG.ruleta) && PIVI_CONFIG.ruleta.length)
@@ -427,61 +318,28 @@ if (codeInput) {
   codeInput.addEventListener("input", () => { if (codeHint && codeHint.classList.contains("error")) codeMessage(""); });
 }
 
-/* ================== PESTAÑAS (móvil): marca la sección que se ve ================== */
-const tabs = [...document.querySelectorAll(".tabbar .tab")];
-function setActiveTab(href) {
-  tabs.forEach(t => {
-    const on = t.getAttribute("href") === href;
-    t.classList.toggle("is-active", on);
-    if (on) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
-  });
-}
-function spyTabs() {
-  if (!tabs.length || !tabs[0].offsetParent) return; // barra oculta (escritorio)
-  const vh = window.innerHeight;
-  let best = "#top", bestVis = vh * 0.35; // hace falta ver al menos ~1/3 de pantalla
-  [["#ruleta", document.getElementById("ruleta")], ["#premios", document.getElementById("premios")]].forEach(([href, el]) => {
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const vis = Math.min(r.bottom, vh) - Math.max(r.top, 0);
-    if (vis > bestVis) { best = href; bestVis = vis; }
-  });
-  if (window.scrollY < 40) best = "#top";
-  setActiveTab(best);
-}
-let spyRaf = 0;
-window.addEventListener("scroll", () => { if (!spyRaf) spyRaf = requestAnimationFrame(() => { spyRaf = 0; spyTabs(); }); }, { passive: true });
-tabs.forEach(t => t.addEventListener("click", () => { const h = t.getAttribute("href"); if (h.startsWith("#")) setActiveTab(h); }));
-
 /* ================== INIT ================== */
 if (window.PiviLedger) PiviLedger.renderStreak(); // "Esta semana: +X pts"
 setPoints(getPoints());
 updateWheelUI();
 updateWeekendUI();
 
-// Aplica los ajustes de recompensas definidos en pivi-config.js (override por id)
-function applyRewardOverrides() {
-  const ov = (window.PIVI_CONFIG && PIVI_CONFIG.recompensasOverride) || {};
-  rewardsData.forEach(r => { const o = ov[String(r.id)]; if (o) Object.assign(r, o); });
+// Catálogo de premios (pivi-premios.js): al cargar y si cambia desde la nube
+if (P) {
+  P.onChange(() => { renderRewards(); });
+  P.load().catch(() => { renderRewards(); });
 }
-
-fetch("recompensas.json", { cache: "no-cache" })
-  .then(r => { if (!r.ok) throw new Error(`recompensas.json (${r.status})`); return r.json(); })
-  .then(data => { rewardsData = data; applyRewardOverrides(); renderRewards(); createWheelNumbers(); migrateCanjes(); })
-  .catch(() => { showPopup("No se han podido cargar las recompensas (recompensas.json)."); renderRewards(); });
+window.addEventListener("pivi:canjes", updateRecuerdosCard);
 
 // Cambios de contenido en caliente (códigos/ruleta/recompensas desde la nube)
 window.addEventListener("pivi:config", () => {
   if (window.PIVI_CONFIG && Array.isArray(PIVI_CONFIG.ruleta) && PIVI_CONFIG.ruleta.length) wheelValues = PIVI_CONFIG.ruleta;
-  applyRewardOverrides();
-  renderRewards();
   createWheelNumbers();
   updateWheelUI();
 });
 
 // Al sincronizar desde la nube: refrescar puntos/estados
 window.addEventListener("pivi:hydrated", () => {
-  if (!hydratedOnce) { hydratedOnce = true; setTimeout(migrateCanjes, 0); } // tras la 1.ª lectura de la nube
   if (spinning) return; // no destapar el resultado mientras gira
   setPoints(getPoints());
   updateWheelUI();

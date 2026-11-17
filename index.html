@@ -16,8 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="theme.css?v=5">
-  <link rel="stylesheet" href="styles.css?v=5">
+  <link rel="stylesheet" href="theme.css?v=6">
+  <link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body class="has-tabbar" id="top">
 
@@ -25,6 +25,7 @@
   <a class="brand" href="index.html"><span class="brand-name">Pivi</span></a>
   <span class="spacer"></span>
   <a class="nav-link hide-mobile" href="retos.html" aria-label="Ir a Retos" title="Ir a Retos"><span class="nav-ic" aria-hidden="true">🎮</span><span class="nav-text">Retos</span></a>
+  <a class="nav-link hide-mobile" href="premios.html" aria-label="Ir a Premios" title="Ir a Premios"><span class="nav-ic" aria-hidden="true">🎁</span><span class="nav-text">Premios</span></a>
   <a class="nav-link hide-mobile" href="recuerdos.html" aria-label="Ir a Recuerdos" title="Ir a Recuerdos"><span class="nav-ic" aria-hidden="true">💞</span><span class="nav-text">Recuerdos</span></a>
   <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
   <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
@@ -60,10 +61,10 @@
         <div class="stat-val" id="weekendStatus">—</div>
       </div>
     </a>
-    <a class="stat-card next-reward" href="#premios">
+    <a class="stat-card next-reward" href="premios.html">
       <span class="stat-ic">🎯</span>
       <div class="grow">
-        <div class="stat-label">Próxima recompensa: <b id="nextRewardName">—</b></div>
+        <div class="stat-label">Próximo premio: <b id="nextRewardName">—</b></div>
         <div class="progress"><span id="nextRewardBar"></span></div>
         <div class="stat-sub muted" id="nextRewardHint">—</div>
       </div>
@@ -72,34 +73,8 @@
 
   <div class="layout">
 
-    <!-- IZQUIERDA: RECOMPENSAS -->
-    <section class="rewards" id="premios">
-      <div class="section-head"><h2>✨ Experiencias</h2></div>
-      <div id="experiences" class="grid"></div>
-
-      <div class="section-head"><h2>🎁 Regalos</h2></div>
-      <div id="gifts" class="grid"></div>
-
-      <!-- lo canjeado vive en Recuerdos (historial permanente, por meses) -->
-      <a class="recuerdos-link" href="recuerdos.html">
-        <span class="rl-ic" aria-hidden="true">💞</span>
-        <span class="grow">
-          <span class="rl-title">Recuerdos</span>
-          <span class="rl-sub" id="recuerdosSub">Todo lo que habéis canjeado, con su fecha</span>
-        </span>
-        <span class="rl-go" aria-hidden="true">›</span>
-      </a>
-    </section>
-
-    <!-- DERECHA: PANEL -->
-    <aside class="right-panel">
-
-      <div class="card card-retos">
-        <h2>🎮 Retos</h2>
-        <p class="muted">Juega minijuegos para ganar puntos.</p>
-        <button id="goToChallenges" class="btn primary big">Ir a Retos</button>
-      </div>
-
+    <!-- IZQUIERDA: lo de hoy -->
+    <section class="col-main">
       <div class="card card-wheel" id="ruleta">
         <h2>🎡 Ruleta de puntos</h2>
         <p class="muted" id="wheelHint">Disponible solo lunes y miércoles (1 tirada por día).</p>
@@ -123,11 +98,33 @@
 
         <div class="code-hint muted" id="codeHint" aria-live="polite">* Los códigos solo se pueden usar una vez.</div>
       </div>
+    </section>
+
+    <!-- DERECHA: premios, actividad y recuerdos (siempre del mismo tamaño) -->
+    <aside class="right-panel">
+
+      <div class="card card-premios" id="premios">
+        <h2>🎁 Premios</h2>
+        <p class="premios-resumen" id="premiosResumen">Cargando premios…</p>
+        <div class="reward-grid mini" id="premiosMini"></div>
+        <a class="btn primary big" href="premios.html">Ver premios</a>
+      </div>
 
       <div class="card card-activity" id="actividad">
         <h2>💞 Actividad</h2>
-        <ul id="activityFeed" class="activity-feed"></ul>
+        <ul id="activityFeed" class="activity-feed" data-limit="5"></ul>
+        <a class="feed-more" href="recuerdos.html#movimientos">Ver más movimientos ›</a>
       </div>
+
+      <!-- lo canjeado vive en Recuerdos (historial permanente, por meses) -->
+      <a class="recuerdos-link" href="recuerdos.html">
+        <span class="rl-ic" aria-hidden="true">💞</span>
+        <span class="grow">
+          <span class="rl-title">Recuerdos</span>
+          <span class="rl-sub" id="recuerdosSub">Todo lo que habéis canjeado, con su fecha</span>
+        </span>
+        <span class="rl-go" aria-hidden="true">›</span>
+      </a>
 
     </aside>
 
@@ -137,9 +134,8 @@
 <!-- PESTAÑAS INFERIORES (solo se ven en el móvil) -->
 <nav class="tabbar" aria-label="Secciones">
   <a class="tab is-active" aria-current="page" href="#top"><span class="tab-ic" aria-hidden="true">🏠</span><span>Inicio</span></a>
-  <a class="tab" href="#ruleta"><span class="tab-ic" aria-hidden="true">🎡</span><span>Ruleta</span></a>
-  <a class="tab" href="#premios"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
   <a class="tab" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
+  <a class="tab" href="premios.html"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
   <a class="tab" href="recuerdos.html"><span class="tab-ic" aria-hidden="true">💞</span><span>Recuerdos</span></a>
 </nav>
 
@@ -154,24 +150,14 @@
   </div>
 </div>
 
-<!-- CONFIRMACIÓN DE CANJE -->
-<div id="confirmOverlay" class="overlay hidden">
-  <div class="popup">
-    <p id="confirmText"></p>
-    <div class="modal-actions">
-      <button id="confirmCancel" class="btn secondary">Cancelar</button>
-      <button id="confirmOk" class="btn primary">Sí, canjear</button>
-    </div>
-  </div>
-</div>
-
 <script src="pivi-core.js?v=8"></script>
 <script src="cloud-config.js?v=3"></script>
-<script src="pivi-config.js?v=2"></script>
+<script src="pivi-config.js?v=3"></script>
 <script src="pivi-dev.js?v=10"></script>
-<script src="pivi-ledger.js?v=7"></script>
+<script src="pivi-ledger.js?v=8"></script>
 <script src="cloud-sync.js?v=7"></script>
 <script src="points-policy.js?v=7"></script>
-<script src="app.js?v=8"></script>
+<script src="pivi-premios.js?v=1"></script>
+<script src="app.js?v=9"></script>
 </body>
 </html>

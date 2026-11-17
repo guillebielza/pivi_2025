@@ -311,7 +311,8 @@
       return;
     }
     var me = deviceId();
-    box.innerHTML = log.slice(0, 14).map(function (e) {
+    var limit = Number(box.getAttribute("data-limit")) || 14; // Inicio: 5; Recuerdos: 14
+    box.innerHTML = log.slice(0, limit).map(function (e) {
       var sign = e.delta > 0 ? "+" + e.delta : (e.delta < 0 ? String(e.delta) : "");
       var cls = e.delta > 0 ? "pos" : (e.delta < 0 ? "neg" : "");
       var mine = e.device === me ? "" : ' title="Desde otro dispositivo"';

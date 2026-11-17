@@ -30,6 +30,17 @@ window.PIVI_CONFIG = {
   /* 🛠 PIN del modo desarrollador */
   devPin: "2026",
 
+  /* 🏷️ NIVELES DE PREMIO  →  en la página de Premios se agrupan así.
+     Un premio cae en el nivel de su coste. Si algún día hay que
+     reajustar la economía, se cambia aquí el precio de cada nivel
+     (y el coste de los premios de ese nivel). */
+  niveles: [
+    { id: "pequeno",  nombre: "Pequeño",  coste: 50,  emoji: "🌱" },
+    { id: "mediano",  nombre: "Mediano",  coste: 85,  emoji: "🌷" },
+    { id: "grande",   nombre: "Grande",   coste: 135, emoji: "🌟" },
+    { id: "especial", nombre: "Especial", coste: 185, emoji: "💎" }
+  ],
+
   /* 🎁 AJUSTES de recompensas por id (override de recompensas.json)
      Ej. para desbloquear la recompensa 8:
        "8": { disponible: true, coste: 125, textoBoton: "🎯",

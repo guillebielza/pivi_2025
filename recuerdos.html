@@ -16,7 +16,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="theme.css?v=5">
+  <link rel="stylesheet" href="theme.css?v=6">
   <link rel="stylesheet" href="recuerdos.css?v=1">
 </head>
 <body class="has-tabbar" id="top">
@@ -26,6 +26,7 @@
   <span class="spacer"></span>
   <a class="nav-link hide-mobile" href="index.html" aria-label="Ir a Inicio" title="Ir a Inicio"><span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-text">Inicio</span></a>
   <a class="nav-link hide-mobile" href="retos.html" aria-label="Ir a Retos" title="Ir a Retos"><span class="nav-ic" aria-hidden="true">🎮</span><span class="nav-text">Retos</span></a>
+  <a class="nav-link hide-mobile" href="premios.html" aria-label="Ir a Premios" title="Ir a Premios"><span class="nav-ic" aria-hidden="true">🎁</span><span class="nav-text">Premios</span></a>
   <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
   <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
 </header>
@@ -46,7 +47,7 @@
   <!-- línea del tiempo: un bloque por mes (lo rellena recuerdos.js) -->
   <section id="timeline" class="rec-timeline" aria-live="polite"></section>
 
-  <section class="card rec-activity">
+  <section class="card rec-activity" id="movimientos">
     <h2>🕒 Últimos movimientos</h2>
     <ul id="activityFeed" class="activity-feed"></ul>
   </section>
@@ -55,18 +56,18 @@
 <!-- PESTAÑAS INFERIORES (solo se ven en el móvil) -->
 <nav class="tabbar" aria-label="Secciones">
   <a class="tab" href="index.html"><span class="tab-ic" aria-hidden="true">🏠</span><span>Inicio</span></a>
-  <a class="tab" href="index.html#ruleta"><span class="tab-ic" aria-hidden="true">🎡</span><span>Ruleta</span></a>
-  <a class="tab" href="index.html#premios"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
   <a class="tab" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
+  <a class="tab" href="premios.html"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
   <a class="tab is-active" aria-current="page" href="recuerdos.html"><span class="tab-ic" aria-hidden="true">💞</span><span>Recuerdos</span></a>
 </nav>
 
 <script src="pivi-core.js?v=8"></script>
 <script src="cloud-config.js?v=3"></script>
-<script src="pivi-config.js?v=2"></script>
+<script src="pivi-config.js?v=3"></script>
 <script src="pivi-dev.js?v=10"></script>
-<script src="pivi-ledger.js?v=7"></script>
+<script src="pivi-ledger.js?v=8"></script>
 <script src="cloud-sync.js?v=7"></script>
-<script src="recuerdos.js?v=1"></script>
+<script src="pivi-premios.js?v=1"></script>
+<script src="recuerdos.js?v=2"></script>
 </body>
 </html>
