@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff9aab"/>
+      <stop offset=".55" stop-color="#ff6b81"/>
+      <stop offset="1" stop-color="#f0506a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".28" cy=".2" r=".7">
+      <stop offset="0" stop-color="#fff" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="box" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fffaf6"/>
+      <stop offset="1" stop-color="#ffe7dd"/>
+    </linearGradient>
+  </defs>
+  <!-- fondo a sangre: sirve como icono normal y "maskable" (Android lo recorta en círculo) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <g transform="translate(256 265) scale(1.1) translate(-256 -265)">
+  <!-- sombra -->
+  <ellipse cx="256" cy="392" rx="118" ry="14" fill="#7a1f35" opacity=".22"/>
+  <!-- caja -->
+  <rect x="166" y="238" width="180" height="146" rx="18" fill="url(#box)"/>
+  <!-- tapa -->
+  <rect x="148" y="196" width="216" height="54" rx="15" fill="#fff"/>
+  <rect x="148" y="236" width="216" height="14" fill="#f3d6cc" opacity=".6"/>
+  <!-- cinta -->
+  <rect x="240" y="196" width="32" height="188" fill="#e8435f"/>
+  <!-- lazo -->
+  <path d="M256 196 C 226 150, 176 150, 186 182 C 192 200, 226 202, 256 196 Z" fill="#e8435f"/>
+  <path d="M256 196 C 286 150, 336 150, 326 182 C 320 200, 286 202, 256 196 Z" fill="#e8435f"/>
+  <path d="M256 196 C 234 168, 202 166, 204 182 C 206 192, 230 196, 256 196 Z" fill="#c92f4a" opacity=".55"/>
+  <path d="M256 196 C 278 168, 310 166, 308 182 C 306 192, 282 196, 256 196 Z" fill="#c92f4a" opacity=".55"/>
+  <circle cx="256" cy="194" r="15" fill="#ff7088"/>
+  <!-- corazón -->
+  <path d="M256 334 c -14 -12 -32 -24 -32 -40 c 0 -11 8 -19 18 -19 c 6 0 11 3 14 8 c 3 -5 8 -8 14 -8 c 10 0 18 8 18 19 c 0 16 -18 28 -32 40 z" fill="#ff6b81" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+  </g>
+  <!-- destellos -->
+  <path d="M372 120 l6 16 l16 6 l-16 6 l-6 16 l-6 -16 l-16 -6 l16 -6 z" fill="#fff" opacity=".9"/>
+  <path d="M140 150 l4 10 l10 4 l-10 4 l-4 10 l-4 -10 l-10 -4 l10 -4 z" fill="#fff" opacity=".75"/>
+</svg>

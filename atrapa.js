@@ -206,7 +206,11 @@ function startChallenge() {
 function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
 
 /* ---------- eventos ---------- */
-cells.forEach((c, i) => c.addEventListener("click", () => tap(i)));
+cells.forEach((c, i) => {
+  // al APOYAR el dedo: toques rápidos seguidos sin perder ninguno
+  if (window.PiviCore && PiviCore.onTap) PiviCore.onTap(c, () => tap(i));
+  else c.addEventListener("click", () => tap(i));
+});
 practiceBtn.onclick = startPractice;
 challengeBtn.onclick = startChallenge;
 restartBtn.onclick = restartSameMode;

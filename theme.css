@@ -64,6 +64,15 @@
 
   --maxw: 1160px;
   --transition: .2s cubic-bezier(.34, 1.56, .64, 1);
+
+  /* Móvil / app instalada: zonas seguras (notch, barra de inicio)
+     y espacio que ocupa la UI fija de abajo (barra de pestañas). */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --tabbar-h: 62px;
+  --bottom-ui: var(--safe-bottom);
 }
 
 [data-theme="dark"] {
@@ -101,18 +110,29 @@
 /* ---------- Reset / base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  /* los saltos a #ancla no quedan tapados por la cabecera fija */
+  scroll-padding-top: calc(76px + var(--safe-top));
+}
 
 body {
   margin: 0;
   font-family: var(--font-body);
   color: var(--text);
   background: var(--bg-grad) fixed;
+  background-color: var(--bg);
   line-height: 1.5;
   min-height: 100vh;
+  min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   transition: background-color .3s ease, color .3s ease;
 }
+
+/* Toques rápidos: sin el retraso del doble toque para hacer zoom */
+a, button, input, select, textarea, label, summary, [role="button"] { touch-action: manipulation; }
 
 h1, h2, h3 { font-family: var(--font-head); font-weight: 700; line-height: 1.15; margin: 0; }
 h1 { font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem); }
@@ -140,12 +160,13 @@ a { color: var(--primary-strong); }
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 12px clamp(14px, 3vw, 28px);
+  padding: calc(12px + var(--safe-top)) max(clamp(14px, 3vw, 28px), var(--safe-right)) 12px max(clamp(14px, 3vw, 28px), var(--safe-left));
   background: color-mix(in srgb, var(--surface) 86%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(10px);
   backdrop-filter: saturate(140%) blur(10px);
   border-bottom: 1px solid var(--border);
 }
-.app-header .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: 700; font-size: 1.15rem; }
+.app-header .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
 .app-header .brand .logo { font-size: 1.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,.15)); }
 .app-header .spacer { flex: 1; }
 
@@ -156,7 +177,10 @@ a { color: var(--primary-strong); }
   font-weight: 700; font-size: .92rem;
   transition: background var(--transition), color var(--transition);
 }
-.nav-link:hover { background: var(--surface-2); color: var(--text); }
+@media (hover: hover) {
+  .nav-link:hover { background: var(--surface-2); color: var(--text); }
+}
+.nav-link:active { background: var(--surface-2); }
 
 /* Marcador de puntos */
 .points-chip {
@@ -177,7 +201,9 @@ a { color: var(--primary-strong); }
   display: grid; place-items: center; box-shadow: var(--shadow-sm);
   transition: transform var(--transition), background var(--transition);
 }
-.theme-toggle:hover { transform: rotate(-12deg) scale(1.06); background: var(--surface-2); }
+@media (hover: hover) {
+  .theme-toggle:hover { transform: rotate(-12deg) scale(1.06); background: var(--surface-2); }
+}
 
 /* ---------- Botones ---------- */
 .btn, button.btn {
@@ -195,8 +221,11 @@ a { color: var(--primary-strong); }
   transition: transform var(--transition), box-shadow var(--transition), background var(--transition), filter var(--transition);
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
-.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-.btn:active { transform: translateY(0) scale(.98); }
+/* En pantallas táctiles el :hover se queda "pegado" tras tocar: solo con ratón */
+@media (hover: hover) {
+  .btn:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+}
+.btn:active { transform: translateY(0) scale(.97); }
 .btn:focus-visible { outline: none; box-shadow: var(--ring); }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: var(--shadow-sm); filter: grayscale(.3); }
 
@@ -240,8 +269,10 @@ a { color: var(--primary-strong); }
   background: rgba(40, 22, 30, .5);
   backdrop-filter: blur(3px);
   display: flex; align-items: center; justify-content: center;
-  padding: 18px; z-index: 1000;
+  padding: max(18px, var(--safe-top)) max(18px, var(--safe-right)) max(18px, var(--safe-bottom)) max(18px, var(--safe-left));
+  z-index: 1000;
   animation: fade .2s ease;
+  overscroll-behavior: contain;
 }
 .hidden { display: none !important; }
 
@@ -251,6 +282,9 @@ a { color: var(--primary-strong); }
   padding: 26px 24px;
   border-radius: var(--radius-lg);
   max-width: 420px; width: 100%;
+  max-height: calc(100vh - 36px);
+  max-height: calc(100dvh - 36px);
+  overflow-y: auto;
   text-align: center;
   box-shadow: var(--shadow-lg);
   animation: pop .28s var(--transition);
@@ -262,7 +296,8 @@ a { color: var(--primary-strong); }
 
 /* ---------- Toast ---------- */
 .toast {
-  position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  position: fixed; left: 50%; bottom: calc(26px + var(--bottom-ui)); transform: translateX(-50%);
+  width: max-content; max-width: calc(100vw - 32px); text-align: center;
   background: var(--text); color: var(--surface);
   padding: 11px 18px; border-radius: var(--radius-pill);
   font-weight: 700; box-shadow: var(--shadow-lg); z-index: 1100;
@@ -276,17 +311,121 @@ a { color: var(--primary-strong); }
   border-radius: var(--radius-pill); box-shadow: var(--shadow-sm);
   pointer-events: none; user-select: none; transition: background .2s, color .2s;
 }
+/* En el móvil el aviso "sincronizado" se aparta solo tras unos segundos
+   (sigue apareciendo mientras guarda o si no hay conexión). */
+@media (max-width: 760px) {
+  #piviSyncBadge[data-state="saved"] { animation: badgeAway .5s ease 2.5s forwards; }
+  /* los campos del panel Dev a 16px: así el iPhone no hace zoom al escribir */
+  #piviDevBar input, #piviDevBar select, #piviDevBar textarea,
+  [id^="piviDev"] input, [id^="piviDev"] textarea { font-size: 16px !important; }
+}
+@keyframes badgeAway { to { opacity: 0; transform: translateY(8px); } }
 
 /* ---------- Layout helpers ---------- */
-.page { max-width: var(--maxw); margin: 0 auto; padding: clamp(16px, 3vw, 28px); }
+.page {
+  max-width: var(--maxw); margin: 0 auto;
+  padding: clamp(16px, 3vw, 28px);
+  padding-left: max(clamp(16px, 3vw, 28px), var(--safe-left));
+  padding-right: max(clamp(16px, 3vw, 28px), var(--safe-right));
+  padding-bottom: calc(clamp(16px, 3vw, 28px) + var(--bottom-ui));
+}
 .stack { display: flex; flex-direction: column; gap: 14px; }
 .fx-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; display: none; }
 
-/* ---------- App header responsive ---------- */
-@media (max-width: 560px) {
-  .app-header { flex-wrap: wrap; gap: 10px; }
-  .app-header .spacer { display: none; }
-  .nav-link { padding: 7px 10px; font-size: .86rem; }
+/* ---------- Barra de pestañas inferior (solo móvil, páginas principales) ---------- */
+.tabbar { display: none; }
+
+/* ============================================================
+   MÓVIL (≤ 760px): cabecera en una sola línea, barra de
+   pestañas tipo app abajo y espacios más ajustados.
+   En ordenador no cambia nada.
+   ============================================================ */
+@media (max-width: 760px) {
+  .app-header {
+    gap: 8px;
+    padding-top: calc(9px + var(--safe-top));
+    padding-bottom: 9px;
+    padding-left: max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
+  }
+  .app-header .brand { gap: 7px; font-size: 1.08rem; }
+  .app-header .brand .logo { font-size: 1.4rem; }
+
+  /* enlaces de la cabecera -> botones redondos solo con icono */
+  .nav-link {
+    width: 40px; height: 40px; padding: 0; justify-content: center;
+    font-size: 1.1rem; flex: none;
+    background: var(--surface); border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-link .nav-text { display: none; }
+  .nav-link.hide-mobile { display: none; }
+
+  .points-chip { padding: 8px 13px; gap: 6px; font-size: .98rem; }
+  .theme-toggle { width: 40px; height: 40px; font-size: 1.05rem; flex: none; }
+
+  .page {
+    padding: 14px max(12px, var(--safe-left)) calc(20px + var(--bottom-ui)) max(12px, var(--safe-left));
+    padding-right: max(12px, var(--safe-right));
+  }
+  .page-head { margin: 0 0 14px; }
+  .subtitle { font-size: .93rem; }
+
+  /* Pestañas inferiores (index y retos) */
+  body.has-tabbar { --bottom-ui: calc(var(--tabbar-h) + var(--safe-bottom)); }
+  .tabbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+    height: calc(var(--tabbar-h) + var(--safe-bottom));
+    padding: 0 max(6px, var(--safe-right)) var(--safe-bottom) max(6px, var(--safe-left));
+    background: color-mix(in srgb, var(--surface) 90%, transparent);
+    -webkit-backdrop-filter: saturate(140%) blur(12px);
+    backdrop-filter: saturate(140%) blur(12px);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -6px 20px rgba(91, 58, 41, .08);
+  }
+  .tab {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    text-decoration: none; color: var(--muted);
+    font: 800 .7rem/1.1 var(--font-body); letter-spacing: .2px;
+    border-radius: 14px; margin: 6px 2px;
+    transition: color .15s, background .15s;
+  }
+  .tab .tab-ic { font-size: 1.35rem; line-height: 1; filter: grayscale(.55) opacity(.8); transition: filter .15s, transform .15s; }
+  .tab:active { background: var(--surface-2); }
+  .tab:active .tab-ic { transform: scale(.9); }
+  .tab.is-active { color: var(--primary-strong); }
+  .tab.is-active .tab-ic { filter: none; }
+
+  /* Páginas de juego: más espacio para el tablero */
+  .panel { padding: 12px; border-radius: var(--radius); }
+  .mode { gap: 8px; }
+  .mode .btn { flex: 1 1 auto; padding: 10px 12px; font-size: .92rem; }
+  .status-row { margin-top: 10px; }
+  .status-note { padding: 9px 12px; font-size: .9rem; }
+  .info { margin-top: 10px; gap: 6px; }
+  .info .pill { padding: 4px 10px; font-size: .78rem; }
+  .timerbar { margin: 10px 0 8px; }
+  .rules { padding: 14px; }
+  .bottomRow .btn { flex: 1 1 auto; }
+
+  /* Ventanas emergentes: botones cómodos para el pulgar */
+  .modal, .popup { padding: 22px 18px; }
+  .modal-actions .btn, .start-actions .btn { min-width: 0; flex: 1 1 140px; padding: 13px 14px; }
+  .start-actions .btn { flex-basis: 100%; } /* "Practicar" / "Jugar reto": uno debajo de otro, a lo ancho */
+}
+
+/* Teléfonos estrechos: en los juegos (cabecera con ⬅️ y 🏠) el nombre
+   "Pivi" cede su sitio a los botones */
+@media (max-width: 400px) {
+  .app-header:has(.nav-link:not(.hide-mobile)) .brand-name { display: none; }
+  .points-chip { padding: 8px 11px; }
+}
+
+/* Tableros de juego: sin selección de texto ni menú al mantener pulsado */
+.board, .keyboard, .simon-board, .atrapa-grid, .react-area, .choices, .stage, .answers {
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* ============================================================
@@ -389,5 +528,6 @@ a { color: var(--primary-strong); }
 .reveal { animation: pop .4s var(--transition) both; }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .05ms !important; }
 }

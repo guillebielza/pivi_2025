@@ -225,7 +225,7 @@
     fab.textContent = "🛠";
     fab.title = "Abrir panel Dev";
     fab.style.cssText = [
-      "position:fixed", "left:12px", "bottom:12px", "z-index:2000",
+      "position:fixed", "left:max(12px, env(safe-area-inset-left, 0px))", "bottom:calc(12px + var(--bottom-ui, 0px))", "z-index:2000",
       "width:46px", "height:46px", "border-radius:50%", "border:1px solid #4a3645",
       "background:#1c1622", "color:#ffe9e2", "font-size:20px", "cursor:pointer",
       "box-shadow:0 10px 28px rgba(0,0,0,.45)", "display:grid", "place-items:center"
@@ -236,8 +236,8 @@
     bar.id = "piviDevBar";
     bar.innerHTML = ""; // se rellena abajo
     bar.style.cssText = [
-      "position:fixed", "left:12px", "bottom:12px", "z-index:2001",
-      "width:280px", "max-width:calc(100vw - 24px)", "max-height:80vh", "overflow:auto",
+      "position:fixed", "left:max(12px, env(safe-area-inset-left, 0px))", "bottom:calc(12px + var(--bottom-ui, 0px))", "z-index:2001",
+      "width:280px", "max-width:calc(100vw - 24px)", "max-height:calc(100dvh - 120px)", "overflow:auto",
       "background:#1c1622", "color:#ffe9e2", "border:1px solid #4a3645",
       "border-radius:16px", "padding:14px", "box-shadow:0 14px 40px rgba(0,0,0,.5)",
       "font:600 12.5px/1.4 system-ui, sans-serif", "display:none"

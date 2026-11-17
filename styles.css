@@ -26,6 +26,11 @@
 .stat-val { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; color: var(--text); }
 .stat-sub { font-size: .78rem; margin-top: 3px; }
 .stat-card.ok .stat-val { color: var(--success); }
+/* las tarjetas de estado son atajos (ruleta, retos, premios) */
+a.stat-card { text-decoration: none; color: inherit; cursor: pointer; transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition); }
+@media (hover: hover) { a.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border-strong); } }
+a.stat-card:active { transform: scale(.98); }
+a.stat-card:focus-visible { outline: none; box-shadow: var(--ring); }
 .stat-card.locked .stat-val { color: var(--muted); }
 .next-reward .progress { margin: 8px 0 4px; }
 
@@ -77,7 +82,10 @@
   background: var(--surface-2); border: 1px solid var(--border);
   padding: 3px 10px; border-radius: var(--radius-pill);
 }
-.reward:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+@media (hover: hover) {
+  .reward:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+}
+.reward:active { transform: scale(.96); }
 .reward:focus-visible { outline: none; box-shadow: var(--ring); }
 
 /* puedes permitírtela: brillo */
@@ -102,7 +110,7 @@
   padding: 3px 7px; border-radius: var(--radius-pill);
   background: var(--surface-inset); color: var(--muted);
 }
-.reward:disabled:hover { transform: none; box-shadow: var(--shadow-sm); }
+.reward:disabled:hover, .reward:disabled:active { transform: none; box-shadow: var(--shadow-sm); }
 
 /* ---------- Historial ---------- */
 .history-card {
@@ -188,9 +196,46 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .grid { grid-template-columns: repeat(3, 1fr); }
+  /* Una columna: lo que se usa a diario va ARRIBA (antes quedaba
+     debajo de todo el catálogo). display:contents deja ordenar las
+     tarjetas del panel derecho junto a las recompensas. */
+  .layout { display: flex; flex-direction: column; align-items: stretch; gap: 16px; }
+  .right-panel { display: contents; }
+  .card-wheel { order: 1; }
+  .card-retos { order: 2; }
+  .card-code { order: 3; }
+  .rewards { order: 5; }
+  .card-activity { order: 7; }
+  /* hoy no toca ruleta: baja tras los premios (sigue a un toque en la pestaña 🎡) */
+  .page:has(#wheelStatCard.locked) .card-wheel { order: 6; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
 }
-@media (max-width: 460px) {
-  .grid { grid-template-columns: repeat(2, 1fr); }
+
+@media (max-width: 760px) {
+  .card-retos { display: none; } /* ya está la pestaña 🎮 Retos abajo */
+  .card { padding: 16px; }
+
+  /* Tira de estado: 3 mini-tarjetas + la de próxima recompensa */
+  .status-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+  .stat-card { flex-direction: column; align-items: flex-start; gap: 6px; padding: 10px 11px; border-radius: var(--radius); }
+  .stat-card .grow { width: 100%; }
+  .stat-ic { font-size: 1.3rem; }
+  .stat-label { font-size: .72rem; }
+  .stat-val { font-size: .92rem; line-height: 1.2; }
+  .next-reward { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 10px; }
+  .next-reward .stat-ic { font-size: 1.5rem; }
+
+  .section-head { margin: 2px 0 10px; }
+  .reward { padding: 12px 6px 10px; border-radius: var(--radius); }
+  .reward .emoji { font-size: 1.9rem; }
+  .reward .cost { font-size: .8rem; padding: 2px 9px; }
+  .reward { justify-content: center; }
+  .reward.unavailable { padding-top: 24px; }
+  .reward.unavailable::after { top: 5px; left: 50%; transform: translateX(-50%); font-size: .55rem; padding: 2px 6px; white-space: nowrap; }
+  .grid { margin-bottom: 18px; }
+
+  .wheel-container { width: min(240px, 70vw); }
+  #codeInput { font-size: 16px; } /* 16px: el iPhone no hace zoom al escribir */
+  .code-row .btn { padding-left: 16px; padding-right: 16px; }
+  .history-card { padding: 4px 14px; }
 }

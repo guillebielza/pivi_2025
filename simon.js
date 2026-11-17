@@ -274,7 +274,11 @@ function startChallenge() {
 function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
 
 /* ---------- eventos ---------- */
-pads.forEach((p, i) => p.addEventListener("click", () => onPad(i)));
+pads.forEach((p, i) => {
+  // al APOYAR el dedo: el pad se ilumina al instante
+  if (window.PiviCore && PiviCore.onTap) PiviCore.onTap(p, () => onPad(i));
+  else p.addEventListener("click", () => onPad(i));
+});
 document.addEventListener("keydown", (e) => {
   if (e.key >= "1" && e.key <= "4") onPad(Number(e.key) - 1);
 });

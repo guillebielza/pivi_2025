@@ -30,3 +30,9 @@
 .react-area.go { background: #3fbf6a; }      /* verde: ¡YA! */
 .react-area.early { background: #d68a3a; }   /* naranja: muy pronto */
 .react-area.result { background: #4d96ff; }  /* azul: resultado */
+
+/* toques: el panel reacciona al instante y no se arrastra la página */
+.react-area { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+@media (max-width: 760px) {
+  .react-area { width: 100%; min-height: 260px; margin-top: 12px; border-radius: 20px; }
+}

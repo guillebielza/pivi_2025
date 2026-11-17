@@ -10,7 +10,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
-@media (max-width: 520px) { .board { gap: 8px; } }
+@media (max-width: 760px) { .board { gap: 8px; width: min(400px, 100%); margin-left: auto; margin-right: auto; } .board .card, .card-inner, .card-face { border-radius: 12px; } }
 
 /* Carta (anula el estilo de la .card de tarjeta global) */
 .board .card {

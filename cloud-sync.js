@@ -306,7 +306,8 @@
     badgeEl = document.createElement("div");
     badgeEl.id = "piviSyncBadge";
     badgeEl.style.cssText = [
-      "position:fixed", "bottom:10px", "right:10px", "z-index:1000",
+      "position:fixed", "bottom:calc(10px + var(--bottom-ui, 0px))",
+      "right:max(10px, env(safe-area-inset-right, 0px))", "z-index:1000",
       "font:600 12px/1 sans-serif", "color:#3a2a1f",
       "padding:7px 10px", "border-radius:999px",
       "box-shadow:0 2px 6px rgba(0,0,0,.18)", "opacity:.92",
@@ -319,6 +320,7 @@
     ensureBadge();
     if (!badgeEl) return;
     badgeEl.textContent = BADGE_TEXT[state] || "";
+    badgeEl.setAttribute("data-state", state);
     badgeEl.style.background = BADGE_BG[state] || "#eee";
   }
 

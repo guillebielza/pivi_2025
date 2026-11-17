@@ -38,3 +38,8 @@
 }
 .atrapa-cell.hit { background: var(--success-bg); }
 .atrapa-cell.boom { background: var(--danger-bg); }
+
+@media (max-width: 760px) {
+  .atrapa-grid { width: min(360px, 100%); gap: 10px; margin-top: 12px; }
+  .atrapa-cell { border-radius: 16px; }
+}

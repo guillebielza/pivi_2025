@@ -209,7 +209,12 @@ function startChallenge() {
 function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
 
 /* ---------- eventos ---------- */
-area.addEventListener("click", onAreaClick);
+// Al APOYAR el dedo (no al levantarlo): en el móvil es más justo y no se pierden toques.
+if (window.PiviCore && PiviCore.onTap) PiviCore.onTap(area, onAreaClick);
+else area.addEventListener("click", onAreaClick);
+area.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); if (!e.repeat) onAreaClick(); }
+});
 practiceBtn.onclick = startPractice;
 challengeBtn.onclick = startChallenge;
 restartBtn.onclick = restartSameMode;

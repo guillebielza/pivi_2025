@@ -5,6 +5,9 @@
    - Confeti + jingle reutilizables (PiviFX.celebrate)
    - Toast y formato de puntos
    - Helpers de fecha SOLO para pistas de UI
+   - Móvil / app instalada: color de la barra del sistema,
+     toques instantáneos (onTap), tablero a la vista al empezar
+     y registro del service worker (sw.js)
    Las reglas reales (cuándo puntúa, candados…) viven en
    pivi-api.js / Supabase. Aquí solo presentación.
    ============================================================ */
@@ -18,8 +21,12 @@
     if (saved === "light" || saved === "dark") return saved;
     return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
+  var THEME_BAR = { light: "#fbf4ef", dark: "#1f1820" }; // = --bg de theme.css
   function applyTheme(t) {
     document.documentElement.setAttribute("data-theme", t);
+    // barra de estado del móvil / ventana de la app, del mismo color que el fondo
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", THEME_BAR[t] || THEME_BAR.light);
     var btns = document.querySelectorAll("[data-theme-toggle]");
     btns.forEach(function (b) {
       b.textContent = t === "dark" ? "☀️" : "🌙";
@@ -234,6 +241,54 @@
     if (opts.sound !== false) jingle();
   }
 
+  /* ---------------- TOQUE INSTANTÁNEO ----------------
+     Para juegos de velocidad (reflejos, atrapa, simón): reacciona al
+     APOYAR el dedo (pointerdown) y no al levantarlo (click), que en el
+     móvil llega tarde o se pierde si el dedo se mueve un poco.
+     El teclado (Enter/Espacio sobre un botón) sigue funcionando. */
+  function onTap(el, fn) {
+    if (!el) return;
+    if (!window.PointerEvent) { el.addEventListener("click", fn); return; }
+    el.addEventListener("pointerdown", function (e) {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      fn(e);
+    });
+    el.addEventListener("click", function (e) {
+      if (e.detail === 0) fn(e); // click de teclado o lector de pantalla
+    });
+  }
+
+  /* ---------------- MÓVIL: TABLERO A LA VISTA ----------------
+     Al empezar una partida en el móvil, desplaza la página para que
+     se vean a la vez los datos (tiempo, aciertos…) y el tablero. */
+  var START_IDS = ["choosePractice", "chooseChallenge", "practiceBtn", "challengeBtn", "startBtn", "restartBtn", "newBtn", "modalAgain"];
+  function isPhone() {
+    return window.matchMedia && matchMedia("(max-width: 760px)").matches;
+  }
+  function focusGame() {
+    var anchor = document.querySelector(".panel .info");
+    if (!anchor || !isPhone()) return;
+    // si se abrió un aviso (p. ej. "⛔ No disponible"), no movemos nada
+    var open = document.querySelector(".overlay:not(.hidden)");
+    if (open) return;
+    var top = anchor.getBoundingClientRect().top;
+    var headerH = (document.querySelector(".app-header") || { offsetHeight: 64 }).offsetHeight;
+    if (top > headerH + 4 && top < headerH + 40) return; // ya está en su sitio
+    var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    anchor.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("button");
+    if (b && START_IDS.indexOf(b.id) !== -1) setTimeout(focusGame, 80);
+  });
+
+  /* ---------------- APP INSTALABLE (service worker) ---------------- */
+  if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () { /* sin modo offline */ });
+    });
+  }
+
   /* ---------------- FECHAS (solo pistas de UI) ---------------- */
   var DAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
   function isoDate(d) {
@@ -246,7 +301,7 @@
 
   window.PiviCore = {
     applyTheme: applyTheme, toggleTheme: toggleTheme, preferred: preferred,
-    setPointsUI: setPointsUI, toast: toast,
+    setPointsUI: setPointsUI, toast: toast, onTap: onTap, focusGame: focusGame,
     celebrate: celebrate, celebrateReward: celebrateReward,
     confetti: confetti, jingle: jingle, fanfare: fanfare, bigEmojiPop: bigEmojiPop,
     isoDate: isoDate, isWeekend: isWeekend, isWheelDay: isWheelDay, dayName: dayName, DAYS: DAYS

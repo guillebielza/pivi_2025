@@ -51,8 +51,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
 }
-@media (max-width: 620px) { .choices { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-@media (max-width: 420px) { .choices { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Son 4 opciones: en el móvil, las 4 en una fila (antes 2x2 o 3+1) */
 
 .choice {
   border-radius: 16px;
@@ -65,8 +64,23 @@
   transition: transform .12s var(--transition), box-shadow .12s, border-color .12s;
   user-select: none;
 }
-.choice:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+@media (hover: hover) {
+  .choice:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+}
+.choice:active { transform: scale(.95); }
 .choice:disabled { opacity: .7; cursor: default; transform: none; box-shadow: none; }
 .choice.correct { background: var(--success-bg); border-color: var(--success); }
 .choice.wrong   { background: var(--danger-bg); border-color: var(--danger); }
 .choice.neutral { opacity: .5; }
+
+/* Móvil: los 9 iconos y las 4 opciones a la vista a la vez */
+@media (max-width: 760px) {
+  .stage { padding: 12px; border-radius: var(--radius); }
+  .stage-title { margin-bottom: 10px; font-size: .95rem; }
+  .grid { width: min(270px, 100%); margin: 0 auto; gap: 8px; }
+  .icon { border-radius: 12px; font-size: 2.1rem; }
+  .question { margin-top: 12px; padding: 12px; border-radius: var(--radius); }
+  .question h2 { font-size: 1.1rem; margin-bottom: 10px; }
+  .choices { gap: 8px; }
+  .choice { padding: 10px 4px; font-size: 1.9rem; border-radius: 12px; }
+}

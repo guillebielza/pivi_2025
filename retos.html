@@ -2,21 +2,29 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#fbf4ef">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pivi">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <title>Retos · Pivi</title>
-  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1f1820':'#fbf4ef');}catch(e){}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="theme.css?v=2">
-  <link rel="stylesheet" href="retos.css?v=2" />
+  <link rel="stylesheet" href="theme.css?v=3">
+  <link rel="stylesheet" href="retos.css?v=3" />
 </head>
-<body>
+<body class="has-tabbar" id="top">
 
 <header class="app-header">
-  <a class="brand" href="index.html"><span class="logo">🎁</span> Pivi</a>
+  <a class="brand" href="index.html"><span class="logo">🎁</span> <span class="brand-name">Pivi</span></a>
   <span class="spacer"></span>
-  <a class="nav-link" href="index.html">🏠 Inicio</a>
+  <a class="nav-link hide-mobile" href="index.html" aria-label="Ir a Inicio" title="Ir a Inicio"><span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-text">Inicio</span></a>
   <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
   <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
 </header>
@@ -31,7 +39,7 @@
     <h2>Minijuegos</h2>
 
     <!-- MEMORY -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="memory.html">
       <div class="challenge-info">
         <h3>🧠 Parejas ocultas</h3>
         <p>Encuentra todas las parejas antes de que acabe el tiempo.</p>
@@ -42,12 +50,13 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='memory.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
     <!-- WORDLE -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="wordle.html">
       <div class="challenge-info">
         <h3>🟩 Wordle</h3>
         <p>Adivina la palabra. Dentro eliges práctica o reto.</p>
@@ -58,12 +67,13 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='wordle.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
     <!-- MISSING -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="missing.html">
       <div class="challenge-info">
         <h3>🧠 ¿Cuál falta?</h3>
         <p>Memoriza 9 iconos, desaparece 1 y eliges cuál falta.</p>
@@ -74,12 +84,13 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='missing.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
     <!-- QUIZ -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="quiz.html">
       <div class="challenge-info">
         <h3>🧩 Quiz</h3>
         <p>Preguntas rápidas. Dentro eliges práctica o reto.</p>
@@ -90,12 +101,13 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='quiz.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
     <!-- SIMÓN -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="simon.html">
       <div class="challenge-info">
         <h3>🎵 Simón</h3>
         <p>Memoriza la secuencia de luces y repítela. Cada ronda es más larga.</p>
@@ -106,12 +118,13 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='simon.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
     <!-- REFLEJOS -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="reflejos.html">
       <div class="challenge-info">
         <h3>⚡ Reflejos relámpago</h3>
         <p>Toca en cuanto el panel se ponga verde. Mide tu reacción.</p>
@@ -122,12 +135,13 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='reflejos.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
     <!-- ATRAPACORAZONES -->
-    <div class="challenge-card">
+    <a class="challenge-card" href="atrapa.html">
       <div class="challenge-info">
         <h3>💘 Atrapacorazones</h3>
         <p>Toca los 💖 y esquiva las 💣 durante 30 segundos.</p>
@@ -138,19 +152,28 @@
         </div>
       </div>
       <div class="challenge-actions one">
-        <button class="btn primary" onclick="window.location.href='atrapa.html'">Ir a jugar</button>
+        <span class="btn primary">Ir a jugar</span>
       </div>
-    </div>
+      <span class="challenge-go" aria-hidden="true">›</span>
+    </a>
 
   </section>
 </main>
 
-<script src="pivi-core.js?v=3"></script>
+<!-- PESTAÑAS INFERIORES (solo se ven en el móvil) -->
+<nav class="tabbar" aria-label="Secciones">
+  <a class="tab" href="index.html"><span class="tab-ic" aria-hidden="true">🏠</span><span>Inicio</span></a>
+  <a class="tab" href="index.html#ruleta"><span class="tab-ic" aria-hidden="true">🎡</span><span>Ruleta</span></a>
+  <a class="tab" href="index.html#premios"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
+  <a class="tab is-active" aria-current="page" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
+</nav>
+
+<script src="pivi-core.js?v=4"></script>
 <script src="cloud-config.js?v=3"></script>
 <script src="pivi-config.js?v=2"></script>
-<script src="pivi-dev.js?v=4"></script>
+<script src="pivi-dev.js?v=5"></script>
 <script src="pivi-ledger.js?v=2"></script>
-<script src="cloud-sync.js?v=3"></script>
+<script src="cloud-sync.js?v=4"></script>
 <script src="retos.js?v=2"></script>
 </body>
 </html>

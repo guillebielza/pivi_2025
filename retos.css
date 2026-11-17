@@ -1,12 +1,17 @@
 /* ============================================================
    retos.css — SOLO las tarjetas de la lista de minijuegos.
    El resto (header, botones, modales…) lo da theme.css.
+   Cada tarjeta es un enlace: se puede tocar entera.
    ============================================================ */
 
 .challenge-list { width: min(820px, 100%); margin: 0 auto; }
 .challenge-list h2 { margin: 0 0 14px; }
 
 .challenge-card {
+  display: block;
+  position: relative;
+  color: inherit;
+  text-decoration: none;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -15,7 +20,11 @@
   margin-bottom: 14px;
   transition: transform var(--transition), box-shadow var(--transition);
 }
-.challenge-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+@media (hover: hover) {
+  .challenge-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+}
+.challenge-card:active { transform: scale(.985); }
+.challenge-card:focus-visible { outline: none; box-shadow: var(--ring), var(--shadow); }
 
 .challenge-info h3 { margin: 0 0 8px; font-size: 1.2rem; }
 .challenge-info p { margin: 0 0 12px; color: var(--text-soft); line-height: 1.4; }
@@ -36,3 +45,23 @@
 
 .challenge-actions { display: grid; gap: 10px; margin-top: 16px; }
 .challenge-actions.one { grid-template-columns: 1fr; }
+
+/* flecha "›" que solo se ve en el móvil (allí la tarjeta entera es el botón) */
+.challenge-go { display: none; }
+
+@media (max-width: 760px) {
+  .challenge-list h2 { margin-bottom: 10px; font-size: 1.15rem; }
+  .challenge-card { padding: 14px 40px 14px 14px; margin-bottom: 10px; border-radius: var(--radius); box-shadow: var(--shadow-sm); }
+  .challenge-info h3 { font-size: 1.08rem; margin-bottom: 4px; }
+  .challenge-info p { font-size: .92rem; margin-bottom: 10px; }
+  .meta { gap: 6px; padding-top: 10px; }
+  .meta span { padding: 3px 9px; font-size: .74rem; }
+  .challenge-actions { display: none; }
+  .challenge-go {
+    display: grid; place-items: center;
+    position: absolute; right: 10px; top: 14px;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--grad-primary); color: var(--on-primary);
+    font: 800 1.2rem/1 var(--font-head); padding-bottom: 2px;
+  }
+}

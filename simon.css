@@ -54,3 +54,8 @@
   25% { transform: translateX(-9px); }
   75% { transform: translateX(9px); }
 }
+
+@media (max-width: 760px) {
+  .simon-stage { margin: 10px 0 12px; }
+  .simon-board { width: min(330px, 84vw); gap: 12px; }
+}
