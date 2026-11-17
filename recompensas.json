@@ -12,7 +12,7 @@
     "id": 2,
     "tipo": "Experiencia",
     "textoBoton": "🍔",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Antojo nivel máximo satisfecho! 😎🔥\nHamburguesa a domicilio en camino: pan blandito, carne jugosa, queso fundido y cero esfuerzo por tu parte. Solo queda una misión… no mancharlo todo 🍟🤤",
     "mensajeHistorico": "Pedido de hamburguesa a domicilio — cena disfrutada desde casa 🍔"
@@ -21,7 +21,7 @@
     "id": 3,
     "tipo": "Experiencia",
     "textoBoton": "🏓",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Raquetas listas y after activado! 😄🍹\nUna tarde de pickleball para sudar lo justo, picarse un poco y rematar con una bebida bien fría. Punto, risas y brindis: plan redondo 👌",
     "mensajeHistorico": "Tarde de pickleball y tomar algo — deporte y relax disfrutados 🏓🍻"
@@ -30,7 +30,7 @@
     "id": 4,
     "tipo": "Experiencia",
     "textoBoton": "🍿",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Plan clásico que nunca falla! 🎬✨\nPelícula en pantalla grande, palomitas en mano y cero preocupaciones durante un par de horas. Solo queda decidir… ¿dulces o saladas? 😄",
     "mensajeHistorico": "Sesión de cine con palomitas — película disfrutada 🍿🎥"
@@ -39,7 +39,7 @@
     "id": 5,
     "tipo": "Experiencia",
     "textoBoton": "🍽️",
-    "coste": 100,
+    "coste": 85,
     "disponible": true,
     "mensajePopup": "¡Planazo gastronómico desbloqueado! 😋✨\nTe espera una cena en Pai Pai, con platos sabrosos, ambiente acogedor y ese tipo de sitio al que siempre apetece volver. Prepárate para disfrutar sin prisas 🍷🍴",
     "mensajeHistorico": "Cena en Pai Pai — experiencia gastronómica disfrutada 🍽️"
@@ -48,7 +48,7 @@
     "id": 6,
     "tipo": "Experiencia",
     "textoBoton": "🍝",
-    "coste": 100,
+    "coste": 85,
     "disponible": true,
     "mensajePopup": "¡Carbohidratos benditos activados! 😇🇮🇹\nTe espera una cena en Beata Pasta: pasta fresca, salsas gloriosas y esa felicidad inmediata que solo llega después del primer bocado. Amén 🍷✨",
     "mensajeHistorico": "Cena en Beata Pasta — experiencia italiana disfrutada 🍝"
@@ -57,7 +57,7 @@
     "id": 7,
     "tipo": "Experiencia",
     "textoBoton": "🧖‍♂️",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "¡Modo relax ON! ✨😌\nUn día entero de spa para desaparecer del mundo: agua calentita, silencio, masajes y cero prisas. Hoy la única obligación es relajarte al máximo 🌿💦",
     "mensajeHistorico": "Día de spa — jornada de descanso y relajación disfrutada 🧖‍♀️"
@@ -66,7 +66,7 @@
     "id": 8,
     "tipo": "Experiencia",
     "textoBoton": "🎯",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -75,7 +75,7 @@
     "id": 9,
     "tipo": "Experiencia",
     "textoBoton": "🎧",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -84,7 +84,7 @@
     "id": 10,
     "tipo": "Experiencia",
     "textoBoton": "🌟",
-    "coste": 160,
+    "coste": 135,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -93,7 +93,7 @@
     "id": 11,
     "tipo": "Experiencia",
     "textoBoton": "💫",
-    "coste": 160,
+    "coste": 135,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -102,7 +102,7 @@
     "id": 12,
     "tipo": "Experiencia",
     "textoBoton": "🫶",
-    "coste": 220,
+    "coste": 185,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -111,7 +111,7 @@
     "id": 13,
     "tipo": "Regalo",
     "textoBoton": "🧸",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Compañero adorable desbloqueado! 💙✨\nTe ha tocado un peluche de Stitch para llevar en el coche o poner donde quieras. Pequeño, achuchable y con energía traviesa incluida 😄🚗",
     "mensajeHistorico": "Peluche de Stitch — detalle decorativo recibido 🧸"
@@ -120,7 +120,7 @@
     "id": 14,
     "tipo": "Regalo",
     "textoBoton": "🔥",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Manos en modo tostito activado! 😄❄️\nTe han tocado unos calentadores de manos eléctricos para sobrevivir al frío como una campeona. Calor instantáneo, cero guantes perdidos y comodidad máxima ✨🧤",
     "mensajeHistorico": "Calentadores de manos eléctricos — accesorio térmico recibido 🔥"
@@ -129,7 +129,7 @@
     "id": 15,
     "tipo": "Regalo",
     "textoBoton": "📱",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Cambio de look desbloqueado! 😎✨\nTu móvil estrena funda nueva: más estilo, más protección y esa sensación tan satisfactoria de “parece otro móvil”. Ahora sí, a lucirlo 💅📲",
     "mensajeHistorico": "Funda nueva para el móvil — accesorio renovado 📱"
@@ -138,7 +138,7 @@
     "id": 16,
     "tipo": "Regalo",
     "textoBoton": "💆‍♂️",
-    "coste": 60,
+    "coste": 50,
     "disponible": true,
     "mensajePopup": "¡Adiós contracturas, hola gloria bendita! 😍⚡\nTe ha tocado una pistola de masaje para dejar los músculos como nuevos. Vibraciones potentes, relax instantáneo y sensación de spa casero en segundos 💥✨",
     "mensajeHistorico": "Máquina de masaje muscular — dispositivo de relajación recibido 💆‍♀️"
@@ -147,7 +147,7 @@
     "id": 17,
     "tipo": "Regalo",
     "textoBoton": "🎭",
-    "coste": 100,
+    "coste": 85,
     "disponible": true,
     "mensajePopup": "¡Tus emociones favoritas en versión mini! 😄💥\nTe han tocado figuritas coleccionables de Inside Out: Alegría, Tristeza, Furia y compañía listas para invadir tu estantería. Pequeñas, adorables y 100% nostalgia Pixar ✨",
     "mensajeHistorico": "Figuritas coleccionables de Inside Out — colección recibida 🎭"
@@ -156,7 +156,7 @@
     "id": 18,
     "tipo": "Regalo",
     "textoBoton": "🪙",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -165,7 +165,7 @@
     "id": 19,
     "tipo": "Regalo",
     "textoBoton": "📦",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -174,7 +174,7 @@
     "id": 20,
     "tipo": "Regalo",
     "textoBoton": "🧩",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -183,7 +183,7 @@
     "id": 21,
     "tipo": "Regalo",
     "textoBoton": "🧷",
-    "coste": 100,
+    "coste": 85,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -192,7 +192,7 @@
     "id": 22,
     "tipo": "Regalo",
     "textoBoton": "🧠",
-    "coste": 160,
+    "coste": 135,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -201,7 +201,7 @@
     "id": 23,
     "tipo": "Regalo",
     "textoBoton": "🌟",
-    "coste": 160,
+    "coste": 135,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
@@ -210,7 +210,7 @@
     "id": 24,
     "tipo": "Regalo",
     "textoBoton": "🔀",
-    "coste": 220,
+    "coste": 185,
     "disponible": false,
     "mensajePopup": "",
     "mensajeHistorico": ""
