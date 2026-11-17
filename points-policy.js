@@ -115,7 +115,7 @@
     if (!bypass) localStorage.setItem(rewardKey(g), wk);
 
     if (window.PiviLedger) {
-      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones", muro: "Reto Muro de pinchos" };
+      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones", muro: "Reto Muro de pinchos", vuelo: "Reto Carta voladora" };
       window.PiviLedger.record(g, n, names[g] || ("Reto " + g));
     }
 
@@ -138,7 +138,7 @@
   }
 
   // --- resumen del finde (lista de Retos y portada) ---
-  const GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro"];
+  const GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro", "vuelo"];
   function weekendSummary(date = nowDate()) {
     const weekend = isWeekend(date);
     const wk = weekendKey(date);

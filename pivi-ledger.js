@@ -51,7 +51,7 @@
   var ICONS = {
     wheel: "🎡", code: "🏷️", reward: "🎁",
     quiz: "🧩", wordle: "🟩", memory: "🧠", missing: "👀",
-    simon: "🎵", reflejos: "⚡", atrapa: "💘", muro: "💗",
+    simon: "🎵", reflejos: "⚡", atrapa: "💘", muro: "💗", vuelo: "💌",
     streak: "🔥", seed: "✨"
   };
 
