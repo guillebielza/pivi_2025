@@ -30,7 +30,7 @@
 
   function isGameKey(k) {
     if (!k || k.indexOf(SBX) === 0) return false;
-    var exact = ["points", "redeemedRewards", "usedCodes", "activityLog", "pivi_streak", "pivi_pending_ev"];
+    var exact = ["points", "redeemedRewards", "usedCodes", "activityLog", "pivi_streak", "pivi_pending_ev", "pivi_feed_seen"];
     if (exact.indexOf(k) !== -1) return true;
     var pref = ["wheel_spin_", "weekend_played_", "weekend_rewarded_", "quiz_daily_", "wordle_daily_", "wordle_"];
     for (var i = 0; i < pref.length; i++) if (k.indexOf(pref[i]) === 0) return true;
@@ -69,6 +69,9 @@
     /* 3) flags de capacidades (vivos, leídos por app.js / points-policy) */
     window.PIVI_DEV_BYPASS = _get(BYPASS_KEY) === "1";
     window.PIVI_DEV_FORCE_AVAILABLE = _get(FORCE_KEY) === "1";
+
+    /* 4) que se NOTE: si te olvidas de salir, lo que juegues aquí no cuenta */
+    document.documentElement.classList.add("pivi-dev");
   }
 
   /* ============================================================
@@ -115,9 +118,14 @@
     if (p) p.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
+  // Solo en la portada: en el resto de páginas el logo vuelve a ser el
+  // enlace a Inicio (antes el gesto se comía el toque y no llevaba a ningún sitio)
   function attachGesture() {
     var logo = document.querySelector(".app-header .logo");
-    if (logo) logo.addEventListener("click", onLogoTap);
+    if (!logo) return;
+    var here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    if (here !== "index.html") return;
+    logo.addEventListener("click", onLogoTap);
   }
 
   /* ============================================================
@@ -180,10 +188,12 @@
   }
 
   function setSimDay(weekday) {
-    // weekday: 0=Dom..6=Sáb, o null para real
+    // weekday: 0=Dom..6=Sáb, o null para real.
+    // Semana de lunes a domingo: "Dom" es el domingo que sigue al sábado
+    // (antes saltaba al domingo ANTERIOR y sáb/dom caían en findes distintos).
     if (weekday == null) { _rem(DATE_KEY); location.reload(); return; }
     var d = new Date();
-    var diff = weekday - d.getDay();
+    var diff = ((weekday + 6) % 7) - ((d.getDay() + 6) % 7);
     d.setDate(d.getDate() + diff);
     _set(DATE_KEY, d.toISOString());
     location.reload();
@@ -198,10 +208,46 @@
         id: "sim-" + Date.now(), ts: new Date().toISOString(),
         type: "wheel", delta: amount, label: "Ruleta (pareja)", device: "pareja-sim"
       });
-      localStorage.setItem("activityLog", JSON.stringify(log));
-      PiviLedger.render();
+      localStorage.setItem("activityLog", JSON.stringify(log)); // sandbox
+      addPointsDev(amount); // la pareja también suma (solo en el sandbox)
     }
     if (window.PiviCore) PiviCore.toast("💞 Tu pareja: Ruleta (pareja) (+" + amount + ")", 2600);
+  }
+
+  /* ---------- aviso visible en todas las páginas ---------- */
+  function markDevUI() {
+    if (!document.getElementById("piviDevStyle")) {
+      var st = document.createElement("style");
+      st.id = "piviDevStyle";
+      st.textContent =
+        "html.pivi-dev .points-chip{background:repeating-linear-gradient(45deg,#ffd166 0 9px,#f4a261 9px 18px);color:#2a1016}" +
+        "#piviDevRibbon{position:absolute;left:0;right:0;top:100%;display:flex;align-items:center;justify-content:center;gap:8px;" +
+        "padding:5px 10px;background:repeating-linear-gradient(45deg,#2a1f12 0 12px,#33261a 12px 24px);color:#ffd166;" +
+        "font:800 12px/1.2 system-ui,sans-serif;letter-spacing:.2px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,.18)}" +
+        "#piviDevRibbon span{color:#ffe9e2;font-weight:700}" +
+        "#piviDevRibbon button{border:none;border-radius:999px;padding:4px 10px;background:#ffd166;color:#2a1016;font:800 11.5px system-ui;cursor:pointer}" +
+        "html.pivi-dev .page{padding-top:calc(14px + 30px)}";
+      document.head.appendChild(st);
+    }
+    // ⭐ -> 🛠 en el marcador: son puntos de PRUEBA
+    document.querySelectorAll(".points-chip").forEach(function (chip) {
+      chip.title = "Puntos de PRUEBA (modo Dev). Los reales no se tocan.";
+      var t = chip.firstChild;
+      if (t && t.nodeType === 3) t.nodeValue = t.nodeValue.replace("⭐", "🛠");
+    });
+    var header = document.querySelector(".app-header");
+    if (header && !document.getElementById("piviDevRibbon")) {
+      var r = document.createElement("div");
+      r.id = "piviDevRibbon";
+      r.setAttribute("role", "status");
+      r.innerHTML = "🛠 MODO PRUEBAS <span>· nada de esto cuenta de verdad</span>";
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "Salir";
+      b.addEventListener("click", disableDev);
+      r.appendChild(b);
+      header.appendChild(r);
+    }
   }
 
   function toggleBypass(on) {
@@ -253,8 +299,11 @@
         '<button data-act="min" title="Plegar" style="' + btnCss() + '">▾</button>' +
         '<button data-act="exit" style="' + btnCss("#ff7d8c", "#2a1016") + '">Salir</button>' +
       '</div>' +
+      '<div style="margin:-2px 0 10px;padding:7px 9px;border-radius:9px;background:#251d24;color:#caffbf;font-weight:700">' +
+        '🔒 Puntos reales: <b>' + (Number(_get("points")) || 0) + '</b> · no se tocan mientras estés aquí' +
+      '</div>' +
 
-      section("Puntos") +
+      section("Puntos de prueba") +
       '<div style="display:flex;gap:6px;margin-bottom:8px">' +
         '<input id="devPts" type="number" placeholder="puntos" style="flex:1;min-width:0;padding:7px;border-radius:9px;border:1px solid #4a3645;background:#251d24;color:#fff">' +
         '<button data-act="setpts" style="' + btnCss("#ff8598", "#2a1016") + '">Fijar</button>' +
@@ -283,7 +332,7 @@
         '<button data-act="partner" style="' + btnCss("#ffc8dd", "#3a1f25") + '">💞 Simular pareja</button>' +
       '</div>' +
 
-      section("Contenido en caliente") +
+      section("Contenido REAL (afecta a los dos)") +
       '<div style="display:flex;gap:6px;margin-bottom:10px">' +
         '<button data-act="content" style="' + btnCss("#a0c4ff", "#0d1b33") + ';flex:1">📦 Editar códigos / ruleta / recompensas</button>' +
       '</div>' +
@@ -295,7 +344,7 @@
         '<button data-act="clearCodes" style="' + btnCss() + '">Reusar códigos</button>' +
         '<button data-act="wipe" style="' + btnCss("#ff7d8c", "#2a1016") + '">Limpiar todo</button>' +
       '</div>' +
-      '<div style="margin-top:10px;opacity:.7;font-weight:600">Sandbox aislado · sync en pausa · tus datos reales están a salvo.</div>';
+      '<div style="margin-top:10px;opacity:.7;font-weight:600">Sandbox aislado · sync en pausa · tus puntos, canjes y retos reales están a salvo. Solo «📦 Contenido» escribe en la nube real.</div>';
 
     document.body.appendChild(bar);
 
@@ -370,6 +419,10 @@
     var cloudNote = hasCloud
       ? "💾 Se guardará en la nube y aparecerá en todos los dispositivos al instante."
       : "⚠️ Sin nube configurada: el cambio solo afecta a esta sesión.";
+    var realWarn = hasCloud
+      ? '<div style="margin:2px 0 8px;padding:8px 10px;border-radius:10px;background:#3a1f25;color:#ffc8dd;font-weight:700">' +
+          '⚠️ Esto NO es el sandbox: cambia el contenido REAL (códigos, ruleta y recompensas) en los dos móviles.</div>'
+      : "";
 
     var ov = document.createElement("div");
     ov.id = "piviContentEditor";
@@ -381,6 +434,7 @@
           '<button id="ceReload" style="' + btnCss() + '">↻ Recargar</button>' +
           '<button id="ceClose" style="' + btnCss("#ff7d8c", "#2a1016") + '">Cerrar</button>' +
         '</div>' +
+        realWarn +
         lbl("🏷️ CÓDIGOS — una línea por código:  CODIGO=puntos") +
         '<textarea id="ceCodigos" spellcheck="false" style="' + ta(120) + '"></textarea>' +
         lbl("🎡 RULETA — 8 números separados por comas") +
@@ -455,7 +509,14 @@
         var eq = line.indexOf("=");
         if (eq > 0) { var k = line.slice(0, eq).trim(); var v = Number(line.slice(eq + 1).trim()); if (k && !isNaN(v)) codigos[k] = v; }
       });
-      var ruleta = document.getElementById("ceRuleta").value.split(",").map(function (x) { return Number(x.trim()); }).filter(function (x) { return !isNaN(x); });
+      var ruletaRaw = document.getElementById("ceRuleta").value.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+      var ruleta = ruletaRaw.map(Number);
+      // la rueda tiene 8 colores fijos: 8 números enteros entre 0 y 100
+      var ruletaOk = ruleta.length === 8 && ruleta.every(function (x) { return Number.isInteger(x) && x >= 0 && x <= 100; });
+      if (ruletaRaw.length && !ruletaOk) {
+        window.alert("La ruleta necesita exactamente 8 números enteros (0 a 100) separados por comas. No se ha guardado nada.");
+        return;
+      }
       var pin = document.getElementById("cePin").value.trim();
       var ovObj = {};
       if (rewardsBox) rewardsBox.querySelectorAll(".ce-rw").forEach(function (row) {
@@ -482,6 +543,7 @@
         recompensasOverride: ovObj
       };
       if (!window.PiviContent) { close(); return; }
+      if (PiviContent.hasCloud && !window.confirm("Vas a cambiar el contenido REAL (no el sandbox): códigos, ruleta y recompensas para los dos móviles.\n\n¿Guardar?")) return;
       PiviContent.save(content).then(function () {
         if (window.PiviCore) PiviCore.toast("📦 Contenido guardado y sincronizado", 2400);
         close();
@@ -495,7 +557,7 @@
   /* ---------- arranque ---------- */
   function boot() {
     attachGesture();
-    if (window.PIVI_DEV) buildBar();
+    if (window.PIVI_DEV) { markDevUI(); buildBar(); }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
