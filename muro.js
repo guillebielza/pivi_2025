@@ -160,7 +160,13 @@ function touchesSpikes() {
 }
 
 /* ---------- modales ---------- */
-function openModal(t, x) { modalTitle.textContent = t; modalText.textContent = x; overlay.classList.remove("hidden"); }
+function openModal(t, x) {
+  modalTitle.textContent = t;
+  modalText.textContent = x;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = practiceMode ? "Jugar otra" : "Practicar";
+  overlay.classList.remove("hidden");
+}
 function closeModal() { overlay.classList.add("hidden"); }
 modalOk.onclick = closeModal;
 modalAgain.onclick = () => { closeModal(); restartSameMode(); };
@@ -175,7 +181,7 @@ function openStartModal() {
   chooseChallenge.disabled = !st.ok;
   chooseChallenge.title = st.ok ? "" : st.reason;
   startText.textContent = st.ok
-    ? "Elige modo. En Reto tienes 3 intentos y cuenta el mejor: 1 punto por cada 3 paredes. 1 vez por fin de semana."
+    ? "Elige modo. En Reto tienes 3 intentos y cuenta el mejor: 1 punto por cada 3 paredes. 1 vez por fin de semana. Si sales a mitad, pierdes los intentos que te queden."
     : st.reason + " Puedes practicar igualmente.";
   startOverlay.classList.remove("hidden");
 }
@@ -565,6 +571,7 @@ function startPractice() {
   dropFocus();
 }
 function startChallenge() {
+  if (inChallenge()) { PiviCore.toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok) { openModal("⛔ No disponible", st.reason); return; }
   if (!confirmLeaveChallenge()) return;
@@ -576,7 +583,14 @@ function startChallenge() {
   setModeUI();
   dropFocus();
 }
-function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
+function restartSameMode() {
+  if (inChallenge()) { PiviCore.toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
+}
+// salir por ⬅️ / 🏠 a mitad del reto pide confirmación
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(inChallenge);
 
 /* ---------- eventos ---------- */
 // al APOYAR el dedo: saltos rápidos seguidos sin perder ninguno

@@ -52,6 +52,11 @@ let acceptingInput = false;
 let level = 0;                 // rondas completadas
 let timerId = null;
 let timeLeft = ANSWER_SECONDS;
+let playing = false;           // hay partida en marcha
+let gen = 0;                   // cambia al reiniciar: anula la secuencia vieja
+
+function isChallengeRunning() { return playing && !practiceMode; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
@@ -79,9 +84,11 @@ function toast(msg) {
   toastEl.classList.remove("hidden");
   setTimeout(() => toastEl.classList.add("hidden"), 1200);
 }
-function openModal(title, text) {
+function openModal(title, text, againLabel) {
   modalTitle.textContent = title;
   modalText.textContent = text;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
   overlay.classList.remove("hidden");
 }
 function closeModal() { overlay.classList.add("hidden"); }
@@ -99,7 +106,7 @@ function openStartModal() {
   chooseChallenge.disabled = !st.ok;
   chooseChallenge.title = st.ok ? "" : st.reason;
   startText.textContent = st.ok
-    ? "Elige modo. En Reto ganas 1 punto por ronda superada (máx 10). Solo 1 vez por fin de semana."
+    ? "Elige modo. En Reto ganas 1 punto por ronda superada (máx 10). Solo 1 vez por fin de semana. Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
   startOverlay.classList.remove("hidden");
 }
@@ -160,6 +167,7 @@ function flash(i, dur) {
 /* ---------- reproducción de la secuencia ---------- */
 function speed() { return Math.max(230, 620 - level * 28); } // más rápido cada ronda
 function playSequence() {
+  const g = gen;
   acceptingInput = false;
   setPadsEnabled(false);
   stage.textContent = "Observa… 👀";
@@ -167,6 +175,7 @@ function playSequence() {
   const litMs = Math.max(240, gap - 130);
   let i = 0;
   function step() {
+    if (g !== gen) return; // partida reiniciada
     if (i >= sequence.length) {
       stage.textContent = "¡Tu turno! 🎯";
       inputIndex = 0;
@@ -203,7 +212,8 @@ function onPad(i) {
       setPadsEnabled(false);
       setRoundUI();
       stage.textContent = "✅ ¡Bien! Ronda " + level + " superada";
-      setTimeout(nextRound, 750);
+      const g = gen;
+      setTimeout(() => { if (g === gen) nextRound(); }, 750);
     }
   } else {
     fail();
@@ -220,6 +230,7 @@ function fail() {
 }
 
 function finish() {
+  playing = false;
   if (practiceMode) {
     openModal("✅ Fin (práctica)", `Rondas superadas: ${level}.\n\nEn práctica no suma puntos. ¡Otra vez!`);
     return;
@@ -245,6 +256,7 @@ function finish() {
 
 /* ---------- modos ---------- */
 function resetState() {
+  gen++;
   stopTimer();
   sequence = [];
   inputIndex = 0;
@@ -255,23 +267,34 @@ function resetState() {
   setRoundUI();
 }
 function startPractice() {
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   resetState();
+  playing = true;
   setModeUI();
   stage.textContent = "Práctica: observa y repite";
-  setTimeout(nextRound, 400);
+  const g = gen;
+  setTimeout(() => { if (g === gen) nextRound(); }, 400);
 }
 function startChallenge() {
+  if (isChallengeRunning()) { toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
-  if (!st.ok) { openModal("⛔ No disponible", st.reason); return; }
+  if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return; }
   practiceMode = false;
   policy?.markWeekendChallengePlayed?.(GAME_ID);
   resetState();
+  playing = true;
   setModeUI();
   stage.textContent = "Reto: observa y repite";
-  setTimeout(nextRound, 400);
+  const g = gen;
+  setTimeout(() => { if (g === gen) nextRound(); }, 400);
 }
-function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
+function restartSameMode(){
+  if (isChallengeRunning()){ toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
+}
 
 /* ---------- eventos ---------- */
 pads.forEach((p, i) => {

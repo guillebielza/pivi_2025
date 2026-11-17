@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css?v=3">
-  <link rel="stylesheet" href="retos.css?v=3" />
+  <link rel="stylesheet" href="retos.css?v=4" />
 </head>
 <body class="has-tabbar" id="top">
 
@@ -33,6 +33,7 @@
   <div class="page-head">
     <h1>🎮 Retos</h1>
     <p class="subtitle">Elige un minijuego. Dentro podrás escoger Práctica o Reto (+ puntos).</p>
+    <div class="week-summary hidden" id="weekSummary" aria-live="polite"></div>
   </div>
 
   <section class="challenge-list">
@@ -46,7 +47,7 @@
         <div class="meta">
           <span>⏱️ 60s (solo reto)</span>
           <span>🃏 16 cartas</span>
-          <span>🎁 Puntos dentro del juego</span>
+          <span>🎁 Hasta +12</span>
         </div>
       </div>
       <div class="challenge-actions one">
@@ -63,7 +64,7 @@
         <div class="meta">
           <span>🎯 6 intentos</span>
           <span>🧠 5 letras</span>
-          <span>🎁 Puntos dentro del juego</span>
+          <span>🎁 Hasta +8</span>
         </div>
       </div>
       <div class="challenge-actions one">
@@ -80,7 +81,7 @@
         <div class="meta">
           <span>⚡ 10 rondas</span>
           <span>🧠 Memoria visual</span>
-          <span>🎁 Puntos dentro del juego</span>
+          <span>🎁 Hasta +10</span>
         </div>
       </div>
       <div class="challenge-actions one">
@@ -97,7 +98,7 @@
         <div class="meta">
           <span>🎯 10 preguntas</span>
           <span>⏱️ Tiempo por pregunta</span>
-          <span>🎁 Puntos dentro del juego</span>
+          <span>🎁 Hasta +10</span>
         </div>
       </div>
       <div class="challenge-actions one">
@@ -185,12 +186,13 @@
   <a class="tab is-active" aria-current="page" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
 </nav>
 
-<script src="pivi-core.js?v=4"></script>
+<script src="pivi-core.js?v=5"></script>
 <script src="cloud-config.js?v=3"></script>
 <script src="pivi-config.js?v=2"></script>
-<script src="pivi-dev.js?v=5"></script>
-<script src="pivi-ledger.js?v=3"></script>
-<script src="cloud-sync.js?v=4"></script>
-<script src="retos.js?v=2"></script>
+<script src="pivi-dev.js?v=6"></script>
+<script src="pivi-ledger.js?v=4"></script>
+<script src="cloud-sync.js?v=5"></script>
+<script src="points-policy.js?v=4"></script>
+<script src="retos.js?v=3"></script>
 </body>
 </html>

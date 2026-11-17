@@ -17,6 +17,7 @@
   var STREAK_KEY = "pivi_streak";
   var SEEN_KEY = "pivi_feed_seen";   // local: último evento ya "visto" (para el aviso)
   var DEVICE_KEY = "pivi_device";
+  var PENDING_KEY = "pivi_pending_ev"; // local: eventos con puntos aún no subidos (lo lee cloud-sync)
   var MAX_EVENTS = 80;
 
   var ICONS = {
@@ -46,8 +47,9 @@
     localStorage.setItem(LOG_KEY, JSON.stringify(arr.slice(-MAX_EVENTS)));
   }
 
-  /* Registra un evento (delta = puntos ganados/gastados; 0 si no aplica) */
-  function record(type, delta, label) {
+  /* Registra un evento (delta = puntos ganados/gastados; 0 si no aplica).
+     opts.silent: no repinta el feed todavía (p. ej. la ruleta aún gira). */
+  function record(type, delta, label, opts) {
     var log = readLog();
     var ev = {
       id: (type || "ev") + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6),
@@ -57,11 +59,20 @@
       label: label || "",
       device: deviceId()
     };
+    // pendiente de subir: cloud-sync suma estos puntos a los de la nube
+    // al fusionar, así nunca se pierden si el otro dispositivo guarda a la vez
+    if (ev.delta) {
+      var pend;
+      try { pend = JSON.parse(localStorage.getItem(PENDING_KEY)); } catch (e) {}
+      pend = Array.isArray(pend) ? pend : [];
+      pend.push(ev.id);
+      localStorage.setItem(PENDING_KEY, JSON.stringify(pend.slice(-60)));
+    }
     log.push(ev);
     writeLog(log);
     // este dispositivo ya "ha visto" lo que él mismo hace
     localStorage.setItem(SEEN_KEY, ev.id);
-    render();
+    if (!(opts && opts.silent)) { render(); renderStreak(); }
     return ev;
   }
 
@@ -85,11 +96,28 @@
     renderStreak();
     return data;
   }
+  /* ---------- Puntos ganados esta semana (lunes a domingo) ----------
+     Sustituye a la racha diaria en la portada: la ruleta es lun/mié y
+     los retos el finde, así que la racha se rompía cada martes. */
+  function weekStart(d) {
+    d = new Date(d || (window.PiviClock && PiviClock.now ? PiviClock.now() : new Date()));
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // lunes
+    return d;
+  }
+  function weekPoints(d) {
+    var from = weekStart(d).getTime();
+    var sum = 0;
+    readLog().forEach(function (e) {
+      if (e && e.delta > 0 && Date.parse(e.ts) >= from) sum += e.delta;
+    });
+    return sum;
+  }
   function renderStreak() {
-    var el = document.getElementById("streakValue");
-    if (!el) return;
-    var s = getStreak();
-    el.textContent = (s.count || 0) + (s.count === 1 ? " día" : " días");
+    var el = document.getElementById("weekValue");
+    if (el) el.textContent = "+" + weekPoints() + " pts";
+    var old = document.getElementById("streakValue"); // por si queda alguna página antigua en caché
+    if (old) { var s = getStreak(); old.textContent = (s.count || 0) + (s.count === 1 ? " día" : " días"); }
   }
 
   /* ---------------- Feed de actividad ---------------- */
@@ -168,6 +196,8 @@
     touchStreak: touchStreak,
     getStreak: getStreak,
     renderStreak: renderStreak,
+    renderWeek: renderStreak,
+    weekPoints: weekPoints,
     notifyNewFromOther: notifyNewFromOther,
     markSeen: markSeen
   };

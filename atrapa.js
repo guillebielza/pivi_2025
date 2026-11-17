@@ -57,10 +57,19 @@ let active = {};               // cellIndex -> { type, remove }
 let gameTimer = null;
 let spawnTimer = null;
 
+function isChallengeRunning() { return running && !practiceMode; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
+
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
 /* ---------- modales ---------- */
-function openModal(t, x) { modalTitle.textContent = t; modalText.textContent = x; overlay.classList.remove("hidden"); }
+function openModal(t, x, againLabel) {
+  modalTitle.textContent = t;
+  modalText.textContent = x;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
+  overlay.classList.remove("hidden");
+}
 function closeModal() { overlay.classList.add("hidden"); }
 modalOk.onclick = closeModal;
 modalAgain.onclick = () => { closeModal(); restartSameMode(); };
@@ -76,7 +85,7 @@ function openStartModal() {
   chooseChallenge.disabled = !st.ok;
   chooseChallenge.title = st.ok ? "" : st.reason;
   startText.textContent = st.ok
-    ? "Elige modo. En Reto tienes 30 s: toca 💖 (suman) y evita 💣 (restan). 1 vez por fin de semana."
+    ? "Elige modo. En Reto tienes 30 s: toca 💖 (suman) y evita 💣 (restan). 1 vez por fin de semana. Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
   startOverlay.classList.remove("hidden");
 }
@@ -191,19 +200,26 @@ function finish() {
 
 /* ---------- modos ---------- */
 function startPractice() {
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   setModeUI();
   startGame();
 }
 function startChallenge() {
+  if (isChallengeRunning()) { PiviCore.toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
-  if (!st.ok) { openModal("⛔ No disponible", st.reason); return; }
+  if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return; }
   practiceMode = false;
   policy?.markWeekendChallengePlayed?.(GAME_ID);
   setModeUI();
   startGame();
 }
-function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
+function restartSameMode(){
+  if (isChallengeRunning()){ PiviCore.toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
+}
 
 /* ---------- eventos ---------- */
 cells.forEach((c, i) => {

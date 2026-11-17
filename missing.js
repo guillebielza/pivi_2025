@@ -64,6 +64,11 @@ let wrong = 0;
 let currentSet = [];
 let missingIcon = null;
 let accepting = false;
+let playing = false;   // hay partida en marcha
+let gen = 0;           // cambia al reiniciar/abandonar: anula los temporizadores viejos
+
+function isChallengeRunning(){ return playing && !practiceMode; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 const ICONS = [
   "🍕","🍣","🍩","🍔","🍟","🌮","🍿","🍪","🍦","🍫",
@@ -86,9 +91,11 @@ function toast(msg){
   setTimeout(() => toastEl.classList.add("hidden"), 1200);
 }
 
-function openModal(title, text){
+function openModal(title, text, againLabel){
   modalTitle.textContent = title;
   modalText.textContent = text;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
   overlay.classList.remove("hidden");
 }
 function closeModal(){ overlay.classList.add("hidden"); }
@@ -107,7 +114,7 @@ function openStartModal(){
   chooseChallenge.title = st.ok ? "" : st.reason;
 
   startText.textContent = st.ok
-    ? "Elige modo. En Reto ganas 1 punto por acierto (máx 10). Solo 1 vez por fin de semana para este juego."
+    ? "Elige modo. En Reto ganas 1 punto por acierto (máx 10). Solo 1 vez por fin de semana para este juego. Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
 
   startOverlay.classList.remove("hidden");
@@ -173,8 +180,8 @@ function startAnswerTimer(){
 }
 
 /* ---------- lógica del juego ---------- */
-function sampleUniqueIcons(n){
-  const pool = [...ICONS];
+function sampleUniqueIcons(n, exclude = []){
+  const pool = ICONS.filter(ic => !exclude.includes(ic));
   const out = [];
   while (out.length < n && pool.length){
     const i = Math.floor(Math.random() * pool.length);
@@ -218,6 +225,7 @@ function setChoicesEnabled(enabled){
 }
 
 function startRound(){
+  const g = gen;
   accepting = false;
   setStatsUI();
   stageTitle.textContent = `Ronda ${round}: memoriza…`;
@@ -230,12 +238,15 @@ function startRound(){
   setChoicesEnabled(false);
 
   setTimeout(() => {
+    if (g !== gen) return; // partida reiniciada/abandonada
     stageTitle.textContent = "… y ahora falta uno";
     renderGrid(currentSet, true);
 
     setTimeout(() => {
+      if (g !== gen) return;
       stageTitle.textContent = "Elige cuál falta";
-      const options = shuffleOptions([missingIcon, ...sampleUniqueIcons(3)]);
+      // las otras 3 opciones nunca repiten la correcta
+      const options = shuffleOptions([missingIcon, ...sampleUniqueIcons(3, [missingIcon])]);
       renderChoices(options);
       accepting = true;
       setChoicesEnabled(true);
@@ -279,7 +290,9 @@ function onChoose(btn, icon){
 
 function endRound(){
   setStatsUI();
+  const g = gen;
   setTimeout(() => {
+    if (g !== gen) return;
     if (round >= ROUNDS_TOTAL) finishGame();
     else { round++; startRound(); }
   }, 650);
@@ -288,6 +301,7 @@ function endRound(){
 function finishGame(){
   stopTimer();
   setChoicesEnabled(false);
+  playing = false;
 
   if (practiceMode){
     openModal("✅ Fin (práctica)", `Aciertos: ${correct}\nFallos: ${wrong}\n\nEn práctica no suma puntos.`);
@@ -311,6 +325,7 @@ function finishGame(){
 }
 
 function resetGameState(){
+  gen++;
   stopTimer();
   round = 1;
   correct = 0;
@@ -324,8 +339,10 @@ function resetGameState(){
 
 /* ---------- modos ---------- */
 function startPractice(){
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   resetGameState();
+  playing = true;
   setModeUI();
   setStatsUI();
   stageTitle.textContent = "Práctica: empieza la ronda 1";
@@ -333,9 +350,10 @@ function startPractice(){
 }
 
 function startChallenge(){
+  if (isChallengeRunning()){ toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok){
-    openModal("⛔ No disponible", st.reason);
+    openModal("⛔ No disponible", st.reason, "Practicar");
     return;
   }
 
@@ -343,15 +361,18 @@ function startChallenge(){
   policy?.markWeekendChallengePlayed?.(GAME_ID);
 
   resetGameState();
+  playing = true;
   setModeUI();
   setStatsUI();
   stageTitle.textContent = "Reto: empieza la ronda 1";
   startRound();
 }
 
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
 function restartSameMode(){
-  if (practiceMode) startPractice();
-  else startChallenge();
+  if (isChallengeRunning()){ PiviCore.toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
 }
 
 /* ---------- botones ---------- */
@@ -360,8 +381,15 @@ challengeBtn.onclick = startChallenge;
 restartBtn.onclick = restartSameMode;
 
 giveUpBtn.onclick = () => {
+  if (!playing) { toast("No hay ninguna partida en marcha"); return; }
+  if (!practiceMode && !confirm("Si abandonas el reto, se queda en 0 puntos y no se puede repetir este finde.\n\n¿Abandonar?")) return;
+  gen++;          // corta la ronda en curso (antes seguía por detrás)
+  playing = false;
   stopTimer();
   accepting = false;
+  setChoicesEnabled(false);
+  stageTitle.textContent = "Partida terminada · elige un modo para jugar otra";
+  updatePolicyStatus();
 
   if (!practiceMode){
     openModal("✖️ Reto finalizado", "Has abandonado antes de terminar las 10 rondas.\n\nResultado: 0 puntos.");

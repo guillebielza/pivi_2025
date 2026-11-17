@@ -131,8 +131,40 @@
        - activityLog                 -> unión por id de evento
        - candados de día (locks)     -> fecha más reciente
        - pivi_streak                 -> mayor racha / día más reciente
-       - points                      -> gana la marca de tiempo más nueva
+       - points                      -> lo de la NUBE + lo que este
+         dispositivo ha ganado/gastado y aún no ha subido (eventos
+         "pendientes" que apunta pivi-ledger.js). Así, si los dos
+         jugáis a la vez, se suman los puntos de ambos en vez de
+         quedarse solo con los del último que guardó.
   */
+  var PENDING_KEY = "pivi_pending_ev"; // local: ids de eventos aún no subidos
+  function pendingIds() { return parseArr(rawGet(PENDING_KEY)); }
+  function pendingDelta(localState, cloudState) {
+    var pend = {};
+    pendingIds().forEach(function (id) { pend[id] = 1; });
+    var inCloud = {};
+    parseArr(cloudState && cloudState.activityLog).forEach(function (ev) { if (ev && ev.id) inCloud[ev.id] = 1; });
+    var sum = 0;
+    parseArr(localState && localState.activityLog).forEach(function (ev) {
+      if (ev && pend[ev.id] && !inCloud[ev.id]) sum += Number(ev.delta) || 0;
+    });
+    return sum;
+  }
+  // Un evento deja de estar pendiente cuando lo VEMOS en la nube al
+  // leerla (no basta con haberlo subido: si el otro dispositivo
+  // escribió a la vez, nuestra subida pudo quedar pisada y entonces
+  // se vuelve a sumar en la siguiente sincronización).
+  function clearPending(cloudState, localState) {
+    var pend = pendingIds();
+    if (!pend.length) return;
+    var seen = {}, mine = {};
+    parseArr(cloudState && cloudState.activityLog).forEach(function (ev) { if (ev && ev.id) seen[ev.id] = 1; });
+    parseArr(localState && localState.activityLog).forEach(function (ev) { if (ev && ev.id) mine[ev.id] = 1; });
+    var left = pend.filter(function (id) { return !seen[id] && mine[id]; });
+    if (left.length === pend.length) return;
+    if (left.length) rawSet(PENDING_KEY, JSON.stringify(left));
+    else rawRemove(PENDING_KEY);
+  }
   function parseArr(v) {
     try { var a = JSON.parse(v); return Array.isArray(a) ? a : []; } catch (_) { return []; }
   }
@@ -178,7 +210,9 @@
         out[k] = mergeStreak(lv, cv);
       } else if (isLockKey(k)) {
         out[k] = (String(cv || "") > String(lv || "")) ? cv : (lv != null ? lv : cv); // fecha mayor
-      } else { // points u otros escalares -> última escritura
+      } else if (k === "points" && cv != null) {
+        out[k] = String((Number(cv) || 0) + pendingDelta(localState, cloudState));
+      } else { // otros escalares -> última escritura
         if (lv == null) out[k] = cv;
         else if (cv == null) out[k] = lv;
         else out[k] = cloudNewer ? cv : lv;
@@ -208,14 +242,10 @@
     });
   }
 
-  function cloudUpsert() {
-    var body = [{
-      profile_id: cfg.profileId,
-      state: collectState(),
-      updated_at: rawGet(META_UPDATED) || new Date().toISOString()
-    }];
+  function cloudUpsert(state, ts) {
+    var body = [{ profile_id: cfg.profileId, state: state, updated_at: ts }];
     var h = Object.assign({}, HEADERS, { "Prefer": "resolution=merge-duplicates,return=minimal" });
-    return fetch(BASE, { method: "POST", headers: h, body: JSON.stringify(body) }).then(function (r) {
+    return fetch(BASE, { method: "POST", headers: h, body: JSON.stringify(body), keepalive: true }).then(function (r) {
       if (!r.ok) throw new Error("UPSERT HTTP " + r.status);
     });
   }
@@ -229,68 +259,89 @@
     schedulePush();
   }
 
+  var holdUntil = 0; // p. ej. mientras gira la ruleta: no subir (ni refrescar) hasta que pare
   function schedulePush() {
     pushPending = true;
     setBadge("saving");
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(push, 700);
+    pushTimer = setTimeout(push, Math.max(700, holdUntil - Date.now()));
+  }
+  function holdPush(ms) {
+    holdUntil = Date.now() + (Number(ms) || 0);
+    if (pushPending) schedulePush();
   }
 
+  // Subir = leer la nube, fusionar y escribir el resultado (nunca se
+  // pisa a ciegas lo que haya subido el otro dispositivo).
   function push() {
     clearTimeout(pushTimer);
     pushPending = false;
-    cloudUpsert()
-      .then(function () { setBadge("saved"); })
-      .catch(function (e) {
-        pushPending = true; // reintentaremos en el próximo cambio / recarga
-        setBadge("error");
-        console.warn("[Pivi sync] no se pudo guardar en la nube:", e.message);
-      });
+    return sync(true);
   }
 
-  /* ---------- descarga + FUSIÓN ---------- */
+  /* ---------- descarga + FUSIÓN (+ subida si hace falta) ---------- */
   function filterTracked(state) {
     var out = {};
     Object.keys(state || {}).forEach(function (k) { if (isTracked(k)) out[k] = state[k]; });
     return out;
   }
 
-  function hydrate() {
-    return cloudGet().then(function (rows) {
+  var syncing = null;      // promesa en curso (no se solapan dos sincronizaciones)
+  var syncAgain = false;   // hubo cambios mientras sincronizábamos -> repetir al acabar
+  var syncAgainPush = false;
+
+  function sync(forcePush) {
+    if (syncing) {
+      syncAgain = true;
+      syncAgainPush = syncAgainPush || !!forcePush;
+      return syncing;
+    }
+    syncing = cloudGet().then(function (rows) {
       var localState = collectState();
       var localTs = rawGet(META_UPDATED);
       var localMs = localTs ? Date.parse(localTs) : 0;
+      var rec = rows && rows.length ? rows[0] : null;
+      var merged, ts, needPush;
 
-      if (rows && rows.length) {
-        var rec = rows[0];
+      if (rec) {
         var cloudState = filterTracked(rec.state || {});
         var cloudMs = rec.updated_at ? Date.parse(rec.updated_at) : 0;
         var cloudNewer = cloudMs >= localMs;
-
-        var merged = mergeStates(localState, cloudState, cloudNewer);
-        var newerTs = (cloudNewer && rec.updated_at) ? rec.updated_at : (localTs || new Date().toISOString());
-
-        var changedCloud = JSON.stringify(merged) !== JSON.stringify(cloudState);
-
+        merged = mergeStates(localState, cloudState, cloudNewer);
+        clearPending(cloudState, localState);
+        ts = (cloudNewer && rec.updated_at) ? rec.updated_at : (localTs || new Date().toISOString());
         // aplica la fusión en este dispositivo (refresca puntos y UI)
-        applyCloudState(merged, newerTs);
-        ready = true;
-
-        if (changedCloud) push();          // la nube no tenía todo -> súbelo fusionado
-        else setBadge("saved");
+        applyCloudState(merged, ts);
+        needPush = forcePush || JSON.stringify(merged) !== JSON.stringify(cloudState);
       } else {
         // No hay registro aún: creamos el primero con lo que haya local
-        if (!localTs) rawSet(META_UPDATED, new Date().toISOString());
-        ready = true;
-        push();
+        merged = localState;
+        ts = localTs || new Date().toISOString();
+        rawSet(META_UPDATED, ts);
+        needPush = true;
       }
       ready = true; // a partir de aquí, los cambios del usuario sí se suben
+
+      if (!needPush) { setBadge("saved"); return; }
+      if (forcePush) ts = new Date().toISOString();
+      return cloudUpsert(merged, ts).then(function () { setBadge("saved"); });
     }).catch(function (e) {
-      ready = true; // sin conexión: dejamos que los cambios se encolen y reintenten
+      ready = true; // sin conexión: los cambios quedan pendientes y se reintentan
+      pushPending = pushPending || !!forcePush || pendingIds().length > 0;
       setBadge("error");
-      console.warn("[Pivi sync] no se pudo leer de la nube:", e.message);
+      console.warn("[Pivi sync] no se pudo sincronizar con la nube:", e.message);
+    }).then(function () {
+      syncing = null;
+      if (syncAgain) {
+        var p = syncAgainPush;
+        syncAgain = syncAgainPush = false;
+        return sync(p);
+      }
     });
+    return syncing;
   }
+
+  function hydrate() { return sync(false); }
 
   /* ---------- indicador visual (se inyecta solo) ---------- */
   var badgeEl = null;
@@ -332,15 +383,17 @@
 
     // Refresco periódico: ver cambios hechos desde otro dispositivo
     setInterval(function () {
-      if (!pushPending) hydrate();
+      if (!pushPending && !document.hidden && Date.now() > holdUntil) hydrate();
     }, 30000);
 
-    // Al volver a la pestaña, sincroniza
+    // Al volver a la app, sincroniza; al irse a segundo plano, sube lo pendiente
     document.addEventListener("visibilitychange", function () {
-      if (!document.hidden && !pushPending) hydrate();
+      if (document.hidden) { if (pushPending) { try { push(); } catch (_) {} } }
+      else if (!pushPending) hydrate();
     });
 
-    // Intento de guardado final al salir
+    // Intento de guardado final al salir (si no llega, lo pendiente se
+    // sube la próxima vez que se abra la web: no se pierde)
     window.addEventListener("pagehide", function () {
       if (pushPending) { try { push(); } catch (_) {} }
     });
@@ -353,5 +406,5 @@
   }
 
   // API mínima por si quieres forzar acciones desde la consola
-  window.PiviSync = { hydrate: hydrate, push: push, state: collectState };
+  window.PiviSync = { hydrate: hydrate, push: push, state: collectState, holdPush: holdPush, _merge: mergeStates };
 })();

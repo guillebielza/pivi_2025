@@ -30,6 +30,9 @@
   color: var(--text);
   transition: transform .15s var(--transition), background .2s, border-color .2s;
 }
+/* fila no válida: tiembla */
+.row.shake { animation: rowShake .4s; }
+@keyframes rowShake { 15% { transform: translateX(-7px); } 35% { transform: translateX(6px); } 55% { transform: translateX(-4px); } 75% { transform: translateX(3px); } }
 .cell.correct { background: #6aaa64; border-color: #6aaa64; color: #fff; }
 .cell.present { background: #c9a227; border-color: #c9a227; color: #fff; }
 .cell.absent  { background: #7a7c80; border-color: #7a7c80; color: #fff; }
@@ -46,7 +49,7 @@
   grid-template-columns: repeat(10, 1fr);
   gap: 6px;
 }
-.krow.second { grid-template-columns: repeat(9, 1fr); }
+.krow.second { grid-template-columns: repeat(10, 1fr); }
 .krow.third  { grid-template-columns: 1.6fr repeat(7, 1fr) 1.6fr; }
 
 .key {

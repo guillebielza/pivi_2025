@@ -45,13 +45,16 @@ let col = 0;
 let grid = Array.from({ length: 6 }, () => Array.from({ length: 5 }, () => ""));
 let finished = false;
 
-let WORDS = new Set();      // soluciones
-let ALLOWED = new Set();    // válidas (puedes meter más aquí si quieres)
+let WORDS = new Set();      // soluciones (palabras comunes: words-sol5.txt)
+let ALLOWED = new Set();    // válidas como intento (diccionario grande: words-es5.txt)
 let wordsLoaded = false;
+
+function isChallengeRunning(){ return !practiceMode && !!secret && !finished; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 /* ---------- util ---------- */
 function todayKey(){
-  return new Date().toISOString().slice(0, 10);
+  return (window.PiviCore && PiviCore.isoDate) ? PiviCore.isoDate() : new Date().toISOString().slice(0, 10);
 }
 
 function normalizeWord(raw){
@@ -63,8 +66,7 @@ function normalizeWord(raw){
     .replace(/[ÍÌÏÎ]/g, "I")
     .replace(/[ÓÒÖÔ]/g, "O")
     .replace(/[ÚÙÜÛ]/g, "U")
-    .replace(/Ñ/g, "N")
-    .replace(/[^A-Z]/g, "");
+    .replace(/[^A-ZÑ]/g, "");
 }
 
 function toast(msg){
@@ -73,9 +75,11 @@ function toast(msg){
   setTimeout(() => toastEl.classList.add("hidden"), 1200);
 }
 
-function openModal(title, text){
+function openModal(title, text, againLabel){
   modalTitle.textContent = title;
   modalText.textContent = text;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
   overlay.classList.remove("hidden");
 }
 function closeModal(){ overlay.classList.add("hidden"); }
@@ -96,7 +100,7 @@ function openStartModal(){
   chooseChallenge.title = st.ok ? "" : st.reason;
 
   startText.textContent = st.ok
-    ? "Elige modo. En Reto hay palabra del día y puedes ganar puntos (1 vez por fin de semana para este juego)."
+    ? "Elige modo. En Reto hay palabra del día y puedes ganar puntos (1 vez por fin de semana para este juego). Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
 
   startOverlay.classList.remove("hidden");
@@ -121,39 +125,35 @@ chooseChallenge.onclick = () => {
       LUNES
       ...
 */
+async function loadList(file){
+  const r = await fetch(file, { cache: "no-cache" });
+  if (!r.ok) throw new Error("No " + file);
+  const text = await r.text();
+  return text.split(/\r?\n/).map(normalizeWord).filter(w => w.length === 5);
+}
+
 async function loadWords(){
-  // mini diccionario base por si no existe el fichero
+  // mini diccionario base por si no carga ningún fichero
   const base = [
     "CASAS","PIZZA","FUEGO","SALSA","NUBES","DULCE","CARTA","PLAZA","NOCHE","RATON",
     "LIMON","GATOS","PERLA","BESOS","HUEVO","JUEGO","PLATO","SUELO","RISAS","MENTE",
     "HEROE","SILLA","MANGO","FRESA","PIANO","TECHO","BOLSA","CIELO","RUMBA","TRONO"
   ].map(normalizeWord).filter(w => w.length === 5);
 
-  base.forEach(w => WORDS.add(w));
-  base.forEach(w => ALLOWED.add(w));
+  const [all, sol] = await Promise.all([
+    loadList("words-es5.txt").catch(() => []),
+    loadList("words-sol5.txt").catch(() => [])
+  ]);
 
-  try{
-    const r = await fetch("words-es5.txt", { cache: "no-store" });
-    if (!r.ok) throw new Error("No words-es5.txt");
-    const text = await r.text();
-    const lines = text.split(/\r?\n/);
+  // el diccionario grande no trae plurales: estos comunes también valen como intento
+  const plurals = ["BESOS","BODAS","CAJAS","CAMAS","CAÑAS","CELOS","COCOS","DAMAS","DATOS","DEDOS","DUNAS","FOCAS","FOTOS","GATOS","GEMAS","GOTAS","HIJOS","HILOS","HOJAS","HORAS","ISLAS","JOYAS","JUGOS","KIWIS","LADOS","LAGOS","LOBOS","LOROS","MANOS","MAPAS","MARES","MIMOS","MODOS","MONOS","MUROS","NAVES","NIÑOS","NUBES","NUDOS","ONDAS","PASOS","PATOS","PECES","PERAS","PISOS","POCOS","PUÑOS","RAMAS","RAMOS","RANAS","RATOS","RAYOS","RISAS","RIZOS","ROCAS","SAPOS","TACOS","TELAS","TODOS","VASOS","VENAS","VINOS","VOCES","ZONAS","ZUMOS"];
 
-    let added = 0;
-    for (const line of lines){
-      const w = normalizeWord(line);
-      if (w.length === 5){
-        WORDS.add(w);
-        ALLOWED.add(w);
-        added++;
-      }
-    }
-
-    wordsLoaded = true;
-    console.log(`✅ words-es5.txt cargado: +${added} palabras (total ${WORDS.size})`);
-  } catch(e){
-    wordsLoaded = false;
-    console.log("ℹ️ No se encontró words-es5.txt; usando diccionario base.");
-  }
+  // intentos válidos: diccionario grande + soluciones + plurales + base
+  [...base, ...plurals, ...all, ...sol].forEach(w => ALLOWED.add(w));
+  // la palabra secreta sale SOLO de palabras comunes (antes salían
+  // cosas como ARELE o VOTRI del diccionario de 9.500)
+  (sol.length ? sol : base).forEach(w => WORDS.add(w));
+  wordsLoaded = all.length > 0;
 }
 
 /* ---------- word selection ---------- */
@@ -190,7 +190,7 @@ function buildGrid(){
 
 const KEY_ROWS = [
   ["Q","W","E","R","T","Y","U","I","O","P"],
-  ["A","S","D","F","G","H","J","K","L"],
+  ["A","S","D","F","G","H","J","K","L","Ñ"],
   ["ENTER","Z","X","C","V","B","N","M","⌫"]
 ];
 
@@ -250,6 +250,7 @@ function resetState(){
 }
 
 function startPractice(){
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   secret = pickRandomWord();
   resetState();
@@ -258,9 +259,10 @@ function startPractice(){
 }
 
 function startChallenge(){
+  if (isChallengeRunning()){ toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok){
-    openModal("⛔ No disponible", st.reason);
+    openModal("⛔ No disponible", st.reason, "Practicar");
     return;
   }
 
@@ -273,9 +275,11 @@ function startChallenge(){
   toast("Modo reto: palabra del día");
 }
 
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
 function restartSameMode(){
-  if (practiceMode) startPractice();
-  else startChallenge(); // seguirá siendo del día, y el intento ya estaba gastado
+  if (isChallengeRunning()){ toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
 }
 
 function applyKeyColor(letter, state){
@@ -339,13 +343,22 @@ function paintRow(r, states){
   }
 }
 
+function shakeRow(r){
+  const el = gridEl.children[r];
+  if (!el) return;
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+}
+
 function submitGuess(){
   if (finished) return;
-  if (col < 5){ toast("Te faltan letras"); return; }
+  if (col < 5){ toast("Te faltan letras"); shakeRow(row); return; }
 
   const guess = grid[row].join("");
   if ((ALLOWED.size > 0) && !ALLOWED.has(guess)){
-    toast("Palabra no válida");
+    toast("No está en el diccionario");
+    shakeRow(row);
     return;
   }
 
@@ -395,7 +408,7 @@ function submitGuess(){
 }
 
 function handleKey(k){
-  if (finished) return;
+  if (finished || !secret) return; // aún no se ha elegido modo
 
   if (k === "ENTER"){ submitGuess(); return; }
   if (k === "⌫"){ backspace(); return; }
@@ -419,7 +432,9 @@ function backspace(){
 
 /* ---------- events ---------- */
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleKey("ENTER");
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (document.querySelector(".overlay:not(.hidden)")) return; // con una ventana abierta, el teclado es suyo
+  if (e.key === "Enter") { e.preventDefault(); handleKey("ENTER"); }
   else if (e.key === "Backspace") handleKey("⌫");
   else {
     const k = e.key.toUpperCase();

@@ -217,26 +217,46 @@ function canSpinNow() {
   return { ok: true, storeKey: key, today };
 }
 
+/* "Mañana, miércoles" / "Sábado, en 4 días": cuándo vuelve algo */
+const DAY_NAMES = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+function nextDayOf(days, from = nowDate()) {
+  for (let n = 1; n <= 7; n++) {
+    const x = new Date(from); x.setDate(x.getDate() + n);
+    if (days.includes(x.getDay())) return { n, name: DAY_NAMES[x.getDay()] };
+  }
+  return { n: 7, name: "" };
+}
+function whenText(next) {
+  if (next.n === 1) return `Mañana, ${next.name}`;
+  return `${next.name.charAt(0).toUpperCase()}${next.name.slice(1)}, en ${next.n} días`;
+}
+
 function updateWheelUI() {
   if (!spinBtn) return;
   const st = canSpinNow();
   const card = document.getElementById("wheelStatCard");
   const statusEl = document.getElementById("wheelStatus");
   const d = nowDate().getDay();
+  const next = nextDayOf([1, 3]);
+  const nextLong = next.n === 1 ? `mañana (${next.name})` : `el ${next.name} (en ${next.n} días)`;
 
-  spinBtn.disabled = !st.ok;
+  if (!spinning) spinBtn.disabled = !st.ok;
   spinBtn.title = st.ok ? "" : st.reason;
 
   if (statusEl) {
     if (st.ok) statusEl.textContent = "¡Disponible! 🎉";
-    else if (d === 1 || d === 3) statusEl.textContent = "Ya tirada hoy ✅";
-    else statusEl.textContent = "Vuelve lun/mié";
+    else if (d === 1 || d === 3) statusEl.textContent = "Hecha hoy ✅";
+    else statusEl.textContent = whenText(next);
   }
   if (card) {
     card.classList.toggle("ok", st.ok);
     card.classList.toggle("locked", !st.ok);
   }
-  if (wheelHint && !st.ok && (d === 1 || d === 3)) wheelHint.textContent = "Ya has tirado hoy. Vuelve el próximo día hábil.";
+  if (wheelHint) {
+    if (st.ok) wheelHint.textContent = "¡Hoy toca! 1 tirada (lunes y miércoles).";
+    else if (d === 1 || d === 3) wheelHint.textContent = `Ya has tirado hoy. Próxima tirada: ${nextLong}.`;
+    else wheelHint.textContent = `Se tira los lunes y miércoles. Próxima: ${nextLong}.`;
+  }
 }
 
 function createWheelNumbers() {
@@ -273,25 +293,33 @@ if (spinBtn) {
     const sectors = wheelValues.length;
     const degreesPerSlice = 360 / sectors;
     const index = Math.floor(Math.random() * sectors);
+    const pointsWon = wheelValues[index];
+
+    // 1) El resultado se GUARDA YA (candado + puntos + registro): si se
+    //    cierra la app mientras gira, la tirada cuenta y no se repite.
+    //    La subida a la nube y el marcador esperan a que pare la ruleta.
+    if (window.PiviSync && PiviSync.holdPush) PiviSync.holdPush(3900);
+    if (status.storeKey) localStorage.setItem(status.storeKey, status.today); // en dev (bypass) no hay candado
+    localStorage.setItem("points", String(getPoints() + pointsWon));
+    if (window.PiviLedger) PiviLedger.record("wheel", pointsWon, pointsWon > 0 ? "Ruleta" : "Ruleta: sin premio", { silent: true });
+
+    // 2) Animación
     const sliceCenter = index * degreesPerSlice + degreesPerSlice / 2;
     const normalized = ((currentRotation % 360) + 360) % 360;
     currentRotation = currentRotation - normalized + 5 * 360 - sliceCenter;
     wheel.style.transform = `rotate(${currentRotation}deg)`;
 
     setTimeout(() => {
-      const pointsWon = wheelValues[index];
-      if (status.storeKey) localStorage.setItem(status.storeKey, status.today); // en dev (bypass) no hay candado
-      setPoints(getPoints() + pointsWon);
+      spinning = false;
+      setPoints(getPoints()); // marcador con "bump"
+      if (window.PiviLedger) { PiviLedger.render(); PiviLedger.renderStreak(); }
 
       if (pointsWon > 0) {
-        if (window.PiviLedger) PiviLedger.record("wheel", pointsWon, "Ruleta");
         celebrateWin();
-        showPopup(`🎉 Has ganado ${pointsWon} puntos`);
+        showPopup(`🎉 Has ganado ${pointsWon} ${pointsWon === 1 ? "punto" : "puntos"}`);
       } else {
-        if (window.PiviLedger) PiviLedger.record("wheel", 0, "Ruleta: sin premio");
         showPopup("😅 Ha salido 0 puntos. Mejor suerte la próxima.");
       }
-      spinning = false;
       updateWheelUI();
     }, 3600);
   };
@@ -304,8 +332,15 @@ function updateWeekendUI() {
   if (!statusEl) return;
   const day = nowDate().getDay();
   const isWeekend = day === 6 || day === 0;
-  statusEl.textContent = isWeekend ? "¡Activos este finde! 🎮" : "Vuelven el sábado";
-  if (card) { card.classList.toggle("ok", isWeekend); card.classList.toggle("locked", !isWeekend); }
+  let pending = isWeekend;
+  if (isWeekend && window.PointsPolicy && PointsPolicy.weekendSummary) {
+    const s = PointsPolicy.weekendSummary();
+    pending = s.played < s.total;
+    statusEl.textContent = pending ? `${s.played}/${s.total} hechos` : `¡${s.total}/${s.total}! 🎉`;
+  } else {
+    statusEl.textContent = isWeekend ? "¡Este finde! 🎮" : whenText(nextDayOf([6]));
+  }
+  if (card) { card.classList.toggle("ok", pending); card.classList.toggle("locked", !isWeekend); }
 }
 
 /* ================== CANJEAR CÓDIGO ================== */
@@ -328,26 +363,71 @@ function findCodeValue(input) {
   return null;
 }
 
+// Avisos del código debajo del campo (sin ventana que haya que cerrar)
+const codeHint = document.getElementById("codeHint");
+const CODE_HINT_DEFAULT = codeHint ? codeHint.textContent : "";
+function codeMessage(text, isError) {
+  if (!codeHint) { showPopup(text); return; }
+  codeHint.textContent = text || CODE_HINT_DEFAULT;
+  codeHint.classList.toggle("error", !!isError);
+  if (codeInput) {
+    codeInput.setAttribute("aria-invalid", isError ? "true" : "false");
+    if (isError) { codeInput.classList.remove("shake"); void codeInput.offsetWidth; codeInput.classList.add("shake"); }
+  }
+}
+
 function redeemCode() {
+  if (!codeInput.value.trim()) { codeMessage("Escribe un código primero ✍️", true); codeInput.focus(); return; }
   const found = findCodeValue(codeInput.value);
-  if (!found) return showPopup("Código inválido ❌");
+  if (!found) return codeMessage("Código inválido ❌ Revisa que esté bien escrito.", true);
   const used = getUsedCodes();
-  if (used.includes(found.key)) return showPopup("Ese código ya fue canjeado.");
+  if (used.includes(found.key)) return codeMessage("Ese código ya está canjeado 🙈", true);
 
   setPoints(getPoints() + found.value);
   used.push(found.key);
   setUsedCodes(used);
   codeInput.value = "";
+  codeInput.blur(); // cierra el teclado del móvil
+  codeMessage("");
 
   if (window.PiviLedger) PiviLedger.record("code", found.value, "Código canjeado");
   celebrateWin();
   showPopup(`✅ Código canjeado: +${found.value} puntos`);
 }
 if (redeemCodeBtn) redeemCodeBtn.onclick = redeemCode;
-if (codeInput) codeInput.addEventListener("keydown", e => { if (e.key === "Enter") redeemCode(); });
+if (codeInput) {
+  codeInput.addEventListener("keydown", e => { if (e.key === "Enter") redeemCode(); });
+  codeInput.addEventListener("input", () => { if (codeHint && codeHint.classList.contains("error")) codeMessage(""); });
+}
+
+/* ================== PESTAÑAS (móvil): marca la sección que se ve ================== */
+const tabs = [...document.querySelectorAll(".tabbar .tab")];
+function setActiveTab(href) {
+  tabs.forEach(t => {
+    const on = t.getAttribute("href") === href;
+    t.classList.toggle("is-active", on);
+    if (on) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+  });
+}
+function spyTabs() {
+  if (!tabs.length || !tabs[0].offsetParent) return; // barra oculta (escritorio)
+  const vh = window.innerHeight;
+  let best = "#top", bestVis = vh * 0.35; // hace falta ver al menos ~1/3 de pantalla
+  [["#ruleta", document.getElementById("ruleta")], ["#premios", document.getElementById("premios")]].forEach(([href, el]) => {
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const vis = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+    if (vis > bestVis) { best = href; bestVis = vis; }
+  });
+  if (window.scrollY < 40) best = "#top";
+  setActiveTab(best);
+}
+let spyRaf = 0;
+window.addEventListener("scroll", () => { if (!spyRaf) spyRaf = requestAnimationFrame(() => { spyRaf = 0; spyTabs(); }); }, { passive: true });
+tabs.forEach(t => t.addEventListener("click", () => { const h = t.getAttribute("href"); if (h.startsWith("#")) setActiveTab(h); }));
 
 /* ================== INIT ================== */
-if (window.PiviLedger) PiviLedger.touchStreak();
+if (window.PiviLedger) PiviLedger.renderStreak(); // "Esta semana: +X pts"
 setPoints(getPoints());
 updateWheelUI();
 updateWeekendUI();
@@ -374,6 +454,7 @@ window.addEventListener("pivi:config", () => {
 
 // Al sincronizar desde la nube: refrescar puntos/estados
 window.addEventListener("pivi:hydrated", () => {
+  if (spinning) return; // no destapar el resultado mientras gira
   setPoints(getPoints());
   updateWheelUI();
   updateWeekendUI();

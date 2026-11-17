@@ -63,6 +63,15 @@ let wrong = 0;
 
 let locked = false; // bloquea clicks durante corrección
 let answered = false;
+let running = false; // hay partida en marcha
+let order = [];      // orden (barajado) en que se muestran las 4 opciones
+let correctPos = 0;  // posición en pantalla de la respuesta correcta
+let advanceTimer = null; // paso automático a la siguiente pregunta
+const AUTO_NEXT_OK_MS = 1200;
+const AUTO_NEXT_FAIL_MS = 2200; // un poco más: para ver cuál era la buena
+
+function isChallengeRunning(){ return running && !practiceMode; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 let timerId = null;
 const QUESTION_SECONDS_PRACTICE = 18;
@@ -77,9 +86,11 @@ function toast(msg){
   setTimeout(() => toastEl.classList.add("hidden"), 1200);
 }
 
-function openModal(title, text){
+function openModal(title, text, againLabel){
   modalTitle.textContent = title;
   modalText.textContent = text;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
   overlay.classList.remove("hidden");
 }
 function closeModal(){ overlay.classList.add("hidden"); }
@@ -107,7 +118,7 @@ function openStartModal(){
   chooseChallenge.title = st.ok ? "" : st.reason;
 
   startText.textContent = st.ok
-    ? "Elige modo. En Reto respondes 10 preguntas y ganas +1 punto por acierto (1 vez por fin de semana para este juego)."
+    ? "Elige modo. En Reto respondes 10 preguntas y ganas +1 punto por acierto (1 vez por fin de semana para este juego). Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
 
   startOverlay.classList.remove("hidden");
@@ -157,7 +168,7 @@ function shuffle(arr){
 
 // Para reto: mismas 10 del día (para evitar farmear cambiando refresh)
 function pickDailySet(){
-  const key = `quiz_daily_${new Date().toISOString().slice(0,10)}`;
+  const key = `quiz_daily_${(window.PiviCore && PiviCore.isoDate) ? PiviCore.isoDate() : new Date().toISOString().slice(0,10)}`;
   const saved = localStorage.getItem(key);
   if (saved){
     try{
@@ -203,7 +214,10 @@ function updateCounters(){
   wrongEl.textContent = String(wrong);
 }
 
+const DIFF_LABEL = { easy: "Fácil", medium: "Media", hard: "Difícil" };
+
 function renderQuestion(){
+  clearTimeout(advanceTimer);
   answered = false;
   locked = false;
   nextBtn.disabled = true;
@@ -215,14 +229,18 @@ function renderQuestion(){
   }
 
   tagCategory.textContent = q.category || "—";
-  tagDifficulty.textContent = q.difficulty || "—";
+  tagDifficulty.textContent = DIFF_LABEL[q.difficulty] || q.difficulty || "—";
   questionText.textContent = q.question;
 
+  // las opciones se barajan: la buena no está siempre en el mismo sitio
+  order = shuffle([0, 1, 2, 3]);
+  correctPos = order.indexOf(q.answerIndex);
+
   answersEl.innerHTML = "";
-  q.options.forEach((opt, i) => {
+  order.forEach((optIdx, i) => {
     const btn = document.createElement("button");
     btn.className = "answer";
-    btn.textContent = opt;
+    btn.textContent = q.options[optIdx];
     btn.onclick = () => chooseAnswer(i);
     answersEl.appendChild(btn);
   });
@@ -275,14 +293,13 @@ function chooseAnswer(i){
   if (locked || answered) return;
   stopTimer();
 
-  const q = questions[idx];
   answered = true;
   locked = true;
 
   const btns = [...answersEl.querySelectorAll(".answer")];
   disableAnswers();
 
-  const correctIdx = q.answerIndex;
+  const correctIdx = correctPos;
 
   if (i === correctIdx){
     correct += 1;
@@ -299,18 +316,24 @@ function chooseAnswer(i){
   updateCounters();
   nextBtn.disabled = false;
   locked = false;
+  scheduleNext(i === correctIdx ? AUTO_NEXT_OK_MS : AUTO_NEXT_FAIL_MS);
+}
+
+function scheduleNext(ms){
+  clearTimeout(advanceTimer);
+  const at = idx;
+  advanceTimer = setTimeout(() => { if (running && answered && idx === at) goNext(); }, ms);
 }
 
 function markWrongAndReveal(){
   stopTimer();
   answered = true;
 
-  const q = questions[idx];
   const btns = [...answersEl.querySelectorAll(".answer")];
   disableAnswers();
 
   wrong += 1;
-  const correctIdx = q.answerIndex;
+  const correctIdx = correctPos;
   if (btns[correctIdx]) btns[correctIdx].classList.add("correct");
   btns.forEach((b, j) => {
     if (j !== correctIdx) b.classList.add("neutral");
@@ -318,24 +341,29 @@ function markWrongAndReveal(){
 
   updateCounters();
   nextBtn.disabled = false;
+  scheduleNext(AUTO_NEXT_FAIL_MS);
 }
 
 /* ---------- navigation ---------- */
 skipBtn.onclick = () => {
-  if (answered) return;
+  if (!running || answered) return;
   toast("⏭️ Pasada");
   markWrongAndReveal();
 };
 
-nextBtn.onclick = () => {
-  if (!answered) return;
+function goNext(){
+  if (!running || !answered) return;
+  clearTimeout(advanceTimer);
   idx += 1;
   if (idx >= questions.length) finishGame();
   else renderQuestion();
-};
+}
+nextBtn.onclick = goNext;
 
 function finishGame(){
   stopTimer();
+  clearTimeout(advanceTimer);
+  running = false;
 
   const gained = practiceMode ? 0 : correct; // +1 por acierto
   if (practiceMode){
@@ -368,7 +396,9 @@ function resetRun(){
 }
 
 function startPractice(){
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
+  running = true;
   questions = pickRandomSet();
   resetRun();
   setModeUI();
@@ -377,13 +407,15 @@ function startPractice(){
 }
 
 function startChallenge(){
+  if (isChallengeRunning()){ toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok){
-    openModal("⛔ No disponible", st.reason);
+    openModal("⛔ No disponible", st.reason, "Practicar");
     return;
   }
 
   practiceMode = false;
+  running = true;
   policy?.markWeekendChallengePlayed?.(GAME_ID);
 
   questions = pickDailySet();
@@ -393,9 +425,11 @@ function startChallenge(){
   toast("Modo reto");
 }
 
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
 function restartSameMode(){
-  if (practiceMode) startPractice();
-  else startChallenge();
+  if (isChallengeRunning()){ toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
 }
 
 /* ---------- buttons ---------- */

@@ -5,6 +5,27 @@
    ============================================================ */
 
 .challenge-list { width: min(820px, 100%); margin: 0 auto; }
+
+/* Resumen del finde (lo pinta retos.js) */
+.week-summary {
+  width: min(820px, 100%); margin: 12px auto 0;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 11px 14px;
+  color: var(--text-soft); font-weight: 600; line-height: 1.4;
+}
+.week-summary b { color: var(--text); }
+.week-summary.on { background: var(--success-bg); border-color: transparent; }
+.week-summary.all { background: var(--grad-soft); }
+
+/* Estado de cada juego este finde */
+.game-badge {
+  display: inline-flex; align-items: center; vertical-align: middle;
+  margin-left: 8px; padding: 3px 9px; border-radius: var(--radius-pill);
+  font: 800 .72rem/1.2 var(--font-body); letter-spacing: .2px; white-space: nowrap;
+}
+.game-badge.todo { background: var(--warn-bg); color: var(--text-soft); }
+.game-badge.done { background: var(--success-bg); color: var(--success); }
+.challenge-card.is-done { opacity: .72; }
 .challenge-list h2 { margin: 0 0 14px; }
 
 .challenge-card {

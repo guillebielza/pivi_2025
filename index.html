@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=4">
 </head>
 <body class="has-tabbar" id="top">
 
@@ -38,13 +38,13 @@
 
   <!-- TIRA DE ESTADO -->
   <section class="status-strip">
-    <div class="stat-card">
-      <span class="stat-ic">🔥</span>
+    <a class="stat-card" id="weekStatCard" href="#actividad">
+      <span class="stat-ic">📈</span>
       <div class="grow">
-        <div class="stat-label">Racha</div>
-        <div class="stat-val" id="streakValue">0 días</div>
+        <div class="stat-label">Esta semana</div>
+        <div class="stat-val" id="weekValue">+0 pts</div>
       </div>
-    </div>
+    </a>
     <a class="stat-card" id="wheelStatCard" href="#ruleta">
       <span class="stat-ic">🎡</span>
       <div class="grow">
@@ -115,7 +115,7 @@
           <button id="redeemCodeBtn" class="btn primary">Canjear</button>
         </div>
 
-        <div class="code-hint muted">* Los códigos solo se pueden usar una vez.</div>
+        <div class="code-hint muted" id="codeHint" aria-live="polite">* Los códigos solo se pueden usar una vez.</div>
       </div>
 
       <div class="card card-activity" id="actividad">
@@ -158,12 +158,13 @@
   </div>
 </div>
 
-<script src="pivi-core.js?v=4"></script>
+<script src="pivi-core.js?v=5"></script>
 <script src="cloud-config.js?v=3"></script>
 <script src="pivi-config.js?v=2"></script>
-<script src="pivi-dev.js?v=5"></script>
-<script src="pivi-ledger.js?v=3"></script>
-<script src="cloud-sync.js?v=4"></script>
-<script src="app.js?v=5"></script>
+<script src="pivi-dev.js?v=6"></script>
+<script src="pivi-ledger.js?v=4"></script>
+<script src="cloud-sync.js?v=5"></script>
+<script src="points-policy.js?v=4"></script>
+<script src="app.js?v=6"></script>
 </body>
 </html>

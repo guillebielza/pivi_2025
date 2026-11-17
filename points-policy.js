@@ -137,7 +137,34 @@
     return "✅ Puedes jugar reto este fin de semana";
   }
 
+  // --- resumen del finde (lista de Retos y portada) ---
+  const GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro"];
+  function weekendSummary(date = nowDate()) {
+    const weekend = isWeekend(date);
+    const wk = weekendKey(date);
+    const sat = new Date(date);
+    sat.setHours(0, 0, 0, 0);
+    if (sat.getDay() === 0) sat.setDate(sat.getDate() - 1);
+    const from = sat.getTime();
+    let log = [];
+    try { log = JSON.parse(localStorage.getItem("activityLog")) || []; } catch {}
+    const games = {};
+    let played = 0, points = 0;
+    GAMES.forEach(g => {
+      const isPlayed = weekend && localStorage.getItem(playKey(g)) === wk;
+      const rewarded = weekend && localStorage.getItem(rewardKey(g)) === wk;
+      let pts = 0;
+      if (weekend) log.forEach(e => { if (e && e.type === g && Date.parse(e.ts) >= from) pts += Number(e.delta) || 0; });
+      games[g] = { played: isPlayed, rewarded, points: pts };
+      if (isPlayed) played++;
+      points += pts;
+    });
+    return { weekend, played, total: GAMES.length, points, games };
+  }
+
   window.PointsPolicy = {
+    GAMES,
+    weekendSummary,
     isWeekend,
     weekendKey,
     canPlayWeekendChallenge,

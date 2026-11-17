@@ -54,6 +54,11 @@ let lock = false;
 
 let matches = 0;
 let mistakes = 0;
+let playing = false;       // hay partida en marcha
+let mismatchTimer = null;  // pausa para ver las dos cartas falladas
+
+function isChallengeRunning(){ return playing && !practiceMode; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 const EMOJIS = ["🍓","🍋","🍇","🍉","🍒","🍑","🥝","🍍"]; // 8 parejas
 
@@ -76,9 +81,11 @@ function computeChallengePoints({ secondsLeft, mistakes }){
 }
 
 /* ---------- modales ---------- */
-function openModal(title, text){
+function openModal(title, text, againLabel){
   modalTitle.textContent = title;
   modalText.textContent = text;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
   overlay.classList.remove("hidden");
 }
 function closeModal(){ overlay.classList.add("hidden"); }
@@ -103,7 +110,7 @@ function openStartModal(){
   chooseChallenge.title = st.ok ? "" : st.reason;
 
   startText.textContent = st.ok
-    ? "Elige modo. En Reto puedes ganar puntos (1 vez por fin de semana para este juego)."
+    ? "Elige modo. En Reto tienes 60 s y puedes ganar puntos (1 vez por fin de semana para este juego). Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
 
   startOverlay.classList.remove("hidden");
@@ -169,7 +176,21 @@ function buildBoard(){
   });
 }
 
+// cierra al momento las dos falladas (si aún se estaban viendo)
+function resolveMismatch(){
+  if (!mismatchTimer) return;
+  clearTimeout(mismatchTimer);
+  mismatchTimer = null;
+  if (first) first.classList.remove("flipped");
+  if (second) second.classList.remove("flipped");
+  first = null; second = null;
+  lock = false;
+}
+
 function onCardClick(card){
+  if (!playing) return;
+  // tocar otra carta mientras se ven las falladas: se cierran ya y se sigue
+  if (mismatchTimer && card !== first && card !== second) resolveMismatch();
   if (lock) return;
   if (card.classList.contains("flipped")) return;
   if (card.classList.contains("matched")) return;
@@ -192,12 +213,13 @@ function onCardClick(card){
   } else {
     mistakes++;
     mistakesEl.textContent = String(mistakes);
-    setTimeout(() => {
+    mismatchTimer = setTimeout(() => {
+      mismatchTimer = null;
       first.classList.remove("flipped");
       second.classList.remove("flipped");
       first = null; second = null;
       lock = false;
-    }, 700);
+    }, 800);
   }
 }
 
@@ -226,6 +248,7 @@ function startTimer(){
 function finishWin(){
   stopTimer();
   lock = true;
+  playing = false;
 
   if (practiceMode){
     openModal("✅ ¡Genial!", "Has completado todas las parejas (modo práctica).");
@@ -256,6 +279,7 @@ function finishWin(){
 
 function finishLose(){
   lock = true;
+  playing = false;
   if (practiceMode){
     openModal("⏱️ Se acabó el tiempo", "Modo práctica: prueba de nuevo cuando quieras.");
   } else {
@@ -266,8 +290,11 @@ function finishLose(){
 
 /* ---------- modos ---------- */
 function startPractice(){
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   stopTimer();
+  clearTimeout(mismatchTimer); mismatchTimer = null;
+  playing = true;
   lock = false;
   first = null; second = null;
   resetStats();
@@ -277,15 +304,18 @@ function startPractice(){
 }
 
 function startChallenge(){
+  if (isChallengeRunning()){ PiviCore.toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
   if (!st.ok){
-    openModal("⛔ No disponible", st.reason);
+    openModal("⛔ No disponible", st.reason, "Practicar");
     return;
   }
 
   practiceMode = false;
   policy?.markWeekendChallengePlayed?.(GAME_ID);
 
+  clearTimeout(mismatchTimer); mismatchTimer = null;
+  playing = true;
   lock = false;
   first = null; second = null;
   resetStats();
@@ -294,9 +324,11 @@ function startChallenge(){
   startTimer();
 }
 
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
 function restartSameMode(){
-  if (practiceMode) startPractice();
-  else startChallenge();
+  if (isChallengeRunning()){ PiviCore.toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
 }
 
 /* ---------- botones ---------- */
@@ -305,9 +337,13 @@ startBtn.onclick = startChallenge;
 restartBtn.onclick = restartSameMode;
 
 giveUpBtn.onclick = () => {
+  if (!playing) { PiviCore.toast("No hay ninguna partida en marcha"); return; }
+  if (!practiceMode && !confirm("Si abandonas el reto, se queda en 0 puntos y no se puede repetir este finde.\n\n¿Abandonar?")) return;
   stopTimer();
   lock = true;
+  playing = false;
   openModal("✖️ Abandonado", practiceMode ? "Has salido del modo práctica." : "Has abandonado el reto (0 puntos).");
+  updatePolicyStatus();
 };
 
 /* ---------- INIT (sin auto-start) ---------- */

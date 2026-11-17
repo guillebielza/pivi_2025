@@ -51,12 +51,22 @@ let round = 0;
 let times = [];
 let goTime = 0;
 let waitTimer = null;
+let stepTimer = null;          // pausa entre rondas
+
+function isChallengeRunning() { return !practiceMode && state !== "idle" && state !== "done"; }
+if (window.PiviCore && PiviCore.guardChallenge) PiviCore.guardChallenge(isChallengeRunning);
 
 function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 function avg(arr) { return arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0; }
 
 /* ---------- modales ---------- */
-function openModal(title, text) { modalTitle.textContent = title; modalText.textContent = text; overlay.classList.remove("hidden"); }
+function openModal(title, text, againLabel) {
+  modalTitle.textContent = title;
+  modalText.textContent = text;
+  // tras un reto (ya gastado) "Jugar otra" lleva a la práctica
+  modalAgain.textContent = againLabel || (practiceMode ? "Jugar otra" : "Practicar");
+  overlay.classList.remove("hidden");
+}
 function closeModal() { overlay.classList.add("hidden"); }
 modalOk.onclick = closeModal;
 modalAgain.onclick = () => { closeModal(); restartSameMode(); };
@@ -72,7 +82,7 @@ function openStartModal() {
   chooseChallenge.disabled = !st.ok;
   chooseChallenge.title = st.ok ? "" : st.reason;
   startText.textContent = st.ok
-    ? "Elige modo. En Reto haces 5 rondas: cuanto más rápida tu reacción media, más puntos (máx 10). 1 vez por fin de semana."
+    ? "Elige modo. En Reto haces 5 rondas: cuanto más rápida tu reacción media, más puntos (máx 10). 1 vez por fin de semana. Si sales a mitad, el reto se pierde."
     : st.reason + " Puedes practicar igualmente.";
   startOverlay.classList.remove("hidden");
 }
@@ -103,7 +113,11 @@ function setStats() {
 }
 
 /* ---------- rondas ---------- */
-function clearWait() { if (waitTimer) clearTimeout(waitTimer); waitTimer = null; }
+function clearWait() {
+  if (waitTimer) clearTimeout(waitTimer);
+  if (stepTimer) clearTimeout(stepTimer);
+  waitTimer = stepTimer = null;
+}
 
 function beginRound() {
   state = "wait";
@@ -137,13 +151,13 @@ function onAreaClick() {
     state = "early";
     recordTime(EARLY_MS);
     setArea("early", "❌ ¡Muy pronto!", `Cuenta como ${EARLY_MS} ms`);
-    setTimeout(nextRound, 950);
+    stepTimer = setTimeout(nextRound, 950);
   } else if (state === "go") {
     const ms = Math.round(performance.now() - goTime);
     state = "result";
     recordTime(ms);
     setArea("result", ms + " ms", reactionComment(ms));
-    setTimeout(nextRound, 950);
+    stepTimer = setTimeout(nextRound, 950);
   } else if (state === "idle" || state === "done") {
     /* nada: usa los botones de modo */
   }
@@ -192,21 +206,28 @@ function resetRun() {
   setStats();
 }
 function startPractice() {
+  if (window.PiviCore && !PiviCore.confirmLeave()) return;
   practiceMode = true;
   resetRun();
   setModeUI();
   nextRound();
 }
 function startChallenge() {
+  if (isChallengeRunning()) { PiviCore.toast("Ya estás jugando el reto 😉"); return; }
   const st = policy?.canPlayWeekendChallenge ? policy.canPlayWeekendChallenge(GAME_ID) : { ok: true, reason: "" };
-  if (!st.ok) { openModal("⛔ No disponible", st.reason); return; }
+  if (!st.ok) { openModal("⛔ No disponible", st.reason, "Practicar"); return; }
   practiceMode = false;
   policy?.markWeekendChallengePlayed?.(GAME_ID);
   resetRun();
   setModeUI();
   nextRound();
 }
-function restartSameMode() { if (practiceMode) startPractice(); else startChallenge(); }
+// "Reiniciar" / "Jugar otra": el reto solo se juega una vez, así que
+// después (o desde práctica) siempre arranca una práctica
+function restartSameMode(){
+  if (isChallengeRunning()){ PiviCore.toast("🔒 El reto no se puede reiniciar"); return; }
+  startPractice();
+}
 
 /* ---------- eventos ---------- */
 // Al APOYAR el dedo (no al levantarlo): en el móvil es más justo y no se pierden toques.

@@ -282,6 +282,29 @@
     if (b && START_IDS.indexOf(b.id) !== -1) setTimeout(focusGame, 80);
   });
 
+  /* ---------------- RETO EN CURSO: no salir sin querer ----------------
+     Cada juego registra cómo saber si hay un reto a medias. Mientras lo
+     haya, tocar un enlace (⬅️, 🏠, logo, pestañas) pide confirmación y
+     el navegador avisa antes de recargar o cerrar la página. */
+  var guardFn = null;
+  function guardChallenge(isRunning) { guardFn = isRunning; }
+  function challengeRunning() { try { return !!(guardFn && guardFn()); } catch (e) { return false; } }
+  var LEAVE_MSG = "Tienes un reto a medias: si sales ahora se pierde (0 puntos) y no se puede repetir este finde.\n\n¿Salir igualmente?";
+  function confirmLeave(msg) {
+    if (!challengeRunning()) return true;
+    return window.confirm(msg || LEAVE_MSG);
+  }
+  var leaveOk = false; // ya confirmó al tocar el enlace: no preguntar dos veces
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a[href]");
+    if (!a || !challengeRunning()) return;
+    if (!confirmLeave()) { e.preventDefault(); e.stopImmediatePropagation(); }
+    else { leaveOk = true; setTimeout(function () { leaveOk = false; }, 1500); }
+  }, true);
+  window.addEventListener("beforeunload", function (e) {
+    if (challengeRunning() && !leaveOk) { e.preventDefault(); e.returnValue = ""; }
+  });
+
   /* ---------------- APP INSTALABLE (service worker) ---------------- */
   if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     window.addEventListener("load", function () {
@@ -302,6 +325,7 @@
   window.PiviCore = {
     applyTheme: applyTheme, toggleTheme: toggleTheme, preferred: preferred,
     setPointsUI: setPointsUI, toast: toast, onTap: onTap, focusGame: focusGame,
+    guardChallenge: guardChallenge, confirmLeave: confirmLeave, challengeRunning: challengeRunning,
     celebrate: celebrate, celebrateReward: celebrateReward,
     confetti: confetti, jingle: jingle, fanfare: fanfare, bigEmojiPop: bigEmojiPop,
     isoDate: isoDate, isWeekend: isWeekend, isWheelDay: isWheelDay, dayName: dayName, DAYS: DAYS
