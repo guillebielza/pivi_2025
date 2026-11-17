@@ -6,7 +6,7 @@
 
 const experiencesEl = document.getElementById("experiences");
 const giftsEl = document.getElementById("gifts");
-const redeemedListEl = document.getElementById("redeemedList");
+const recuerdosSubEl = document.getElementById("recuerdosSub");
 const popupOverlay = document.getElementById("popupOverlay");
 const popupText = document.getElementById("popupText");
 
@@ -37,8 +37,10 @@ function getRedeemed() {
 }
 function addRedeemed(id) {
   const raw = readArr("redeemedRewards");
-  raw.push(id + "#" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
+  const mark = id + "#" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5).padEnd(3, "0");
+  raw.push(mark);
   localStorage.setItem("redeemedRewards", JSON.stringify(raw));
+  return mark;
 }
 
 /* ================== POPUP ================== */
@@ -118,24 +120,30 @@ function renderRewards() {
   if (!experiencesEl || !giftsEl) return;
   experiencesEl.innerHTML = "";
   giftsEl.innerHTML = "";
-  if (redeemedListEl) redeemedListEl.innerHTML = "";
-
-  const redeemed = getRedeemed();
 
   rewardsData.forEach((r) => {
     (r.tipo === "Experiencia" ? experiencesEl : giftsEl).appendChild(makeRewardTile(r));
-    if (redeemed.includes(r.id) && r.mensajeHistorico && redeemedListEl) {
-      const li = document.createElement("li");
-      li.textContent = r.mensajeHistorico;
-      redeemedListEl.appendChild(li);
-    }
   });
 
-  if (redeemedListEl && !redeemedListEl.children.length) {
-    redeemedListEl.innerHTML = '<li class="muted">Aún no has canjeado nada.</li>';
-  }
-
   updateNextReward();
+  updateRecuerdosCard();
+}
+
+// Acceso a Recuerdos: cuántos hay y el último (el historial completo vive en recuerdos.html)
+function updateRecuerdosCard() {
+  if (!recuerdosSubEl || !window.PiviLedger || !PiviLedger.visibleCanjes) return;
+  const list = PiviLedger.visibleCanjes();
+  if (!list.length) { recuerdosSubEl.textContent = "Aquí se guardará todo lo que canjeéis 💞"; return; }
+  const last = list[0];
+  recuerdosSubEl.textContent = `${list.length} ${list.length === 1 ? "recuerdo" : "recuerdos"} · último: ${last.emoji} ${last.nombre}`;
+}
+
+// Canjes sin "foto" (los de antes o hechos desde una versión vieja): se crean
+// a partir del catálogo, pero solo después de leer la nube (por si ya están allí)
+let hydratedOnce = !window.PiviSync; // sin nube o en modo Dev no hay que esperar
+function migrateCanjes() {
+  if (!hydratedOnce || !rewardsData.length || !window.PiviLedger || !PiviLedger.ensureCanjes) return;
+  if (PiviLedger.ensureCanjes(rewardsData)) updateRecuerdosCard();
 }
 
 function updateNextReward() {
@@ -188,7 +196,9 @@ function redeemReward(rewardId) {
   if (points < reward.coste) return showPopup(`Te faltan ${reward.coste - points} puntos para esto.`);
 
   setPoints(points - reward.coste);
-  addRedeemed(reward.id);
+  const mark = addRedeemed(reward.id);
+  // recuerdo permanente: una "foto" del premio tal y como era al canjearlo
+  if (window.PiviLedger && PiviLedger.recordCanje) PiviLedger.recordCanje(reward, mark);
 
   if (window.PiviLedger) PiviLedger.record("reward", -reward.coste, "Canje: " + rewardName(reward));
 
@@ -457,7 +467,7 @@ function applyRewardOverrides() {
 
 fetch("recompensas.json", { cache: "no-cache" })
   .then(r => { if (!r.ok) throw new Error(`recompensas.json (${r.status})`); return r.json(); })
-  .then(data => { rewardsData = data; applyRewardOverrides(); renderRewards(); createWheelNumbers(); })
+  .then(data => { rewardsData = data; applyRewardOverrides(); renderRewards(); createWheelNumbers(); migrateCanjes(); })
   .catch(() => { showPopup("No se han podido cargar las recompensas (recompensas.json)."); renderRewards(); });
 
 // Cambios de contenido en caliente (códigos/ruleta/recompensas desde la nube)
@@ -471,6 +481,7 @@ window.addEventListener("pivi:config", () => {
 
 // Al sincronizar desde la nube: refrescar puntos/estados
 window.addEventListener("pivi:hydrated", () => {
+  if (!hydratedOnce) { hydratedOnce = true; setTimeout(migrateCanjes, 0); } // tras la 1.ª lectura de la nube
   if (spinning) return; // no destapar el resultado mientras gira
   setPoints(getPoints());
   updateWheelUI();

@@ -11,13 +11,13 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg?v=2" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-  <title>Pivi · Reto 2026</title>
+  <title>Pivi</title>
   <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1f1820':'#fbf4ef');}catch(e){}})();</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="theme.css?v=5">
-  <link rel="stylesheet" href="styles.css?v=4">
+  <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body class="has-tabbar" id="top">
 
@@ -25,6 +25,7 @@
   <a class="brand" href="index.html"><span class="brand-name">Pivi</span></a>
   <span class="spacer"></span>
   <a class="nav-link hide-mobile" href="retos.html" aria-label="Ir a Retos" title="Ir a Retos"><span class="nav-ic" aria-hidden="true">🎮</span><span class="nav-text">Retos</span></a>
+  <a class="nav-link hide-mobile" href="recuerdos.html" aria-label="Ir a Recuerdos" title="Ir a Recuerdos"><span class="nav-ic" aria-hidden="true">💞</span><span class="nav-text">Recuerdos</span></a>
   <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
   <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
 </header>
@@ -32,8 +33,8 @@
 <main class="page">
 
   <div class="page-head">
-    <h1>🎁 Reto 2026</h1>
-    <p class="subtitle">Gana Pivi Puntos con la ruleta, los retos y los códigos. Canjéalos por experiencias y regalos 💞</p>
+    <h1>🎁 Pivi</h1>
+    <p class="subtitle">Jugamos, sumamos y lo celebramos juntos 💞 Gana puntos con la ruleta, los retos y los códigos, y canjéalos por planes y regalos.</p>
   </div>
 
   <!-- TIRA DE ESTADO -->
@@ -79,10 +80,15 @@
       <div class="section-head"><h2>🎁 Regalos</h2></div>
       <div id="gifts" class="grid"></div>
 
-      <details class="history-card" id="historyWrap">
-        <summary>📜 Recompensas canjeadas</summary>
-        <ul id="redeemedList" class="redeemed-list"></ul>
-      </details>
+      <!-- lo canjeado vive en Recuerdos (historial permanente, por meses) -->
+      <a class="recuerdos-link" href="recuerdos.html">
+        <span class="rl-ic" aria-hidden="true">💞</span>
+        <span class="grow">
+          <span class="rl-title">Recuerdos</span>
+          <span class="rl-sub" id="recuerdosSub">Todo lo que habéis canjeado, con su fecha</span>
+        </span>
+        <span class="rl-go" aria-hidden="true">›</span>
+      </a>
     </section>
 
     <!-- DERECHA: PANEL -->
@@ -134,6 +140,7 @@
   <a class="tab" href="#ruleta"><span class="tab-ic" aria-hidden="true">🎡</span><span>Ruleta</span></a>
   <a class="tab" href="#premios"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
   <a class="tab" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
+  <a class="tab" href="recuerdos.html"><span class="tab-ic" aria-hidden="true">💞</span><span>Recuerdos</span></a>
 </nav>
 
 <!-- CONFETI / FX -->
@@ -161,10 +168,10 @@
 <script src="pivi-core.js?v=8"></script>
 <script src="cloud-config.js?v=3"></script>
 <script src="pivi-config.js?v=2"></script>
-<script src="pivi-dev.js?v=9"></script>
-<script src="pivi-ledger.js?v=6"></script>
-<script src="cloud-sync.js?v=6"></script>
+<script src="pivi-dev.js?v=10"></script>
+<script src="pivi-ledger.js?v=7"></script>
+<script src="cloud-sync.js?v=7"></script>
 <script src="points-policy.js?v=7"></script>
-<script src="app.js?v=7"></script>
+<script src="app.js?v=8"></script>
 </body>
 </html>

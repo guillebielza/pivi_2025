@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf4ef">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pivi">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+  <title>Recuerdos · Pivi</title>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1f1820':'#fbf4ef');}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=5">
+  <link rel="stylesheet" href="recuerdos.css?v=1">
+</head>
+<body class="has-tabbar" id="top">
+
+<header class="app-header">
+  <a class="brand" href="index.html"><span class="brand-name">Pivi</span></a>
+  <span class="spacer"></span>
+  <a class="nav-link hide-mobile" href="index.html" aria-label="Ir a Inicio" title="Ir a Inicio"><span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-text">Inicio</span></a>
+  <a class="nav-link hide-mobile" href="retos.html" aria-label="Ir a Retos" title="Ir a Retos"><span class="nav-ic" aria-hidden="true">🎮</span><span class="nav-text">Retos</span></a>
+  <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
+  <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
+</header>
+
+<main class="page rec-page">
+  <div class="page-head">
+    <h1>💞 Recuerdos</h1>
+    <p class="subtitle">Todo lo que habéis canjeado y vivido con Pivi, mes a mes.</p>
+  </div>
+
+  <!-- contadores de siempre -->
+  <section class="rec-stats" aria-label="Resumen">
+    <div class="rec-stat"><span class="rec-stat-ic" aria-hidden="true">💞</span><span class="rec-stat-val" id="statCanjes">0</span><span class="rec-stat-label" id="statCanjesLabel">recuerdos</span></div>
+    <div class="rec-stat"><span class="rec-stat-ic" aria-hidden="true">⭐</span><span class="rec-stat-val" id="statGanado">0</span><span class="rec-stat-label">puntos ganados</span></div>
+    <div class="rec-stat"><span class="rec-stat-ic" aria-hidden="true">📅</span><span class="rec-stat-val" id="statDesde">—</span><span class="rec-stat-label">juntos desde</span></div>
+  </section>
+
+  <!-- línea del tiempo: un bloque por mes (lo rellena recuerdos.js) -->
+  <section id="timeline" class="rec-timeline" aria-live="polite"></section>
+
+  <section class="card rec-activity">
+    <h2>🕒 Últimos movimientos</h2>
+    <ul id="activityFeed" class="activity-feed"></ul>
+  </section>
+</main>
+
+<!-- PESTAÑAS INFERIORES (solo se ven en el móvil) -->
+<nav class="tabbar" aria-label="Secciones">
+  <a class="tab" href="index.html"><span class="tab-ic" aria-hidden="true">🏠</span><span>Inicio</span></a>
+  <a class="tab" href="index.html#ruleta"><span class="tab-ic" aria-hidden="true">🎡</span><span>Ruleta</span></a>
+  <a class="tab" href="index.html#premios"><span class="tab-ic" aria-hidden="true">🎁</span><span>Premios</span></a>
+  <a class="tab" href="retos.html"><span class="tab-ic" aria-hidden="true">🎮</span><span>Retos</span></a>
+  <a class="tab is-active" aria-current="page" href="recuerdos.html"><span class="tab-ic" aria-hidden="true">💞</span><span>Recuerdos</span></a>
+</nav>
+
+<script src="pivi-core.js?v=8"></script>
+<script src="cloud-config.js?v=3"></script>
+<script src="pivi-config.js?v=2"></script>
+<script src="pivi-dev.js?v=10"></script>
+<script src="pivi-ledger.js?v=7"></script>
+<script src="cloud-sync.js?v=7"></script>
+<script src="recuerdos.js?v=1"></script>
+</body>
+</html>

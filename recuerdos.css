@@ -1,0 +1,100 @@
+/* ============================================================
+   recuerdos.css — Página de Recuerdos (histórico permanente).
+   El sistema base (cabecera, tarjetas, pestañas…) lo da theme.css.
+   ============================================================ */
+
+.rec-page { max-width: 760px; }
+
+/* ---------- contadores ---------- */
+.rec-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+.rec-stat {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 10px;
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+}
+.rec-stat-ic { font-size: 1.4rem; line-height: 1; }
+.rec-stat-val { font-family: var(--font-head); font-weight: 700; font-size: 1.35rem; color: var(--text); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.rec-stat-label { font-size: .78rem; color: var(--muted); font-weight: 700; }
+
+/* ---------- línea del tiempo ---------- */
+.rec-timeline { display: flex; flex-direction: column; gap: 18px; margin-bottom: 22px; }
+.rec-month {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px 10px;
+  box-shadow: var(--shadow-sm);
+}
+.rec-month-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; margin-bottom: 8px; }
+.rec-month-head h2 { margin: 0; font-size: 1.2rem; }
+.rec-note { font-size: .8rem; color: var(--muted); font-weight: 700; }
+.rec-chips { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; }
+.rec-chip {
+  font-size: .78rem; font-weight: 800; color: var(--text-soft);
+  background: var(--surface-inset); border-radius: var(--radius-pill);
+  padding: 3px 9px; white-space: nowrap;
+}
+.rec-chip.pos { color: var(--success); background: var(--success-bg); }
+
+.rec-list { list-style: none; margin: 4px 0 0; padding: 0; }
+.rec-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.rec-item:first-child { border-top: none; }
+.rec-emoji {
+  flex: 0 0 44px; height: 44px; border-radius: 14px;
+  display: grid; place-items: center;
+  font-size: 1.5rem; line-height: 1;
+  background: var(--surface-inset);
+}
+.rec-body { flex: 1; min-width: 0; }
+.rec-name { font-weight: 800; color: var(--text); line-height: 1.3; }
+.rec-detail { font-size: .9rem; color: var(--text-soft); line-height: 1.35; margin-top: 1px; }
+.rec-meta { font-size: .78rem; color: var(--muted); font-weight: 700; margin-top: 4px; }
+.rec-none { margin: 6px 0 8px; font-size: .9rem; color: var(--muted); }
+
+.rec-empty {
+  text-align: center; padding: 26px 18px;
+  background: var(--surface); border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-lg); color: var(--text-soft);
+}
+.rec-empty span { font-size: 2rem; }
+.rec-empty p { margin: 8px 0 0; line-height: 1.5; }
+
+/* ---------- últimos movimientos (mismo aspecto que en Inicio) ---------- */
+.rec-activity { margin-bottom: 8px; }
+.activity-feed { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.feed-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 4px; border-bottom: 1px solid var(--border);
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-ic { font-size: 1.1rem; width: 1.4rem; text-align: center; }
+.feed-label { flex: 1; min-width: 0; font-size: .9rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.feed-who { color: var(--primary-strong); font-weight: 700; font-size: .8rem; }
+.feed-delta { font-weight: 800; font-size: .9rem; font-variant-numeric: tabular-nums; }
+.feed-delta.pos { color: var(--success); }
+.feed-delta.neg { color: var(--danger); }
+.feed-time { font-size: .72rem; color: var(--muted); white-space: nowrap; }
+.feed-empty { padding: 12px 4px; font-size: .9rem; }
+
+@media (max-width: 760px) {
+  .rec-stats { gap: 8px; margin-bottom: 16px; }
+  .rec-stat { padding: 12px 6px; }
+  .rec-stat-val { font-size: 1.15rem; }
+  .rec-stat-label { font-size: .72rem; }
+  .rec-month { padding: 14px 14px 8px; }
+  .rec-emoji { flex-basis: 40px; height: 40px; font-size: 1.35rem; }
+}

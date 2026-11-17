@@ -33,7 +33,7 @@
   function isGameKey(k) {
     if (!k || k.indexOf(SBX) === 0) return false;
     var exact = ["points", "redeemedRewards", "revokedRewards", "usedCodes", "activityLog", "pivi_streak",
-                 "pivi_pending_ev", "pivi_feed_seen", "pivi_fixes", "pivi_updated_at"];
+                 "pivi_pending_ev", "pivi_feed_seen", "pivi_fixes", "pivi_updated_at", "pivi_canjes", "pivi_meses"];
     if (exact.indexOf(k) !== -1) return true;
     var pref = ["wheel_spin_", "weekend_played_", "weekend_rewarded_", "quiz_daily_", "wordle_daily_", "wordle_"];
     for (var i = 0; i < pref.length; i++) if (k.indexOf(pref[i]) === 0) return true;

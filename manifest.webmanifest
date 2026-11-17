@@ -1,7 +1,7 @@
 {
-  "name": "Pivi · Reto 2026",
+  "name": "Pivi",
   "short_name": "Pivi",
-  "description": "Gana Pivi Puntos con la ruleta, los retos y los códigos, y canjéalos por experiencias y regalos.",
+  "description": "Jugamos, sumamos y lo celebramos juntos: gana Pivi Puntos con la ruleta, los retos y los códigos, y canjéalos por planes y regalos.",
   "id": "./",
   "start_url": "./index.html",
   "scope": "./",
@@ -19,6 +19,7 @@
   ],
   "shortcuts": [
     { "name": "Retos", "short_name": "Retos", "url": "./retos.html", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] },
-    { "name": "Ruleta", "short_name": "Ruleta", "url": "./index.html#ruleta", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] }
+    { "name": "Ruleta", "short_name": "Ruleta", "url": "./index.html#ruleta", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] },
+    { "name": "Recuerdos", "short_name": "Recuerdos", "url": "./recuerdos.html", "icons": [{ "src": "icon-192.png?v=2", "sizes": "192x192" }] }
   ]
 }

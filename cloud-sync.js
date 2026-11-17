@@ -26,7 +26,8 @@
   var ENABLED = !!(cfg.url && cfg.anonKey && cfg.profileId);
 
   // Claves de localStorage que viajan a la nube
-  var EXACT_KEYS = ["points", "redeemedRewards", "revokedRewards", "usedCodes", "activityLog", "pivi_streak", "pivi_fixes"];
+  var EXACT_KEYS = ["points", "redeemedRewards", "revokedRewards", "usedCodes", "activityLog", "pivi_streak", "pivi_fixes",
+                    "pivi_canjes", "pivi_meses"];
   var PREFIXES = ["wheel_spin_", "weekend_played_", "weekend_rewarded_"];
   var META_UPDATED = "pivi_updated_at";
 
@@ -136,7 +137,12 @@
      (que perdía canjeos/códigos si dos dispositivos jugaban a la
      vez), fusionamos campo a campo:
        - redeemedRewards / usedCodes -> unión (conjuntos que crecen)
-       - activityLog                 -> unión por id de evento
+       - activityLog                 -> unión por id de evento (se recorta
+         como dice PiviLedger.trimLog: 80 + todo el mes actual y el anterior)
+       - pivi_canjes (recuerdos)     -> unión por id; si hay dos versiones
+         del mismo canje, gana la "foto" real frente a la reconstruida
+       - pivi_meses (resumen)        -> por mes, el resumen más completo,
+         recalculado con el registro ya fusionado
        - candados de día (locks)     -> fecha más reciente
        - pivi_streak                 -> mayor racha / día más reciente
        - points                      -> lo de la NUBE + lo que este
@@ -189,14 +195,36 @@
     });
     return JSON.stringify(out);
   }
-  function unionLog(localStr, cloudStr) {
+  function unionLogArr(localStr, cloudStr) {
     var seen = {}, out = [];
     parseArr(localStr).concat(parseArr(cloudStr)).forEach(function (ev) {
       if (ev && ev.dev) return; // lo hecho en modo Dev nunca viaja a la nube
       if (ev && ev.id && !seen[ev.id]) { seen[ev.id] = 1; out.push(ev); }
     });
     out.sort(function (a, b) { return (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0); });
-    return JSON.stringify(out.slice(-80));
+    return out;
+  }
+  function unionLog(localStr, cloudStr) {
+    var out = unionLogArr(localStr, cloudStr);
+    var trim = (window.PiviLedger && PiviLedger.trimLog) || function (a) { return a.slice(-80); };
+    return JSON.stringify(trim(out));
+  }
+  // Recuerdos: unión por id. Con dos versiones del mismo canje gana la
+  // "foto" hecha al canjear frente a la reconstruida, y la que tiene fecha.
+  function mergeCanjes(localStr, cloudStr) {
+    var byId = {}, order = [];
+    function better(a, b) {
+      if (!!a.migrado !== !!b.migrado) return !a.migrado;
+      if (!!a.ts !== !!b.ts) return !!a.ts;
+      return false;
+    }
+    parseArr(cloudStr).concat(parseArr(localStr)).forEach(function (c) {
+      if (!c || !c.id || c.dev) return; // pruebas del modo Dev: nunca a la nube
+      if (!byId[c.id]) { byId[c.id] = c; order.push(c.id); }
+      else if (better(c, byId[c.id])) byId[c.id] = c;
+    });
+    var str = JSON.stringify(order.map(function (id) { return byId[id]; }));
+    return (cloudStr != null && JSON.stringify(parseArr(cloudStr)) === str) ? cloudStr : str;
   }
   function mergeStreak(localStr, cloudStr) {
     var a, b;
@@ -220,6 +248,10 @@
         out[k] = unionArray(lv, cv);
       } else if (k === "activityLog") {
         out[k] = unionLog(lv, cv);
+      } else if (k === "pivi_canjes") {
+        out[k] = mergeCanjes(lv, cv);
+      } else if (k === "pivi_meses") {
+        out[k] = cv != null ? cv : lv; // se recalcula abajo, con el registro ya fusionado
       } else if (k === "pivi_streak") {
         out[k] = mergeStreak(lv, cv);
       } else if (isLockKey(k)) {
@@ -232,6 +264,17 @@
         else out[k] = cloudNewer ? cv : lv;
       }
     });
+    // Resumen por mes: lo guardado en los dos lados + lo que sale del registro
+    // completo (antes de recortarlo), quedándose por mes con el más completo.
+    if (window.PiviLedger && PiviLedger.mergeMeses && PiviLedger.summarize) {
+      var cm = cloudState && cloudState.pivi_meses;
+      var mm = PiviLedger.mergeMeses(cm, localState && localState.pivi_meses,
+        PiviLedger.summarize(unionLogArr(localState && localState.activityLog, cloudState && cloudState.activityLog)));
+      if (Object.keys(mm).length) {
+        var ms = JSON.stringify(mm);
+        out.pivi_meses = (cm != null && JSON.stringify(PiviLedger.mergeMeses(cm)) === ms) ? cm : ms;
+      }
+    }
     return out;
   }
 
@@ -317,7 +360,9 @@
       var rec = rows && rows.length ? rows[0] : null;
       var merged, ts, needPush;
 
+      var extra = {}; // claves de la nube que esta versión no conoce: se conservan tal cual
       if (rec) {
+        Object.keys(rec.state || {}).forEach(function (k) { if (!isTracked(k)) extra[k] = rec.state[k]; });
         var cloudState = filterTracked(rec.state || {});
         var cloudMs = rec.updated_at ? Date.parse(rec.updated_at) : 0;
         var cloudNewer = cloudMs >= localMs;
@@ -338,7 +383,7 @@
 
       if (!needPush) { setBadge("saved"); return; }
       if (forcePush) ts = new Date().toISOString();
-      return cloudUpsert(merged, ts).then(function () { setBadge("saved"); });
+      return cloudUpsert(Object.assign({}, extra, merged), ts).then(function () { setBadge("saved"); });
     }).catch(function (e) {
       ready = true; // sin conexión: los cambios quedan pendientes y se reintentan
       pushPending = pushPending || !!forcePush || pendingIds().length > 0;

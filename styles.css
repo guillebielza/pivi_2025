@@ -112,27 +112,25 @@ a.stat-card:focus-visible { outline: none; box-shadow: var(--ring); }
 }
 .reward:disabled:hover, .reward:disabled:active { transform: none; box-shadow: var(--shadow-sm); }
 
-/* ---------- Historial ---------- */
-.history-card {
+/* ---------- Acceso a Recuerdos (el historial vive en recuerdos.html) ---------- */
+.recuerdos-link {
+  display: flex; align-items: center; gap: 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 6px 18px;
+  padding: 14px 18px;
   box-shadow: var(--shadow-sm);
+  text-decoration: none; color: inherit;
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
-.history-card > summary {
-  cursor: pointer; font-family: var(--font-head); font-weight: 700;
-  padding: 12px 0; list-style: none;
-}
-.history-card > summary::-webkit-details-marker { display: none; }
-.history-card > summary::before { content: "▸ "; color: var(--muted); }
-.history-card[open] > summary::before { content: "▾ "; }
-.redeemed-list { list-style: none; margin: 0 0 14px; padding: 0; }
-.redeemed-list li {
-  padding: 9px 0; border-top: 1px solid var(--border);
-  color: var(--text-soft); font-size: .92rem;
-}
-.redeemed-list li:first-child { border-top: none; }
+.recuerdos-link .rl-ic { font-size: 1.6rem; line-height: 1; }
+.recuerdos-link .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.recuerdos-link .rl-title { font-family: var(--font-head); font-weight: 700; font-size: 1.08rem; color: var(--text); }
+.recuerdos-link .rl-sub { font-size: .88rem; color: var(--text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recuerdos-link .rl-go { font-size: 1.6rem; color: var(--muted); line-height: 1; }
+@media (hover: hover) { .recuerdos-link:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--border-strong); } }
+.recuerdos-link:active { transform: scale(.98); }
+.recuerdos-link:focus-visible { outline: none; box-shadow: var(--ring); }
 
 /* ---------- Panel derecho ---------- */
 .right-panel { display: flex; flex-direction: column; gap: 16px; }
@@ -244,5 +242,5 @@ a.stat-card:focus-visible { outline: none; box-shadow: var(--ring); }
   .wheel-container { width: min(240px, 70vw); }
   #codeInput { font-size: 16px; } /* 16px: el iPhone no hace zoom al escribir */
   .code-row .btn { padding-left: 16px; padding-right: 16px; }
-  .history-card { padding: 4px 14px; }
+  .recuerdos-link { padding: 12px 14px; }
 }
