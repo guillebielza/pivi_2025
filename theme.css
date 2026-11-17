@@ -167,7 +167,6 @@ a { color: var(--primary-strong); }
   border-bottom: 1px solid var(--border);
 }
 .app-header .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: 700; font-size: 1.15rem; color: var(--text); text-decoration: none; }
-.app-header .brand .logo { font-size: 1.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,.15)); }
 .app-header .spacer { flex: 1; }
 
 .nav-link {
@@ -349,7 +348,6 @@ a { color: var(--primary-strong); }
     padding-right: max(12px, var(--safe-right));
   }
   .app-header .brand { gap: 7px; font-size: 1.08rem; }
-  .app-header .brand .logo { font-size: 1.4rem; }
 
   /* enlaces de la cabecera -> botones redondos solo con icono */
   .nav-link {
@@ -415,10 +413,9 @@ a { color: var(--primary-strong); }
   .start-actions .btn { flex-basis: 100%; } /* "Practicar" / "Jugar reto": uno debajo de otro, a lo ancho */
 }
 
-/* Teléfonos estrechos: en los juegos (cabecera con ⬅️ y 🏠) el nombre
-   "Pivi" cede su sitio a los botones */
+/* Teléfonos estrechos: botones algo más compactos (el nombre "Pivi"
+   se queda: ya no hay logo y es el enlace a Inicio) */
 @media (max-width: 400px) {
-  .app-header:has(.nav-link:not(.hide-mobile)) .brand-name { display: none; }
   .points-chip { padding: 8px 11px; }
 }
 

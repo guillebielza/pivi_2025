@@ -1,7 +1,7 @@
 /* ============================================================
    pivi-dev.js — Modo desarrollador (SOLO para el dueño)
    ------------------------------------------------------------
-   - Activación secreta: 5 toques en el logo 🎁 + PIN.
+   - Activación secreta: 5 toques en «Pivi» (cabecera de la portada) + PIN.
    - AISLAMIENTO: mientras Dev está ON, todos los datos del juego
      se guardan en un "sandbox" (prefijo pividev::) y la
      SINCRONIZACIÓN se pausa. Tus puntos/canjeos reales no se tocan.
@@ -18,7 +18,7 @@
 
   /* ====== CONFIG: cambia tu PIN aquí ====== */
   var DEV_PIN = "2026";          // <-- tu PIN secreto (cámbialo)
-  var TAPS_NEEDED = 5;           // toques en el logo para pedir PIN
+  var TAPS_NEEDED = 5;           // toques en «Pivi» para pedir PIN
   var TAP_WINDOW_MS = 1500;      // ventana de tiempo entre toques
 
   /* ====== claves ====== */
@@ -103,7 +103,7 @@
     else window.alert("PIN incorrecto.");
   }
 
-  /* gesto secreto: TAPS_NEEDED toques en el logo */
+  /* gesto secreto: TAPS_NEEDED toques en «Pivi» (portada) */
   var taps = 0, tapTimer = null;
   function onLogoTap(e) {
     e.preventDefault(); e.stopPropagation();
@@ -118,10 +118,10 @@
     if (p) p.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  // Solo en la portada: en el resto de páginas el logo vuelve a ser el
-  // enlace a Inicio (antes el gesto se comía el toque y no llevaba a ningún sitio)
+  // Sobre el nombre "Pivi" de la cabecera (ya no hay logo 🎁), y solo en la
+  // portada: en el resto de páginas "Pivi" es el enlace a Inicio de siempre
   function attachGesture() {
-    var logo = document.querySelector(".app-header .logo");
+    var logo = document.querySelector(".app-header .brand");
     if (!logo) return;
     var here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
     if (here !== "index.html") return;
