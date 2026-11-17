@@ -28,23 +28,38 @@
   var FORCE_KEY = "pivi_dev_force";  // "1" = todas las recompensas disponibles
   var SBX = "pividev::";             // prefijo del sandbox
 
+  var SNAP_KEY = "pivi_dev_realsnap"; // copia de tus datos REALES al entrar (se restaura al salir)
+
   function isGameKey(k) {
     if (!k || k.indexOf(SBX) === 0) return false;
-    var exact = ["points", "redeemedRewards", "usedCodes", "activityLog", "pivi_streak", "pivi_pending_ev", "pivi_feed_seen"];
+    var exact = ["points", "redeemedRewards", "revokedRewards", "usedCodes", "activityLog", "pivi_streak",
+                 "pivi_pending_ev", "pivi_feed_seen", "pivi_fixes", "pivi_updated_at"];
     if (exact.indexOf(k) !== -1) return true;
     var pref = ["wheel_spin_", "weekend_played_", "weekend_rewarded_", "quiz_daily_", "wordle_daily_", "wordle_"];
     for (var i = 0; i < pref.length; i++) if (k.indexOf(pref[i]) === 0) return true;
     return false;
   }
 
-  var DEV = false;
-  try { DEV = localStorage.getItem(FLAG) === "1"; } catch (e) {}
-  window.PIVI_DEV = DEV;
+  /* ---------- accesos NATIVOS al almacenamiento ----------
+     OJO: hay que parchear Storage.prototype, NO localStorage.setItem.
+     Safari (iPhone) y Firefox no dejan cambiar el método en el propio
+     localStorage: guardan la función como un dato y siguen escribiendo
+     en las claves REALES. Por eso el sandbox no aislaba en el iPhone
+     (el 17-nov-2026 un canje de prueba llegó a los datos reales). */
+  var SP = Storage.prototype;
+  var N = { get: SP.getItem, set: SP.setItem, rem: SP.removeItem, clear: SP.clear };
+  function _get(k) { return N.get.call(localStorage, k); }
+  function _set(k, v) { return N.set.call(localStorage, k, v); }
+  function _rem(k) { return N.rem.call(localStorage, k); }
+  function realKeys() {
+    var out = [];
+    for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (isGameKey(k)) out.push(k); }
+    return out;
+  }
 
-  /* ---------- guardas originales (sin parchear) ---------- */
-  var _get = localStorage.getItem.bind(localStorage);
-  var _set = localStorage.setItem.bind(localStorage);
-  var _rem = localStorage.removeItem.bind(localStorage);
+  var DEV = false;
+  try { DEV = _get(FLAG) === "1"; } catch (e) {}
+  var SANDBOX_FAILED = false;
 
   /* ---------- reloj (viaje en el tiempo) ---------- */
   window.PiviClock = {
@@ -58,12 +73,38 @@
   };
 
   if (DEV) {
-    /* 1) SANDBOX: redirige las claves del juego a pividev:: */
-    localStorage.getItem = function (k) { return _get(isGameKey(k) ? SBX + k : k); };
-    localStorage.setItem = function (k, v) { return _set(isGameKey(k) ? SBX + k : k, v); };
-    localStorage.removeItem = function (k) { return _rem(isGameKey(k) ? SBX + k : k); };
+    /* 1) SANDBOX: redirige las claves del juego a pividev:: (solo en localStorage) */
+    var mapKey = function (store, k) { return (store === window.localStorage && isGameKey(k)) ? SBX + k : k; };
+    var ok = false;
+    try {
+      SP.getItem = function (k) { return N.get.call(this, mapKey(this, k)); };
+      SP.setItem = function (k, v) { return N.set.call(this, mapKey(this, k), v); };
+      SP.removeItem = function (k) { return N.rem.call(this, mapKey(this, k)); };
+      SP.clear = function () { // en Dev, "borrar todo" solo borra el sandbox
+        if (this !== window.localStorage) return N.clear.call(this);
+        var ks = [];
+        for (var i = 0; i < this.length; i++) { var k = this.key(i); if (k && k.indexOf(SBX) === 0) ks.push(k); }
+        ks.forEach(function (k) { _rem(k); });
+      };
 
-    /* 2) PAUSAR sincronización (cloud-sync verá que no hay config) */
+    /* 2) COMPROBACIÓN: ¿de verdad va al sandbox? Si no, NO hay modo Dev
+          (más vale quedarse sin pruebas que tocar los datos reales). */
+      var PK = "weekend_played___sandbox_probe";
+      localStorage.setItem(PK, "1");
+      ok = _get(SBX + PK) === "1" && _get(PK) === null && localStorage.getItem(PK) === "1";
+      _rem(SBX + PK); _rem(PK);
+    } catch (e) { ok = false; }
+    if (!ok) {
+      try { SP.getItem = N.get; SP.setItem = N.set; SP.removeItem = N.rem; SP.clear = N.clear; } catch (e) {}
+      try { _rem(FLAG); } catch (e) {}
+      DEV = false;
+      SANDBOX_FAILED = true;
+    }
+  }
+  window.PIVI_DEV = DEV;
+
+  if (DEV) {
+    /* 3) PAUSAR sincronización (cloud-sync verá que no hay config) */
     window.PIVI_CLOUD = null;
 
     /* 3) flags de capacidades (vivos, leídos por app.js / points-policy) */
@@ -78,19 +119,34 @@
      Activación / desactivación
      ============================================================ */
   function enableDev() {
-    // siembra el sandbox con una copia de tus datos REALES (snapshot)
     try {
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (isGameKey(k)) {
-          if (_get(SBX + k) == null) _set(SBX + k, _get(k));
-        }
-      }
+      var snap = {};
+      realKeys().forEach(function (k) {
+        snap[k] = _get(k);
+        // siembra el sandbox con una copia de tus datos reales (solo lo que falte)
+        if (_get(SBX + k) == null) _set(SBX + k, _get(k));
+      });
+      // copia de seguridad de lo REAL: al salir se deja exactamente así
+      _set(SNAP_KEY, JSON.stringify({ ts: new Date().toISOString(), data: snap }));
     } catch (e) {}
     _set(FLAG, "1");
     location.reload();
   }
+  // Al salir: tus datos reales vuelven a como estaban al entrar. En Dev la
+  // sincronización está parada, así que lo real no debería haber cambiado;
+  // si algo se coló (como pasaba en el iPhone), aquí se deshace.
+  function restoreRealSnapshot() {
+    var raw = _get(SNAP_KEY);
+    if (!raw) return;
+    try {
+      var snap = JSON.parse(raw).data || {};
+      realKeys().forEach(function (k) { if (!(k in snap)) _rem(k); });
+      Object.keys(snap).forEach(function (k) { if (snap[k] == null) _rem(k); else _set(k, snap[k]); });
+    } catch (e) {}
+    _rem(SNAP_KEY);
+  }
   function disableDev() {
+    restoreRealSnapshot();
     _rem(FLAG);
     location.reload();
   }
@@ -206,7 +262,7 @@
       var log = PiviLedger.readLog();
       log.push({
         id: "sim-" + Date.now(), ts: new Date().toISOString(),
-        type: "wheel", delta: amount, label: "Ruleta (pareja)", device: "pareja-sim"
+        type: "wheel", delta: amount, label: "Ruleta (pareja)", device: "pareja-sim", dev: true
       });
       localStorage.setItem("activityLog", JSON.stringify(log)); // sandbox
       addPointsDev(amount); // la pareja también suma (solo en el sandbox)
@@ -558,9 +614,14 @@
   function boot() {
     attachGesture();
     if (window.PIVI_DEV) { markDevUI(); buildBar(); }
+    if (SANDBOX_FAILED) {
+      setTimeout(function () {
+        window.alert("🛠 El modo pruebas no puede aislar los datos en este navegador, así que se ha desactivado.\n\nNo se ha tocado nada real: estás en modo normal.");
+      }, 300);
+    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
-  window.PiviDev = { enable: enableDev, disable: disableDev, isOn: function () { return !!window.PIVI_DEV; } };
+  window.PiviDev = { enable: enableDev, disable: disableDev, restoreReal: restoreRealSnapshot, isOn: function () { return !!window.PIVI_DEV; } };
 })();

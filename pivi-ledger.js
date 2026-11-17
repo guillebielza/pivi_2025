@@ -18,7 +18,35 @@
   var SEEN_KEY = "pivi_feed_seen";   // local: último evento ya "visto" (para el aviso)
   var DEVICE_KEY = "pivi_device";
   var PENDING_KEY = "pivi_pending_ev"; // local: eventos con puntos aún no subidos (lo lee cloud-sync)
+  var FIX_KEY = "pivi_fixes";          // correcciones ya aplicadas (viaja a la nube, unión)
+  var REVOKED_KEY = "revokedRewards";  // canjes anulados (viaja a la nube, unión)
   var MAX_EVENTS = 80;
+
+  /* ---------------- CORRECCIONES DE DATOS ----------------
+     17-nov-2026: en el iPhone el modo Dev no aislaba (Safari no deja
+     sustituir localStorage.setItem) y 7 acciones de prueba llegaron a
+     los datos reales. Esta corrección, que se aplica UNA sola vez entre
+     todos los dispositivos (queda apuntada en "pivi_fixes"):
+       - anula esos eventos (dejan de verse y de contar),
+       - devuelve sus puntos con eventos "undo-…" (−1 −6 −10 +100 = +83),
+       - deshace el canje de prueba de Beata Pasta (recompensa 6). */
+  var FIXES = [{
+    id: "fix-2026-11-17-dev",
+    label: "Corrección: prueba del modo Dev anulada",
+    voids: {
+      "wheel-mwl6fnmt-gbjx": 1, "wheel-mwl6o9kf-4luo": 6, "muro-mwl6rgh9-h6p9": 10,
+      "reward-mwl7fgjc-fkvh": -100,
+      "sim-1794949255720": 0, "sim-1794949257582": 0, "sim-1794949258966": 0
+    },
+    revokeRewards: ["6"]
+  }];
+  var VOID = {};
+  FIXES.forEach(function (fx) { Object.keys(fx.voids).forEach(function (id) { VOID[id] = 1; }); });
+  function isVoid(id) { return !!VOID[id]; }
+  // eventos que no se enseñan ni cuentan: de pruebas, anulados o correcciones
+  function isHidden(e) {
+    return !e || !!e.dev || e.type === "fix" || !!VOID[e.id] || e.device === "pareja-sim";
+  }
 
   var ICONS = {
     wheel: "🎡", code: "🏷️", reward: "🎁",
@@ -46,6 +74,10 @@
     arr.sort(function (a, b) { return (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0); });
     localStorage.setItem(LOG_KEY, JSON.stringify(arr.slice(-MAX_EVENTS)));
   }
+  function visibleLog() { return readLog().filter(function (e) { return !isHidden(e); }); }
+  function readArr(k) {
+    try { var a = JSON.parse(localStorage.getItem(k)); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+  }
 
   /* Registra un evento (delta = puntos ganados/gastados; 0 si no aplica).
      opts.silent: no repinta el feed todavía (p. ej. la ruleta aún gira). */
@@ -59,6 +91,8 @@
       label: label || "",
       device: deviceId()
     };
+    // hecho en modo Dev: queda marcado y la nube lo ignora aunque se colase
+    if (window.PIVI_DEV) ev.dev = true;
     // pendiente de subir: cloud-sync suma estos puntos a los de la nube
     // al fusionar, así nunca se pierden si el otro dispositivo guarda a la vez
     if (ev.delta) {
@@ -108,7 +142,7 @@
   function weekPoints(d) {
     var from = weekStart(d).getTime();
     var sum = 0;
-    readLog().forEach(function (e) {
+    visibleLog().forEach(function (e) {
       if (e && e.delta > 0 && Date.parse(e.ts) >= from) sum += e.delta;
     });
     return sum;
@@ -138,7 +172,7 @@
   function render() {
     var box = document.getElementById("activityFeed");
     if (!box) return;
-    var log = readLog().slice().reverse();
+    var log = visibleLog().slice().reverse();
     if (!log.length) {
       box.innerHTML = '<li class="feed-empty muted">Aún no hay actividad. ¡Gana tus primeros puntos! ✨</li>';
       return;
@@ -171,7 +205,7 @@
     // primer evento posterior al visto que sea de otro dispositivo
     var fresh = null;
     for (var j = seenIdx + 1; j < log.length; j++) {
-      if (log[j].device !== me) { fresh = log[j]; }
+      if (log[j].device !== me && !isHidden(log[j])) { fresh = log[j]; }
     }
     // marca todo como visto
     localStorage.setItem(SEEN_KEY, log[log.length - 1].id);
@@ -189,9 +223,46 @@
     if (log.length) localStorage.setItem(SEEN_KEY, log[log.length - 1].id);
   }
 
+  /* Aplica las correcciones pendientes (una sola vez entre todos los
+     dispositivos). Solo con la nube real activa y tras sincronizar, para
+     saber si otro dispositivo ya la aplicó. */
+  function applyFixes() {
+    if (window.PIVI_DEV || !window.PiviSync) return;
+    var done = readArr(FIX_KEY).map(String);
+    var todo = FIXES.filter(function (fx) { return done.indexOf(fx.id) === -1; });
+    if (!todo.length) return;
+    var log = readLog();
+    var have = {};
+    log.forEach(function (e) { if (e && e.id) have[e.id] = 1; });
+    var pend = readArr(PENDING_KEY);
+    var revoked = readArr(REVOKED_KEY).map(String);
+    todo.forEach(function (fx) {
+      Object.keys(fx.voids).forEach(function (origId) {
+        var d = Number(fx.voids[origId]) || 0;
+        var uid = "undo-" + origId;
+        if (!d || have[uid]) return;
+        log.push({ id: uid, ts: nowISO(), type: "fix", delta: -d, label: fx.label, device: deviceId(), fix: fx.id, voids: origId });
+        pend.push(uid);
+        have[uid] = 1;
+      });
+      (fx.revokeRewards || []).forEach(function (t) { if (revoked.indexOf(String(t)) === -1) revoked.push(String(t)); });
+      done.push(fx.id);
+    });
+    localStorage.setItem(PENDING_KEY, JSON.stringify(pend.slice(-60)));
+    localStorage.setItem(REVOKED_KEY, JSON.stringify(revoked));
+    localStorage.setItem(FIX_KEY, JSON.stringify(done));
+    writeLog(log); // al cambiar el registro, cloud-sync sube todo
+    render(); renderStreak();
+    if (typeof window.renderRewards === "function") { try { window.renderRewards(); } catch (e) {} }
+  }
+
   window.PiviLedger = {
     record: record,
     readLog: readLog,
+    visibleLog: visibleLog,
+    isHidden: isHidden,
+    isVoid: isVoid,
+    applyFixes: applyFixes,
     render: render,
     touchStreak: touchStreak,
     getStreak: getStreak,
@@ -212,5 +283,6 @@
   window.addEventListener("pivi:hydrated", function () {
     if (firstHydrate) { firstHydrate = false; render(); renderStreak(); markSeen(); }
     else { notifyNewFromOther(); renderStreak(); }
+    setTimeout(applyFixes, 0); // tras la 1.ª sincronización (ya se sabe qué hay en la nube)
   });
 })();

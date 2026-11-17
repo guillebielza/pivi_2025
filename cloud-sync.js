@@ -26,21 +26,25 @@
   var ENABLED = !!(cfg.url && cfg.anonKey && cfg.profileId);
 
   // Claves de localStorage que viajan a la nube
-  var EXACT_KEYS = ["points", "redeemedRewards", "usedCodes", "activityLog", "pivi_streak"];
+  var EXACT_KEYS = ["points", "redeemedRewards", "revokedRewards", "usedCodes", "activityLog", "pivi_streak", "pivi_fixes"];
   var PREFIXES = ["wheel_spin_", "weekend_played_", "weekend_rewarded_"];
   var META_UPDATED = "pivi_updated_at";
 
   // Claves que se fusionan por UNIÓN (nunca se pierde nada al sincronizar)
-  var UNION_ARRAYS = ["redeemedRewards", "usedCodes"];
+  var UNION_ARRAYS = ["redeemedRewards", "revokedRewards", "usedCodes", "pivi_fixes"];
   function isLockKey(k) {
     return k.indexOf("wheel_spin_") === 0 || k.indexOf("weekend_played_") === 0 || k.indexOf("weekend_rewarded_") === 0;
   }
 
-  // Accesos "crudos" al storage (sin pasar por nuestro parche)
-  var rawGet = localStorage.getItem.bind(localStorage);
-  var rawSet = localStorage.setItem.bind(localStorage);
-  var rawRemove = localStorage.removeItem.bind(localStorage);
-  var rawClear = localStorage.clear.bind(localStorage);
+  // Accesos "crudos" al storage (sin pasar por nuestro parche).
+  // Se toman de Storage.prototype: en Safari/Firefox no se puede cambiar
+  // localStorage.setItem directamente (guarda la función como un dato).
+  var SP = Storage.prototype;
+  var N = { get: SP.getItem, set: SP.setItem, rem: SP.removeItem, clear: SP.clear };
+  function rawGet(k) { return N.get.call(localStorage, k); }
+  function rawSet(k, v) { return N.set.call(localStorage, k, v); }
+  function rawRemove(k) { return N.rem.call(localStorage, k); }
+  function rawClear() { return N.clear.call(localStorage); }
 
   function isTracked(k) {
     if (!k) return false;
@@ -65,17 +69,21 @@
                          // Evita que las escrituras de arranque (p.ej. setPoints(getPoints()))
                          // se cuenten como "cambios" y pisen lo que hay en la nube.
 
-  localStorage.setItem = function (k, v) {
-    rawSet(k, v);
-    if (ready && !hydrating && isTracked(k)) onLocalChange();
+  // En el prototipo y solo para localStorage (así también funciona en el iPhone)
+  SP.setItem = function (k, v) {
+    var r = N.set.call(this, k, v);
+    if (this === window.localStorage && ready && !hydrating && isTracked(k)) onLocalChange();
+    return r;
   };
-  localStorage.removeItem = function (k) {
-    rawRemove(k);
-    if (ready && !hydrating && isTracked(k)) onLocalChange();
+  SP.removeItem = function (k) {
+    var r = N.rem.call(this, k);
+    if (this === window.localStorage && ready && !hydrating && isTracked(k)) onLocalChange();
+    return r;
   };
-  localStorage.clear = function () {
-    rawClear();
-    if (ready && !hydrating) onLocalChange();
+  SP.clear = function () {
+    var r = N.clear.call(this);
+    if (this === window.localStorage && ready && !hydrating) onLocalChange();
+    return r;
   };
 
   /* ---------- helpers de estado ---------- */
@@ -146,9 +154,14 @@
     parseArr(cloudState && cloudState.activityLog).forEach(function (ev) { if (ev && ev.id) inCloud[ev.id] = 1; });
     var sum = 0;
     parseArr(localState && localState.activityLog).forEach(function (ev) {
-      if (ev && pend[ev.id] && !inCloud[ev.id]) sum += Number(ev.delta) || 0;
+      if (!ev || !pend[ev.id] || inCloud[ev.id]) return;
+      if (ev.dev || isVoidEvent(ev.id)) return; // pruebas del modo Dev / anulados: nunca suman
+      sum += Number(ev.delta) || 0;
     });
     return sum;
+  }
+  function isVoidEvent(id) {
+    return !!(window.PiviLedger && PiviLedger.isVoid && PiviLedger.isVoid(id));
   }
   // Un evento deja de estar pendiente cuando lo VEMOS en la nube al
   // leerla (no basta con haberlo subido: si el otro dispositivo
@@ -160,7 +173,7 @@
     var seen = {}, mine = {};
     parseArr(cloudState && cloudState.activityLog).forEach(function (ev) { if (ev && ev.id) seen[ev.id] = 1; });
     parseArr(localState && localState.activityLog).forEach(function (ev) { if (ev && ev.id) mine[ev.id] = 1; });
-    var left = pend.filter(function (id) { return !seen[id] && mine[id]; });
+    var left = pend.filter(function (id) { return !seen[id] && mine[id] && !isVoidEvent(id); });
     if (left.length === pend.length) return;
     if (left.length) rawSet(PENDING_KEY, JSON.stringify(left));
     else rawRemove(PENDING_KEY);
@@ -179,6 +192,7 @@
   function unionLog(localStr, cloudStr) {
     var seen = {}, out = [];
     parseArr(localStr).concat(parseArr(cloudStr)).forEach(function (ev) {
+      if (ev && ev.dev) return; // lo hecho en modo Dev nunca viaja a la nube
       if (ev && ev.id && !seen[ev.id]) { seen[ev.id] = 1; out.push(ev); }
     });
     out.sort(function (a, b) { return (a.ts < b.ts ? -1 : a.ts > b.ts ? 1 : 0); });

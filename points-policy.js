@@ -148,6 +148,8 @@
     const from = sat.getTime();
     let log = [];
     try { log = JSON.parse(localStorage.getItem("activityLog")) || []; } catch {}
+    // sin pruebas del modo Dev, anulados ni correcciones
+    if (window.PiviLedger && PiviLedger.isHidden) log = log.filter(e => !PiviLedger.isHidden(e));
     const games = {};
     let played = 0, points = 0;
     GAMES.forEach(g => {

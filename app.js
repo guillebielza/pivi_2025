@@ -19,8 +19,27 @@ function setPoints(value) {
   else { const el = document.getElementById("points"); if (el) el.textContent = String(v); }
   renderRewards();
 }
-function getRedeemed() { try { return JSON.parse(localStorage.getItem("redeemedRewards")) || []; } catch (e) { return []; } }
-function setRedeemed(arr) { localStorage.setItem("redeemedRewards", JSON.stringify(arr)); }
+// Canjes: "redeemedRewards" guarda una marca por canje ("6" en los
+// antiguos, "6#k3x9" en los nuevos) y "revokedRewards" las marcas anuladas
+// (p. ej. el canje de prueba que se coló desde el modo Dev). Las dos listas
+// se fusionan por unión en la nube; anular una marca no impide volver a
+// canjear esa recompensa de verdad más adelante (la marca nueva es otra).
+function readArr(key) { try { const a = JSON.parse(localStorage.getItem(key)); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+function getRedeemed() {
+  const revoked = new Set(readArr("revokedRewards").map(String));
+  const ids = [];
+  readArr("redeemedRewards").forEach(t => {
+    if (revoked.has(String(t))) return;
+    const id = Number(String(t).split("#")[0]);
+    if (!isNaN(id) && !ids.includes(id)) ids.push(id);
+  });
+  return ids;
+}
+function addRedeemed(id) {
+  const raw = readArr("redeemedRewards");
+  raw.push(id + "#" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5));
+  localStorage.setItem("redeemedRewards", JSON.stringify(raw));
+}
 
 /* ================== POPUP ================== */
 function showPopup(text) {
@@ -169,9 +188,7 @@ function redeemReward(rewardId) {
   if (points < reward.coste) return showPopup(`Te faltan ${reward.coste - points} puntos para esto.`);
 
   setPoints(points - reward.coste);
-  const redeemed = getRedeemed();
-  redeemed.push(reward.id);
-  setRedeemed(redeemed);
+  addRedeemed(reward.id);
 
   if (window.PiviLedger) PiviLedger.record("reward", -reward.coste, "Canje: " + rewardName(reward));
 

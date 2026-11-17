@@ -14,6 +14,17 @@
 (function () {
   "use strict";
 
+  /* ---------------- LIMPIEZA: claves basura de versiones anteriores ----------------
+     Antes se hacía "localStorage.setItem = function…" para vigilar los
+     cambios. Safari (iPhone) y Firefox no lo permiten: en vez de cambiar
+     el método GUARDABAN el texto de la función como un dato. Se borran. */
+  try {
+    ["getItem", "setItem", "removeItem", "clear", "key"].forEach(function (n) {
+      var v = Storage.prototype.getItem.call(localStorage, n);
+      if (typeof v === "string" && /^\s*(function|\()/.test(v)) Storage.prototype.removeItem.call(localStorage, n);
+    });
+  } catch (e) { /* sin almacenamiento */ }
+
   /* ---------------- TEMA ---------------- */
   var THEME_KEY = "pivi_theme";
   function preferred() {
