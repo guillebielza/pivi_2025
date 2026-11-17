@@ -115,7 +115,7 @@
     if (!bypass) localStorage.setItem(rewardKey(g), wk);
 
     if (window.PiviLedger) {
-      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones" };
+      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones", muro: "Reto Muro de pinchos" };
       window.PiviLedger.record(g, n, names[g] || ("Reto " + g));
     }
 

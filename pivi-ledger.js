@@ -22,6 +22,7 @@
   var ICONS = {
     wheel: "🎡", code: "🏷️", reward: "🎁",
     quiz: "🧩", wordle: "🟩", memory: "🧠", missing: "👀",
+    simon: "🎵", reflejos: "⚡", atrapa: "💘", muro: "💗",
     streak: "🔥", seed: "✨"
   };
 

@@ -3,17 +3,17 @@
 // y, si no hay conexión, usa la copia guardada en el móvil.
 // Los puntos NO pasan por aquí: la sincronización con Supabase va directa a la red.
 // Cambia el número de versión cuando añadas o quites archivos de la lista.
-const CACHE = 'pivi-v1';
+const CACHE = 'pivi-v2';
 const FILES = [
   './', './index.html', './retos.html',
   './quiz.html', './wordle.html', './memory.html', './missing.html',
-  './simon.html', './reflejos.html', './atrapa.html',
+  './simon.html', './reflejos.html', './atrapa.html', './muro.html',
   './theme.css', './styles.css', './retos.css', './quiz.css', './wordle.css',
-  './memory.css', './missing.css', './simon.css', './reflejos.css', './atrapa.css',
+  './memory.css', './missing.css', './simon.css', './reflejos.css', './atrapa.css', './muro.css',
   './pivi-core.js', './cloud-config.js', './pivi-config.js', './pivi-dev.js',
   './pivi-ledger.js', './cloud-sync.js', './points-policy.js', './app.js', './retos.js',
   './quiz.js', './wordle.js', './memory.js', './missing.js',
-  './simon.js', './reflejos.js', './atrapa.js',
+  './simon.js', './reflejos.js', './atrapa.js', './muro.js',
   './recompensas.json', './preguntas.json', './words-es5.txt',
   './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './apple-touch-icon.png'
 ];
