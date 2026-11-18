@@ -3,6 +3,8 @@
    - Marcador de puntos.
    - En finde: qué retos ya se han jugado (entre los dos, se
      sincroniza) y cuántos puntos dio cada uno, más un resumen.
+   - Orden de la lista: cambia cada semana (ordenarRetos, en
+     retos.html); en finde, los pendientes primero.
    ============================================================ */
 const pointsEl = document.getElementById("points");
 
@@ -25,6 +27,12 @@ function renderWeekend() {
   if (!P || !P.weekendSummary || !box) return;
 
   const s = P.weekendSummary();
+  // orden de la semana (función en retos.html); en finde, los pendientes primero
+  if (typeof window.ordenarRetos === "function") {
+    const jugados = {};
+    if (s.weekend) Object.keys(s.games).forEach(g => { jugados[g] = !!s.games[g].played; });
+    window.ordenarRetos(nowDate(), s.weekend ? jugados : null);
+  }
   if (s.weekend) {
     const all = s.played >= s.total;
     box.innerHTML = all

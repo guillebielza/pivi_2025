@@ -216,6 +216,57 @@
     </template>
 
   </section>
+  <script>
+  /* Orden de los minijuegos: cambia cada lunes y es el mismo en los dos móviles
+     (solo depende de la semana). Cada semana abre la lista un juego distinto, por
+     turnos, y el resto se baraja. En finde, retos.js lo vuelve a llamar con lo ya
+     jugado: los pendientes van primero y los hechos bajan al final.
+     Va aquí, justo tras la lista, para ordenar antes de que se pinte (sin saltos). */
+  function ordenarRetos(now, jugados) {
+    try {
+      var list = document.querySelector(".challenge-list");
+      if (!list) return;
+      var cards = [], byId = {};
+      for (var k = 0; k < list.children.length; k++) {
+        var c = list.children[k];
+        if (c.tagName === "A" && c.classList.contains("challenge-card")) {
+          var cid = c.getAttribute("href").replace(/\.html$/, "");
+          cards.push(cid); byId[cid] = c;
+        }
+      }
+      cards.sort(); // base fija: el orden del HTML no influye
+      var n = cards.length;
+      if (n < 2) return;
+      // número de semana (lunes a domingo), en días UTC para no fallar con el cambio de hora
+      var d = now || new Date();
+      var dias = Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 864e5);
+      var semana = Math.floor((dias + 3) / 7); // el 1-1-1970 fue jueves: así la semana empieza en lunes
+      // primero: por turnos (cada juego abre una semana de cada n)
+      var primero = cards[((semana % n) + n) % n];
+      var resto = cards.filter(function (x) { return x !== primero; });
+      // resto: barajado con la semana como semilla (mulberry32)
+      var s = semana * 2654435761 | 0;
+      var rnd = function () {
+        s = s + 0x6D2B79F5 | 0;
+        var t = Math.imul(s ^ s >>> 15, 1 | s);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+      for (var i = resto.length - 1; i > 0; i--) {
+        var j = Math.floor(rnd() * (i + 1)), x = resto[i]; resto[i] = resto[j]; resto[j] = x;
+      }
+      var orden = [primero].concat(resto);
+      if (jugados) { // finde: pendientes primero, sin perder el orden de la semana
+        orden = orden.filter(function (g) { return !jugados[g]; })
+          .concat(orden.filter(function (g) { return jugados[g]; }));
+      }
+      var ancla = list.querySelector("template"); // los retirados siguen al final
+      orden.forEach(function (g) { list.insertBefore(byId[g], ancla); });
+      list.setAttribute("data-semana", String(semana));
+    } catch (e) { /* si algo falla, se queda el orden del HTML */ }
+  }
+  ordenarRetos(new Date());
+  </script>
 </main>
 
 <!-- PESTAÑAS INFERIORES (solo se ven en el móvil) -->
@@ -233,6 +284,6 @@
 <script src="pivi-ledger.js?v=9"></script>
 <script src="cloud-sync.js?v=7"></script>
 <script src="points-policy.js?v=8"></script>
-<script src="retos.js?v=3"></script>
+<script src="retos.js?v=4"></script>
 </body>
 </html>
