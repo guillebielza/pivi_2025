@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <meta name="theme-color" content="#fbf4ef">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pivi">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+  <title>Camino a la cita · Pivi</title>
+  <script>(function(){try{var t=localStorage.getItem('pivi_theme');if(t!=='light'&&t!=='dark'){t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1f1820':'#fbf4ef');}catch(e){}})();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+  <link rel="stylesheet" href="theme.css?v=6">
+  <link rel="stylesheet" href="cita.css?v=1" />
+</head>
+<body>
+
+<header class="app-header">
+  <a class="brand" href="index.html"><span class="brand-name">Pivi</span></a>
+  <span class="spacer"></span>
+  <a class="nav-link" href="retos.html" aria-label="Volver a Retos" title="Volver a Retos"><span class="nav-ic" aria-hidden="true">⬅️</span><span class="nav-text">Retos</span></a>
+  <a class="nav-link" href="index.html" aria-label="Ir a Inicio" title="Ir a Inicio"><span class="nav-ic" aria-hidden="true">🏠</span><span class="nav-text">Inicio</span></a>
+  <span class="points-chip" title="Tus Pivi Puntos">⭐ <span class="num" id="points" data-points>0</span></span>
+  <button class="theme-toggle" data-theme-toggle aria-label="Cambiar tema">🌙</button>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <h1>🌹 Camino a la cita</h1>
+    <p class="subtitle">Avanza casilla a casilla cruzando calles, vías y el río… ¡y no llegues tarde!</p>
+  </div>
+
+  <section class="panel">
+
+    <div class="mode">
+      <button id="practiceBtn" class="btn secondary">Practicar</button>
+      <button id="challengeBtn" class="btn primary">Jugar reto (+ puntos)</button>
+      <button id="restartBtn" class="btn">🔁 Reiniciar</button>
+    </div>
+
+    <div class="status-row">
+      <div id="policyStatus" class="status-note">—</div>
+    </div>
+
+    <div class="info">
+      <div class="pill">Modo: <b id="modeLabel">—</b></div>
+      <div class="pill">Intento: <b id="tryLabel">—</b></div>
+      <div class="pill">Mejor: <b id="bestLabel">0</b></div>
+      <div class="pill">Recompensa: <b id="rewardLabel">—</b></div>
+    </div>
+
+    <!-- avance hacia el máximo de puntos (60 filas = +10) -->
+    <div class="timerbar" title="Avance hacia +10">
+      <div id="progressFill" class="timerbar-fill" style="width:0%"></div>
+    </div>
+
+    <canvas id="citaCanvas" class="cita-canvas" width="360" height="540"
+            role="img" aria-label="Tablero: toca para avanzar y desliza para moverte a los lados"></canvas>
+
+    <div class="rules">
+      <h3>📌 Cómo se suman puntos en este juego</h3>
+      <p><b>Solo en modo reto</b>. En práctica juegas ilimitado y <b>no suma puntos</b>.</p>
+      <ul class="rules-list">
+        <li><b>Toca el tablero</b> para avanzar una casilla. <b>Desliza</b> el dedo hacia un lado (o hacia atrás) para moverte en esa dirección. Con teclado: flechas o espacio.</li>
+        <li><b>Cada fila nueva que alcanzas suma 1.</b> Cuanto más lejos, más tráfico y más rápido va todo.</li>
+        <li><b>Coches, motos y el tranvía</b> acaban el intento. Si la luz de la vía parpadea en rojo, ¡viene el tranvía!</li>
+        <li><b>En el río</b> solo puedes pisar troncos y nenúfares: el agua acaba el intento, y también que un tronco te saque de la pantalla.</li>
+        <li><b>No te entretengas:</b> el camino avanza solo. Si te quedas atrás, llegas tarde y se acaba el intento.</li>
+        <li><b>3 intentos</b> y cuenta el mejor. Si sales a mitad del reto, pierdes los que te queden.</li>
+        <li><b>Puntos:</b> 1 punto por cada 6 filas (máximo 10).</li>
+      </ul>
+      <p class="rules-foot"><b>Política:</b> el reto solo puede otorgar puntos <b>una vez por fin de semana</b> para este juego.</p>
+    </div>
+
+  </section>
+</main>
+
+<!-- Modal resultado -->
+<div id="overlay" class="overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle">Resultado</h3>
+    <p id="modalText"></p>
+    <div class="modal-actions">
+      <button id="modalOk" class="btn primary">Aceptar</button>
+      <button id="modalAgain" class="btn secondary">Jugar otra</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal inicio -->
+<div id="startOverlay" class="overlay start-overlay hidden">
+  <div class="modal start-modal">
+    <h3>🌹 ¿Cómo quieres jugar?</h3>
+    <p id="startText"></p>
+    <div class="start-actions">
+      <button id="choosePractice" class="btn secondary">Practicar</button>
+      <button id="chooseChallenge" class="btn primary">Jugar reto (+ puntos)</button>
+    </div>
+    <p class="start-foot muted">Puedes cambiar de modo cuando quieras.</p>
+  </div>
+</div>
+
+<script src="pivi-core.js?v=8"></script>
+<script src="cloud-config.js?v=3"></script>
+<script src="pivi-config.js?v=4"></script>
+<script src="pivi-dev.js?v=11"></script>
+<script src="pivi-ledger.js?v=9"></script>
+<script src="cloud-sync.js?v=7"></script>
+<script src="points-policy.js?v=8"></script>
+<script src="cita.js?v=1"></script>
+</body>
+</html>

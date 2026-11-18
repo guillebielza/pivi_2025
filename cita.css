@@ -1,0 +1,45 @@
+/* ============================================================
+   cita.css — SOLO el tablero de Camino a la cita.
+   El resto (header, botones, panel, pills, barra, reglas…) -> theme.css
+   ============================================================ */
+
+.cita-canvas {
+  display: block;
+  width: min(360px, 100%);
+  aspect-ratio: 2 / 3;            /* 360 × 540 lógicos */
+  margin: 10px auto 6px;
+  border-radius: 22px;
+  border: 1px solid var(--border);
+  background: var(--surface-inset);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  -webkit-user-select: none; user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;     /* sin zoom por doble toque */
+}
+/* mientras se juega, deslizar el dedo mueve al personaje, no la página */
+.cita-canvas.is-playing { touch-action: none; }
+
+.cita-canvas.shake { animation: citaShake .35s; }
+@keyframes citaShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cita-canvas.shake { animation: none; }
+}
+
+/* Móvil: datos + tablero caben a la vez en pantalla tras empezar
+   (la cabecera y las pastillas ocupan ~190 px) */
+@media (max-width: 760px) {
+  .cita-canvas {
+    width: min(100%, calc((100vh - 190px) * 2 / 3));
+    width: min(100%, calc((100svh - 190px) * 2 / 3));
+    margin-top: 6px;
+    border-radius: 18px;
+  }
+}

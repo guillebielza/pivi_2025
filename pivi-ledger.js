@@ -60,7 +60,7 @@
   var ICONS = {
     wheel: "🎡", code: "🏷️", reward: "🎁",
     quiz: "🧩", wordle: "🟩", memory: "🧠", missing: "👀",
-    simon: "🎵", reflejos: "⚡", atrapa: "💘", muro: "💗", vuelo: "💌",
+    simon: "🎵", reflejos: "⚡", atrapa: "💘", muro: "💗", vuelo: "💌", cita: "🌹",
     streak: "🔥", seed: "✨"
   };
 
@@ -174,7 +174,7 @@
   }
 
   /* ---------------- Resumen permanente por mes ---------------- */
-  var GAME_TYPES = { quiz: 1, wordle: 1, memory: 1, missing: 1, simon: 1, reflejos: 1, atrapa: 1, muro: 1, vuelo: 1 };
+  var GAME_TYPES = { quiz: 1, wordle: 1, memory: 1, missing: 1, simon: 1, reflejos: 1, atrapa: 1, muro: 1, vuelo: 1, cita: 1 };
   function pad2(n) { return String(n).padStart(2, "0"); }
   function monthKey(ts) { var d = new Date(ts); return d.getFullYear() + "-" + pad2(d.getMonth() + 1); }
   function summarize(log) {

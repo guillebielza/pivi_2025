@@ -65,7 +65,7 @@
   }
 
   // --- juegos ---
-  const ALL_GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro", "vuelo"];
+  const ALL_GAMES = ["memory", "wordle", "missing", "quiz", "simon", "reflejos", "atrapa", "muro", "vuelo", "cita"];
   // Juegos RETIRADOS (ocultos): no salen en Retos, no cuentan en el resumen
   // del finde y su reto ya no da puntos (si alguien entra por la dirección,
   // solo puede practicar). Sus archivos siguen en la carpeta, intactos.
@@ -129,7 +129,7 @@
     if (!bypass) localStorage.setItem(rewardKey(g), wk);
 
     if (window.PiviLedger) {
-      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones", muro: "Reto Muro de pinchos", vuelo: "Reto Carta voladora" };
+      var names = { quiz: "Reto Quiz", wordle: "Reto Wordle", memory: "Reto Parejas", missing: "Reto ¿Cuál falta?", simon: "Reto Simón", reflejos: "Reto Reflejos", atrapa: "Reto Atrapacorazones", muro: "Reto Muro de pinchos", vuelo: "Reto Carta voladora", cita: "Reto Camino a la cita" };
       window.PiviLedger.record(g, n, names[g] || ("Reto " + g));
     }
 
