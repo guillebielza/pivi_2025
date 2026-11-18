@@ -13,6 +13,9 @@
 -- fila cuyo id coincide. Sin ese id no se puede listar, leer ni
 -- tocar nada aunque se conozca la clave pública del proyecto.
 -- Borrar filas está prohibido desde la web.
+--
+-- 🔔 AVISOS (notificaciones push): van aparte, en supabase/avisos.sql
+--    (+ la función supabase/functions/pivi-push).
 -- ============================================================
 
 -- ---------- 1) ESTADO DEL JUEGO: una fila por perfil ----------
