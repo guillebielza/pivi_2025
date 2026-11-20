@@ -48,16 +48,17 @@ const chooseChallenge = document.getElementById("chooseChallenge");
 const W = 360, H = 540;            // tamaño lógico del tablero
 const WALL = 6;                    // grosor de las paredes
 const EDGE = 24;                   // franja de pinchos de techo y suelo
-const SLOTS = 10;                  // huecos para pinchos en cada pared
+const SLOTS = 11;                  // huecos para pinchos en cada pared (con 10 el paso libre era muy ancho)
 const SLOT_H = (H - 2 * EDGE) / SLOTS;
 const SPIKE_D = 26;                // lo que sobresale un pincho
 const R = 14;                      // tamaño del corazón (dibujo y rebote)
 const HIT_R = 10;                  // radio de choque: algo menor, perdona roces
 const GRAVITY = 1450;              // px/s²
 const JUMP = 470;                  // velocidad de salto (px/s)
-const SPEED0 = 190;                // velocidad lateral al empezar
-const SPEED_STEP = 4;              // + por cada pared
-const SPEED_MAX = 290;
+const SPEED0 = 195;                // velocidad lateral al empezar
+const SPEED_STEP = 5;              // + por cada pared
+const SPEED_MAX = 320;             // (dificultad subida el 2026-11-20: antes 190 +4 hasta 290 y
+                                   //  llegar a 30 paredes era fácil)
 const STEP = 1 / 120;              // física a paso fijo (igual en pantallas de 60 y 120 Hz)
 const READY_Y = H * 0.45;
 const TRIES = 3;                   // intentos del reto (cuenta el mejor)
@@ -89,8 +90,8 @@ let challengePending = false; // reto elegido pero aún sin el primer toque
 function inChallenge() { return !practiceMode && !challengePending && state !== "idle" && state !== "over"; }
 
 /* ---------- pinchos ---------- */
-function spikeCount(s) { return Math.min(2 + Math.floor(s / 4), SLOTS - 3); } // 2 → 7
-function safeGap(s) { return s < 12 ? 3 : 2; } // huecos libres seguidos que siempre hay
+function spikeCount(s) { return Math.min(2 + Math.floor(s / 3), SLOTS - 3); } // 2 → 8 (a las 18 paredes)
+function safeGap(s) { return s < 9 ? 3 : 2; } // huecos libres seguidos que siempre hay
 
 function shuffle(a) {
   for (let i = a.length - 1; i > 0; i--) {

@@ -57,13 +57,14 @@ const GRAVITY = 1350;              // px/s²
 const FLAP = 400;                  // velocidad del aleteo (px/s hacia arriba)
 const MAX_FALL = 620;
 const COL_W = 58;                  // ancho de las columnas
-const SPACING = 205;               // distancia entre columnas
-const SPEED0 = 150;                // velocidad al empezar (px/s)
-const SPEED_STEP = 2;              // + por cada columna superada
-const SPEED_MAX = 200;
-const GAP0 = 168;                  // hueco al empezar
-const GAP_STEP = 2;                // − por cada columna
-const GAP_MIN = 128;
+const SPACING = 200;               // distancia entre columnas (con 190 había bajadas casi imposibles)
+const SPEED0 = 160;                // velocidad al empezar (px/s)
+const SPEED_STEP = 4;              // + por cada columna superada
+const SPEED_MAX = 230;
+const GAP0 = 160;                  // hueco al empezar
+const GAP_STEP = 3;                // − por cada columna
+const GAP_MIN = 104;               // (dificultad subida el 2026-11-20: antes 168→128 y 150→200 px/s,
+                                   //  y llegar a 20 columnas era fácil)
 const MARGIN = 44;                 // el hueco nunca pega al techo ni al suelo
 const MAX_SHIFT = 130;             // cuánto puede cambiar la altura del hueco de una columna a otra
                                    //   (con más, al final hay subidas casi imposibles)
